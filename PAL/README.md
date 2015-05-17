@@ -3,7 +3,7 @@
 New information will be added here if needed.
 
 ##The original readme is found below (any contact information is probably outdated):
-
+```
 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 ³                                                                ³
 ³                  Welcome to the PAL library !                  ³
@@ -12,7 +12,7 @@ New information will be added here if needed.
 ³                                                                ³
 ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 ------------------------------------------------------------------
-
+```
  NOTE: This archive contains subdirectories - if you extracted it
  without the -d switch, delete all the files that were extracted
  with the exception of PAL.ZIP, and try again with:
