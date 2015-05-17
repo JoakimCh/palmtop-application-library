@@ -1,0 +1,311 @@
+!short:^u PFE: PAL Font Editor.
+^u The PAL Font Editor.
+
+
+         ============================================
+         PFE, The PAL Font Editor. Vr.1.02 [06/15/95]
+         ============================================
+
+
+ PFE is a small font editor which supports character sets
+from 4x4 to 16x16 bits of size. PFE can load any .HFN, .VFN,
+or FCL font file, and save it in any of these 3 formats:
+
+ - HFN: PAL's (Palmtop Application Library) horizontal fonts.
+ - VFN: Gilles Kohl's VR (Vertical reader) vertical fonts.
+ - FCL: FCL definition file, ready to be compiled by
+        Gilles Kohl's FCL font compiler/loader.
+
+
+ * VR and FCL are copyrighted shareware programs written
+   by Gilles Kohl.
+
+
+______________
+1. Running PFE
+
+ When you invoke PFE from the command line without any
+arguments, PFE will display its internal font. You can
+specify the font filename at the command line if you
+wish as follows:
+
+ pfe <FontName>
+
+where <FontName> is the filename of a valid .HFN, .VFN or
+.FCL font file. When no extension is given, PFE looks for
+the .HFN extension. If the specified filename is not
+found, the internal (resident) font will be displayed.
+
+ PFE can also load .FCL files for editing. However, there are
+a few limitations when loading FCL files in PFE. First,
+PFE will ignore any duplicated character definitions in
+the FCL file, even if the font size is different. This means
+that the FCL file must have character definitions for one
+font size only, since PFE can edit only one font at a time.
+
+ What you can do when you have an FCL file with different
+font definitions is to split it up into one file per font.
+You can use FCL's 'include' command in one of the font
+files if you want to compile everything in a single .COM
+See your FCL.DOC for more details.
+
+________________
+2. Moving around
+
+ Once you have loaded a font in PFE, you will notice the
+following on the screen:
+
+ First, on your left is the Edit window grid. It's inside
+that grid that character bitmaps can be edited. On your
+right the complete character set of the loaded font is
+displayed. On the middle top of the screen you will find
+the current ASCII code and display of the selected
+character on the set, and the character size. On the top
+right the filename of the font will be displayed.
+
+ You can press [F1] to get a quick help view of the most
+used options.
+
+
+ a) Character selection:
+ -----------------------
+ You can select the character to be edited by using the 4
+arrows. A small cursor will guide you through the set, and
+the grid will display the bitmap of the selected character.
+If the cursor falls on an undefined character bitmap, the
+sizing rectangle won't appear on the grid.
+
+
+ You can also select a character by pressing the actual
+key on the keyboard. For example, pressing 'a' will
+bring the cursor to the character 'a'. If you press
+SHIFT-A, the cursor will fall on the 'A' character.
+Same goes for numbers, and any other character on the
+keyboard.
+
+ Another alternative for selecting characters is using
+the ALT-MENU key combination. By holding down both ALT
+and MENU keys, you can enter the ASCII code of the
+desired character on the numeric keypad, release the
+buttons, and the cursor will go to the selected character.
+
+
+ b) New Font [F2]:
+ -----------------
+
+ Pressing F2 will delete the current font from memory and
+ clean up the font area. You will be prompted to enter the
+ new font size.
+
+
+ c) Edit character [F3] or [ENTER]:
+ ----------------------------------
+ This brings you to the Edit mode (See section 3 below).
+
+
+ d) Set font global size [F4]:
+ -----------------------------
+ Use this option  if you wish to change the size of all
+ the characters in the loaded font. Note that reducing
+ the size to smaller than the character's size, the
+ characters will be truncated.
+
+ If you enter 0 as a width or height value, the original
+ width or height of each character will be preserved.
+ This is usefull if you are working with proportional
+ fonts.
+
+
+ e) Copy [F5] & Paste [F6]:
+ --------------------------
+ You can copy any selected character of the set in the buffer
+ by pressing F5 (Copy). You can later use the Paste function
+ (F6) to paste the buffer on any other selected character.
+
+
+ f) Convert from ISO latin to IBM code page 850 [F7]:
+ ----------------------------------------------------
+ Use this option if you wish to convert some fonts from
+ ISO Latin to IBM code page 850. Once the font is converted
+ with this option, it can't be converted back.
+
+
+ g) Rotate complete font [F8]:
+ -----------------------------
+ This function allows you to rotate all the characters
+ of the loaded font. Every time you press it, the characters
+ will be rotated 90 degrees clockwise.
+
+
+ h) Open a font file [F9]:
+ -------------------------
+ This option will allow you to load a font in PFE. You must
+ specify extensions (.HFN, .VFN or .FCL). If no extension is
+ given, PFE will default to .HFN
+
+
+ i) Save the font [F10]:
+ -----------------------
+ Once you have finished editing the loaded font, use this
+ option to save it. PFE will prompt you to enter the filename,
+ the font I.D. number (depending on the font style) and
+ to select the format output, HFN, VFN or FCL.
+
+
+ j) Delete character from font [DEL]:
+ ------------------------------------
+ You can remove any character from the font by pressing the
+ DELETE button. The selected character will be completely
+ removed from the font.
+
+
+ k) Quitting PFE [ESC] or [MENU-Q]:
+ ----------------------------------
+ Before quitting you will be asked if you wish to save the
+ current font.
+
+
+______________________________________
+3. Editing a character [F3] or [ENTER]
+
+ Once you have selected the character you wish to edit, press
+F3 (Edit-mode). The cursor will now appear inside the grid.
+Again, you can move around the grid using the arrows, and draw
+using the SPACE-BAR. The drawn character will also appear
+in real size on the right of the screen inside the set.
+
+
+ a) Rotate character [F1]:
+ -------------------------
+ This simply rotates the selected character 90 degrees clockwise
+ every time F1 is pressed.
+
+
+ b) Invert character [F2]:
+ -------------------------
+ This function will invert all pixels of the selected character,
+ and produce a 'negative image' of it. Note that only the bits
+ inside the sizing rectangle will be inverted.
+
+
+ c) Adjust Width [F3]/[Shift-F3]:
+ --------------------------------
+ You can adjust the logical width of each character by pressing
+ F3 / Shift-F3 till you get the desired width.
+
+
+ d) Adjust Height [F4]/[Shift-F4]:
+ ---------------------------------
+ You can adjust the logical height of each character by pressing
+ F4 / Shift-F4 till you get the desired height.
+
+ e) Scroll Left [F5]:
+ --------------------
+ Scrolls the character inside the sizing rectangle to the left.
+ Note that the limits of the scrolling area are defined
+ by the sizing rectangle.
+
+ f) Scroll Right [F6]:
+ --------------------
+ Scrolls the character inside the sizing rectangle to the right.
+
+
+ g) Scroll Up [F7]:
+ ------------------
+ Scrolls the character inside the sizing rectangle upwards.
+
+
+ h) Scroll Down [F8]:
+ --------------------
+ Scrolls the character inside the sizing rectangle downwards.
+
+
+ i) Restore character [F9]:
+ --------------------------
+ Restores the character definition the way it was before
+ entering the Edit-Mode (undo).
+
+
+ j) Exit Edit mode [F10] or [ENTER]:
+ -----------------------------------
+ Pressing F10 will save the current definition in the font
+ and exit Edit-mode. You must press F10 again to save the
+ font to the file.
+
+
+ k) Clear character bitmap [DEL]:
+ --------------------------------
+ Clears the character definition area (all white).
+
+
+_________________
+4. Saving a font.
+
+ When you exit the Edit-mode, you can then save your font
+to a file, by pressing [F10]. PFE will prompt you for
+the filename, font I.D. number (depending on the font style)
+and the file format you wish your file to be saved in.
+Currently, there are 3 file formats, HFN for horizontal
+fonts, VFN for vertical fonts, and FCL definition file
+for the FCL font compiler/loader. There's no need to
+specify an extension, PFE will add the required extensions
+depending on the selected file format.
+
+
+
+                         ******
+
+
+
+IMPORTANT NOTES:
+
+* When saving to .VFN format, the font must not be rotated
+  in PFE. PFE will automatically rotate & flip it for you.
+  Note that VR (.VFN) fonts are always 8 or 16 bits of
+  height.
+
+* PFE will 'fill-in' undefined characters that fall within
+  the ASCII minimum and ASCII maximum range of any HFN
+  or VFN font. Only FCL fonts make exception of this.
+
+* When saving a font in .FCL format, font characters that
+  exceed 12 bits of height will be truncated. This is
+  because the maximum allowable height in FCL definitions
+  is 12 (16x12 size).
+
+
+* Here's a suggestion for the 16-bit font I.D. (style)
+  numbers. You can enter any number as an I.D., but it's
+  better to enter something more meaningfull like this:
+
+
+             BIT  DESCRIPTION
+             --------------------------------
+             15 : Proportional flag (1=prop.)
+             14 : Bold flag.
+             13 : Italic flag.
+             12 : Underlined flag.
+             11 : Reverse (negative) flag.
+             10 : Special flag.
+
+             9,8: Unused for the moment.
+
+             7-0: Font type ID.
+
+ * For normal text all the bits 8-15 are cleared.
+
+ The bits 0-7 can describe the type of font which can be one of the
+ following:
+
+             0 =  ?
+             1 = Courier.
+             2 = Roman.
+             3 = Sans Serif.
+             4 = Prestige.
+             5 = Script.
+             6 = Orator.
+             . =  ?
+             . =  ?
+             . =  ?
+           255 = Special.
+

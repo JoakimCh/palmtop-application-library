@@ -1,0 +1,640 @@
+<HTML>
+<HEAD><TITLE>PAL - Quickreference: Lograph</TITLE></HEAD>
+<BODY>
+<H1>PAL - Quickreference: Lograph</H1>
+<HR>
+<A NAME="Low level graphics"><HR>
+<H2> Low level graphics routines
+</H2>
+</A><P>
+The low-level graphics routines are interface functions to the INT5h graphics
+calls. With these functions you can set graphics mode, pen color, pen position,
+select and display text using the built-in fonts, scroll, save and restore
+a rectangular area of the graphics screen, define shape and blinkrate of the
+graphics cursor.
+<P>
+Available functions:
+<P>
+<BR><A HREF="#GraphMode">GraphMode</A>
+   : Switch to 640x200 monochrome graphics mode.
+<BR><A HREF="#TextMode">TextMode</A>
+    : Switch to text mode.
+<BR><A HREF="#SelectFont">SelectFont</A>
+  : Select one of the 3 built-in fonts, small, medium or large.
+<BR><A HREF="#SetColor">SetColor</A>
+    : Select the pen color, black or white.
+<BR><A HREF="#SetRule">SetRule</A>
+     : Set the graphics replacement rule.
+<BR><A HREF="#SetPos">SetPos</A>
+      : Set the graphics pen coordinates.
+<BR><A HREF="#SetMask">SetMask</A>
+     : Set fill mask.
+<BR><A HREF="#SetLineType">SetLineType</A>
+ : Set the graphics line type.
+<BR><A HREF="#SetClip">SetClip</A>
+     : Define a rectangular clip region.
+<BR><A HREF="#Scroll">Scroll</A>
+      : Scroll a rectangular area of the screen.
+<BR><A HREF="#PlotDot">PlotDot</A>
+     : Set a pixel to current color.
+<BR><A HREF="#WriteText">WriteText</A>
+   : Write text on the graphics screen (built-in fonts).
+<BR><A HREF="#GetImg">GetImg</A>
+      : Get a rectangular bitmap from screen and store into a buffer.
+<BR><A HREF="#PutImg">PutImg</A>
+      : Output a bitmap at a given coordinate position, with
+                  a given output rule.
+<P>
+<BR><A HREF="#DefineCursor">DefineCursor</A>
+: Define the shape of the graphics cursor.
+<BR><A HREF="#BlinkRate">BlinkRate</A>
+   : Specify the graphics cursor blinking rate (Normal blink=9).
+<BR><A HREF="#Cursor">Cursor</A>
+      : Cursor control function. (on, off, blink, noblink)
+<BR><A HREF="#MoveCursor">MoveCursor</A>
+  : Move graphics cursor to the specified X:Y location of
+                  the screen.
+<BR><A HREF="#SaveState">SaveState</A>
+   : save the current PAL graphics state into a structure
+<BR><A HREF="#RestoreState">RestoreState</A>
+: restore the graphics state from the above structure
+<BR><A HREF="#GetDot">GetDot</A>
+      : Reads the color of a pixel on the screen.
+<P>
+<HR><H2><A NAME="GraphMode">GraphMode</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      GraphMode</PRE><DT>DESCRIPTION
+<DD><PRE>      Graphmode switches to the 640x200 monochrome graphics mode and clears
+      the display. You must set to this mode before using any of the graphics
+      functions.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int GraphMode(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      TRUE if successful. Returns false if no INT 5F support detected -
+      on the desktop, check if CGAGRAPH TSR is resident.</PRE><DT>NOTE
+<DD><PRE>      Use the TextMode() function to get back to the text mode.</PRE><DT>SAMPLE
+<DD><PRE>      if(!GraphMode()) {  /* Try to set 640x200 graphics mode */
+         FatalExit("GraphMode() failed - CGAGRAPH not loaded ?", 1);
+      }</PRE><DT>SEE ALSO
+<DD><A HREF="misc.HTM#PalInit">PalInit</A>
+<A HREF="lograph.HTM#TextMode">TextMode</A>
+
+</DL><HR><H2><A NAME="RestoreGraph">RestoreGraph</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      RestoreGraph</PRE><DT>DESCRIPTION
+<DD><PRE>      This function is called by the GetKey() PAL function to restore the
+      graphics settings that may have been altered when another application
+      has been launched. Usually, another application may be launched while
+      in System Manager, by pressing a blue key. The GetKey() function
+      will restore the graphics state just before it returns to its caller,
+      just in case any settings were altered by the other application.
+      RestoreGraph() reads back the settings from a set of global variables
+      that are used by a few LOGRAPH functions.
+</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void RestoreGraph(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      If you're using another function for reading the keyboard (instead
+      of GetKey), you must call RestoreGraph() afterwards to restore
+      any modified settings.</PRE><DT>SAMPLE
+<DD><PRE>
+      RestoreGraph();   /* restore graphics settings */</PRE><DT>SEE ALSO
+<DD><A HREF="misc.HTM#GetKey">GetKey</A>
+
+</DL><HR><H2><A NAME="TextMode">TextMode</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      TextMode</PRE><DT>DESCRIPTION
+<DD><PRE>      TextMode switches to the text mode and clears the display.
+      Will check for presence of INT 5F support and return FALSE
+      (and do nothing) if this is not the case.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int TextMode(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      The PalDeInit() function also sets the text mode.</PRE><DT>SAMPLE
+<DD><PRE>      TextMode();    /* Set to text mode */</PRE><DT>SEE ALSO
+<DD><A HREF="misc.HTM#PalDeInit">PalDeInit</A>
+<A HREF="lograph.HTM#GraphMode">GraphMode</A>
+
+</DL><HR><H2><A NAME="SelectFont">SelectFont</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      SelectFont</PRE><DT>DESCRIPTION
+<DD><PRE>      SelectFont selects one of the 3 built-in fonts, SMALL_FONT, MEDIUM_FONT,
+      or LARGE_FONT.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void SelectFont(int Size);</PRE><DT>INPUTS
+<DD><PRE>      Size - This argument specifies one of the 3 built-in font sizes. You
+             can use one of the following Sizes: SMALL_FONT, MEDIUM_FONT,
+             or LARGE_FONT.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      You can use the WriteText() function to display your text to
+      the graphics screen. You can also use external fonts, see the
+      Unified font routines for more details.</PRE><DT>SAMPLE
+<DD><PRE>      SelectFont(MEDIUM_FONT);  /* Set medium font */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#WriteText">WriteText</A>
+<A HREF="font.HTM#TextOut">TextOut</A>
+<A HREF="font.HTM#LoadFont">LoadFont</A>
+
+</DL><HR><H2><A NAME="SetColor">SetColor</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      SetColor</PRE><DT>DESCRIPTION
+<DD><PRE>      SetColor sets the pen color which can either be BLACK_COLOR
+      or WHITE_COLOR.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void SetColor(int Color);</PRE><DT>INPUTS
+<DD><PRE>      Color - Specifies the pen color, BLACK_COLOR or WHITE_COLOR.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      The selected color affects both graphics and text output.
+      With BLACK color LCD pixels are ON, WHITE color are OFF.</PRE><DT>SAMPLE
+<DD><PRE>      SetColor(BLACK_COLOR);  /* set color to black */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetRule">SetRule</A>
+<A HREF="lograph.HTM#SetMask">SetMask</A>
+<A HREF="lograph.HTM#SetLineType">SetLineType</A>
+
+</DL><HR><H2><A NAME="SetRule">SetRule</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      SetRule</PRE><DT>DESCRIPTION
+<DD><PRE>      SetRule sets the graphics replacement rule. The graphics or text output
+      always depend on the selected replacement rule.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void SetRule(int Rule);</PRE><DT>INPUTS
+<DD><PRE>      Rule - One of the following definitions can be used:
+
+      FORCE_RULE  : Force output to screen.
+      AND_RULE    : AND output with screen.
+      OR_RULE     : OR output with screen.
+      XOR_RULE    : XOR output with screen.
+      INVFOR_RULE : NOT-force output to screen.
+      INVAND_RULE : NOT-AND output to screen.
+      INVOR_RULE  : NOT-OR output to screen.
+      INVXOR_RULE : NOT-XOR output to screen.
+      TXT_RULE    : TEXT-RULE, clears the background before outputting
+                    a character on the screen.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>SAMPLE
+<DD><PRE>      SetRule(FORCE_RULE);  /* set FORCE replacement rule */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetColor">SetColor</A>
+<A HREF="lograph.HTM#SetMask">SetMask</A>
+<A HREF="lograph.HTM#SetLineType">SetLineType</A>
+
+</DL><HR><H2><A NAME="SetPos">SetPos</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      SetPos</PRE><DT>DESCRIPTION
+<DD><PRE>      Sets the position of the graphics pen.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void SetPos(int x, int y);</PRE><DT>INPUTS
+<DD><PRE>      x - This is the X coordinate, (0-639).
+      y - This is the Y coordinate, (0-199).</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>SAMPLE
+<DD><PRE>      SetPos(100,50);  /* set to 100:50 coordinates */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetClip">SetClip</A>
+<A HREF="lograph.HTM#SetColor">SetColor</A>
+<A HREF="lograph.HTM#SetRule">SetRule</A>
+<A HREF="lograph.HTM#SetMask">SetMask</A>
+<A HREF="lograph.HTM#SetLineType">SetLineType</A>
+
+</DL><HR><H2><A NAME="SetMask">SetMask</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      SetMask</PRE><DT>DESCRIPTION
+<DD><PRE>      The SetMask function defines the fill pattern, used by the
+      Rectangle() function.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void SetMask(char far *FillMask);</PRE><DT>INPUTS
+<DD><PRE>      FillMask - This is a pointer pointing to an 8-byte fill pattern
+      definition table.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>SAMPLE
+<DD><PRE>      BYTE fmask[]= { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa };
+      SetMask(fmask); /* set window shadow fill pattern */</PRE><DT>SEE ALSO
+<DD><A HREF="higraph.HTM#Rectangle">Rectangle</A>
+<A HREF="lograph.HTM#SetColor">SetColor</A>
+<A HREF="lograph.HTM#SetRule">SetRule</A>
+<A HREF="lograph.HTM#SetLineType">SetLineType</A>
+
+</DL><HR><H2><A NAME="SetLineType">SetLineType</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      SetLineType</PRE><DT>DESCRIPTION
+<DD><PRE>      SetLineType defines the shape of the lines displayed by the Line()
+      and Rectangle() functions.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void SetLineType(unsigned int LineType);</PRE><DT>INPUTS
+<DD><PRE>      LineType - This is a 16-bit (integer) which defines the shape of
+                 the line. Use  value 0xffff for solid line (default).</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      When initializing graphics with the PalInit() function, the line-type
+      is solid by default.</PRE><DT>SAMPLE
+<DD><PRE>      SetLineType(0x5555);  /* set dotted line */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetColor">SetColor</A>
+<A HREF="lograph.HTM#SetRule">SetRule</A>
+<A HREF="higraph.HTM#Rectangle">Rectangle</A>
+<A HREF="higraph.HTM#Line">Line</A>
+
+</DL><HR><H2><A NAME="SetClip">SetClip</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      SetClip</PRE><DT>DESCRIPTION
+<DD><PRE>      SetClip sets the coordinates of the upper-left and lower-right
+      corners of the clip rectangle.
+      All reading/writing of the display in this graphics system is limited
+      by the current CLIP REGION.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void SetClip(int x1, int y1, int x2, int y2);</PRE><DT>INPUTS
+<DD><PRE>      x1:y1 - Top left corner coordinates of the clipped area.
+      x2:y2 - Bottom right corner coordinates of the clipped area.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      After a clip region is defined, all graphics reading and writing
+      is limited within the clipped region.</PRE><DT>SAMPLE
+<DD><PRE>      SetClip(50,60,200,100);  /* clipping area */
+      line(40,30,210,120); /* this line exceeds clip region, so it's clipped */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetPos">SetPos</A>
+<A HREF="higraph.HTM#Rectangle">Rectangle</A>
+<A HREF="higraph.HTM#Line">Line</A>
+
+</DL><HR><H2><A NAME="Scroll">Scroll</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      Scroll</PRE><DT>DESCRIPTION
+<DD><PRE>      This function scrolls in the given direction a defined rectangular
+      area of the graphics screen.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void Scroll(int Direction, int Distance, int Color,
+            int x1, int y1, int x2, int y2);</PRE><DT>INPUTS
+<DD><PRE>      Direction - specifies the direction of the scrolling. There are 4
+                  possible directions: SCROLL_UP, SCROLL_DOWN, SCROLL_LEFT
+                  and SCROLL_RIGHT.
+
+      Distance  - This is a 16-bit value which specifies the number of
+                  pixels to scroll in the given direction.
+
+      Color     - Specifies in what color the scrolled area should be filled
+                  with. There are 2 colors, BLACK_COLOR and WHITE_COLOR.
+
+      x1:y1     - Top left coordinates of the rectangular area.
+      x2:y2     - Bottom right coordinates of the rectangular area.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      The bits scrolled out of the rectangle are lost, the bits scrolled
+      in are either set or cleared depending on specified color.</PRE><DT>SAMPLE
+<DD><PRE>      Scroll(SCROLL_UP,10,WHITE_COLOR,50,60,250,120);</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetColor">SetColor</A>
+<A HREF="higraph.HTM#Rectangle">Rectangle</A>
+
+</DL><HR><H2><A NAME="PlotDot">PlotDot</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      PlotDot</PRE><DT>DESCRIPTION
+<DD><PRE>      This function plots a dot (point) at the specified location of the
+      graphics screen.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void PlotDot(int x, int y);</PRE><DT>INPUTS
+<DD><PRE>      x:y     - X:Y coordinates of the dot. The x value can be
+                between 0 and 639, and the y value from 0 to 199.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      The color of the pen must be set to BLACK_COLOR for the dot to
+      be visible. To erase a dot, set the color to WHITE_COLOR
+      before using the PlotDot() function.</PRE><DT>SAMPLE
+<DD><PRE>      SetColor(BLACK_COLOR);
+      PlotDot(50,100);     /* plot dot to 50:100 coordinates */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetColor">SetColor</A>
+<A HREF="higraph.HTM#Line">Line</A>
+<A HREF="higraph.HTM#Rectangle">Rectangle</A>
+
+</DL><HR><H2><A NAME="WriteText">WriteText</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      WriteText</PRE><DT>DESCRIPTION
+<DD><PRE>      This function writes a string of text at the specified location of the
+      graphics screen, using one of the 3 built-in fonts.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void WriteText(int x, int y, char far *Str);</PRE><DT>INPUTS
+<DD><PRE>      x:y  - The X:Y coordinates on the screen.
+      Str  - Pointer to the string.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      You can select one of the three built-in fonts with the SelectFont()
+      function. The graphics replacement rule can be set with the SetRule()
+      function. The color of the text (black or white) can be set with
+      the SetColor() function. Another alternative for outputting text
+      to the graphics screen is the TextOut() function. With this function
+      external fonts can be used by calling LoadFont().</PRE><DT>SAMPLE
+<DD><PRE>      SelectFont(MEDIUM_FONT);             /* set to medium font */
+      WriteText(100,50,"Hello world.");    /* display string */</PRE><DT>SEE ALSO
+<DD><A HREF="font.HTM#TextOut">TextOut</A>
+<A HREF="font.HTM#LoadFont">LoadFont</A>
+<A HREF="lograph.HTM#SelectFont">SelectFont</A>
+<A HREF="lograph.HTM#SetRule">SetRule</A>
+<A HREF="lograph.HTM#SetColor">SetColor</A>
+
+</DL><HR><H2><A NAME="GetImg">GetImg</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      GetImg</PRE><DT>DESCRIPTION
+<DD><PRE>      This function gets a rectangular area of the screen and stores it in
+      a buffer. If you pass NULL as the address of your buffer, GetImg
+      will allocate sufficient storage itself. It will return a pointer to
+      the buffer (either the allocated one or the one that you passed).</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      IMGHDR *GetImg(int x1, int y1, int x2, int y2, void far *Bitmap);</PRE><DT>INPUTS
+<DD><PRE>      x1:y1  - Specifies the top left corner of the rectangular area.
+      x2:y2  - Specifies the bottom right corner of the rectangular area.
+      Bitmap - Pointer to the image buffer.</PRE><DT>RETURN VALUE
+<DD><PRE>      When you passed a non-NULL Bitmap pointer, GetImg will return this
+      pointer. Otherwise, it will allocate sufficient space for the
+      bitmap and return a pointer to it. In this case, you will need to
+      free() the pointer again when you don't need the bitmap any more.</PRE><DT>NOTE
+<DD><PRE>      The stored image can be displayed anywhere on the screen using
+      the PutImg() function. The size of the bitmap buffer can be
+      calculated with the following formula:
+
+      Size(bytes) = 8 + ((x2-x1+8)/8) * (y2-y1+1)
+
+      You can use the prefined macro IMGSIZE(x1,y1,x2,y2) to
+      compute the size of the bitmap buffer. Or you can simply pass
+      NULL as the buffer address to have GetImg allocate sufficient
+      space prior to doing the bitmap transfer, and return the address
+      of that buffer to you.
+
+      Bits with a value of 0 are added to the right end of each row of
+      pixels (if necessary) to fill out an integral number of bytes of
+      data for that row.  The image is always left justified within the
+      buffer regardless of its byte-alignment on the display.</PRE><DT>SAMPLE
+<DD><PRE>      IMGHDR *pImg;
+      int x1, y1, x1, x2;
+      x1 = 50;
+      y1 = 60;
+      x2 = 220;
+      x3 = 110;
+
+      pImg = GetImg(x1, y1, x2, y2, NULL);   /* Store Image */
+      PutImg(x1, y1, FORCE_RULE, pImg);      /* Restore saved Image */
+      free(pImg); /* free memory that got allocated by GetImg */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#PutImg">PutImg</A>
+
+</DL><HR><H2><A NAME="PutImg">PutImg</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      PutImg</PRE><DT>DESCRIPTION
+<DD><PRE>      This function displays at the specified coordinates the bitmap
+      that was saved previously by the GetImg() function, with a
+      given replacement rule.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void PutImg(int x1, int y1, int Rule, void far *Bitmap);</PRE><DT>INPUTS
+<DD><PRE>      x1:y1  - Specifies the top left corner of the rectangular image.
+      Bitmap - Pointer to the saved image buffer.
+      Rule   - Specifies the graphics replacement rule, which can be one
+               of the following:
+
+               FORCE_RULE  : Force output to screen.
+               AND_RULE    : AND output with screen.
+               OR_RULE     : OR output with screen.
+               XOR_RULE    : XOR output with screen.
+               INVFOR_RULE : NOT-force output to screen.
+               INVAND_RULE : NOT-AND output to screen.
+               INVOR_RULE  : NOT-OR output to screen.
+               INVXOR_RULE : NOT-XOR output to screen.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      If the entire image doesn't fit on the display, none of it's drawn.</PRE><DT>SAMPLE
+<DD><PRE>      char far *pBuffer;
+      int length, x1, y1, x1, x2;
+      x1 = 50;
+      y1 = 60;
+      x2 = 220;
+      x3 = 110;
+      length = 8 + ((x2-x1+8)/8) * (y2-y1+1);   /* calculate buffer length */
+      pBuffer = malloc(length);                 /* allocate buffer space   */
+
+      GetImg(x1, y1, x2, y2, pBuffer);          /* Store Image */
+      PutImg(x1, y1, FORCE_RULE, pBuffer);      /* Restore saved Image */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#GetImg">GetImg</A>
+
+</DL><HR><H2><A NAME="DefineCursor">DefineCursor</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      DefineCursor</PRE><DT>DESCRIPTION
+<DD><PRE>      This function defines the shape of the graphics cursor. The cursor
+      definition is a 130-byte table.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void DefineCursor(char far *CursorDef);</PRE><DT>INPUTS
+<DD><PRE>      CursorDef - Pointer to the 130-byte cursor definition. The first 2
+                  bytes are always zero. The next 64 bytes are the cursor
+                  definition. The last 64 bytes are the AND RULE of the
+                  defined shape.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      You can use the default cursor shape by calling the Cursor(CURSOR_INIT)
+      function. Use the MoveCursor() function to place the cursor on the
+      desired screen coordinates, and BlinkRate() to set the blink rate.</PRE><DT>SAMPLE
+<DD><PRE>
+    /* This is the default cursor shape */
+    unsigned char cursordef[]={
+
+    0,0,
+
+    0x80,0x0f, 0x80,0x0f, 0x80,0x0f, 0x80,0x0f,
+    0x80,0x0f, 0x80,0x0f, 0x80,0x0f, 0x80,0x0f,
+    0x80,0x0f, 0x80,0x0f, 0x80,0x0f, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+
+    0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0,
+    0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0,
+    0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+
+    };
+
+    DefineCursor(cursordef);   /* define cursor shape */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#Cursor">Cursor</A>
+<A HREF="lograph.HTM#MoveCursor">MoveCursor</A>
+<A HREF="lograph.HTM#BlinkRate">BlinkRate</A>
+
+</DL><HR><H2><A NAME="BlinkRate">BlinkRate</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      BlinkRate</PRE><DT>DESCRIPTION
+<DD><PRE>      This function sets the graphics cursor blink rate.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void BlinkRate(int Rate);</PRE><DT>INPUTS
+<DD><PRE>      BlinkRate - This integer specifies the blink rate value, 0-0xffff.
+                  The normal blink rate is 9. The value is actually the
+                  number of clock ticks (18.2 per second).</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      You can use the Cursor(CURSOR_INIT) call to define the default shape
+      and blink rate of the cursor. You can also turn on or off the
+      blinking by calling Cursor(CURSOR_BLINK) or Cursor(CURSOR_NOBLINK).</PRE><DT>SAMPLE
+<DD><PRE>      BlinkRate(9);        /* default blinking rate */
+      Cursor(CURSOR_ON);   /* enable cursor */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#Cursor">Cursor</A>
+<A HREF="lograph.HTM#MoveCursor">MoveCursor</A>
+
+</DL><HR><H2><A NAME="Cursor">Cursor</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      Cursor</PRE><DT>DESCRIPTION
+<DD><PRE>      This function initializes, turns on, off, or blink the graphics cursor.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void Cursor(WORD Function);</PRE><DT>INPUTS
+<DD><PRE>      Function - This specifies the type of action Cursor() should take.
+                 Here are the available functions:
+
+                 CURSOR_ON      : Turn cursor on.
+                 CURSOR_OFF     : Turn cursor off.
+                 CURSOR_BLINK   : Enable cursor blinking.
+                 CURSOR_NOBLINK : Disable cursor blinking.
+                 CURSOR_INIT    : Initialize cursor to default shape
+                                  and blink rate.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      You can set the cursor coordinates with the MoveCursor() function.</PRE><DT>SAMPLE
+<DD><PRE>      Cursor(CURSOR_INIT);   /* default cursor shape &amp; blink rate */
+      Cursor(CURSOR_ON);     /* enable cursor */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#MoveCursor">MoveCursor</A>
+
+</DL><HR><H2><A NAME="MoveCursor">MoveCursor</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      MoveCursor</PRE><DT>DESCRIPTION
+<DD><PRE>      MoveCursor moves the graphics cursor at the specified screen
+      coordinates.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void MoveCursor(int x, int y);</PRE><DT>INPUTS
+<DD><PRE>      x:y - Screen coordinates of the cursor position. X can be between
+            0-639, and Y between 0-199.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      You can use the Cursor() function to enable/disable display and
+      blinking of the cursor.</PRE><DT>SAMPLE
+<DD><PRE>      Cursor(CURSOR_INIT);   /* default cursor shape &amp; blink rate */
+      MoveCursor(100,60);    /* Place cursor at 100:60 screen coordinates */
+      Cursor(CURSOR_ON);     /* enable cursor */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#Cursor">Cursor</A>
+<A HREF="lograph.HTM#BlinkRate">BlinkRate</A>
+
+</DL><HR><H2><A NAME="SaveState">SaveState</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      SaveState</PRE><DT>DESCRIPTION
+<DD><PRE>      SaveState saves the PAL graphics state (settings like color, pattern,
+      line type etc.) into a SAVEDSTATE structure.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void SaveState(SAVEDSTATE *pState);</PRE><DT>INPUTS
+<DD><PRE>      pState - pointer to a structure of type SAVEDSTATE that you must
+      provide - the current graphics settings are copied into this
+      structure.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      This is the definition of the SAVEDSTATE structure:
+
+      /* Structure representing saved graphics state */
+      typedef struct {
+         int sh_xpos;           /* shadow xpos      */
+         int sh_ypos;           /* shadow ypos      */
+         int sh_font;           /* shadow font type */
+         int sh_rule;           /* shadow rep. rule */
+         int sh_color;          /* shadow color     */
+         unsigned int sh_Ltype; /* shadow line type */
+         BYTE sh_mask[8];       /* shadow fill mask */
+      } SAVEDSTATE;</PRE><DT>SAMPLE
+<DD><PRE>      SAVEDSTATE MyState;
+
+      SaveState(&amp;MyState);    /* save the current state for future use */
+      SetColor(WHITE_COLOR);  /* these functions ... */
+      SetRule(AND_RULE);
+      SetLineType(0xAAAA);    /* ... modify the state */
+      RestoreState(&amp;MyState); /* now restore the state */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetColor">SetColor</A>
+<A HREF="lograph.HTM#SetRule">SetRule</A>
+<A HREF="lograph.HTM#SetMask">SetMask</A>
+<A HREF="lograph.HTM#SetLineType">SetLineType</A>
+<A HREF="lograph.HTM#SetPos">SetPos</A>
+<A HREF="lograph.HTM#SelectFont">SelectFont</A>
+<A HREF="lograph.HTM#RestoreState">RestoreState</A>
+
+</DL><HR><H2><A NAME="RestoreState">RestoreState</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      RestoreState</PRE><DT>DESCRIPTION
+<DD><PRE>      RestoreState recalls the PAL graphics state (settings like
+      color, pattern, line type etc.) from a SAVEDSTATE structure,
+      where you previously saved it into.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void RestoreState(SAVEDSTATE *pState);</PRE><DT>INPUTS
+<DD><PRE>      pState - pointer to a structure of type SAVEDSTATE that you must
+      provide - the graphics settings are set from the data in this
+      structure.</PRE><DT>RETURN VALUE
+<DD><PRE>      None.</PRE><DT>NOTE
+<DD><PRE>      This is the definition of the SAVEDSTATE structure:
+
+      /* Structure representing saved graphics state */
+      typedef struct {
+         int sh_xpos;           /* shadow xpos      */
+         int sh_ypos;           /* shadow ypos      */
+         int sh_font;           /* shadow font type */
+         int sh_rule;           /* shadow rep. rule */
+         int sh_color;          /* shadow color     */
+         unsigned int sh_Ltype; /* shadow line type */
+         BYTE sh_mask[8];       /* shadow fill mask */
+      } SAVEDSTATE;</PRE><DT>SAMPLE
+<DD><PRE>      SAVEDSTATE MyState;
+
+      SaveState(&amp;MyState);    /* save the current state for future use */
+      SetColor(WHITE_COLOR);  /* these functions ... */
+      SetRule(AND_RULE);
+      SetLineType(0xAAAA);    /* ... modify the state */
+      RestoreState(&amp;MyState); /* now restore the state */</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#SetColor">SetColor</A>
+<A HREF="lograph.HTM#SetRule">SetRule</A>
+<A HREF="lograph.HTM#SetMask">SetMask</A>
+<A HREF="lograph.HTM#SetLineType">SetLineType</A>
+<A HREF="lograph.HTM#SetPos">SetPos</A>
+<A HREF="lograph.HTM#SelectFont">SelectFont</A>
+<A HREF="lograph.HTM#SaveState">SaveState</A>
+
+</DL><HR><H2><A NAME="GetDot">GetDot</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      GetDot</PRE><DT>DESCRIPTION
+<DD><PRE>      This function returns the color of the pixel at the
+      specified screen coordinates.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+
+      int Getdot(int x, int y);</PRE><DT>INPUTS
+<DD><PRE>      x, y - The screen coordinates of the pixel.</PRE><DT>RETURN VALUE
+<DD><PRE>     Returns the color of the pixel, BLACK_COLOR or WHITE_COLOR.</PRE><DT>SAMPLE
+<DD><PRE>
+     color = GetDot(50,100);</PRE><DT>SEE ALSO
+<DD><A HREF="lograph.HTM#PlotDot">PlotDot</A>
+
+</DL></BODY>
+</HTML>

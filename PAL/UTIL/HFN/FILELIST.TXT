@@ -1,0 +1,35 @@
+This directory contains a number of PAL HFN fonts. They have
+been converted from 'Vertical Reader' VFN fonts.
+
+HFN fonts are used by the PAL 'external font routines' and the
+'unified font routines', see documentation on the 'HFN' and
+'FONT' modules.
+
+Here's the section on font nomenclature from the VR docs:
+
+Font nomenclature
+-----------------------------------------------------------
+
+Fonts are named using the following system:
+
+   letter 1: identifies the 'family'.
+               s: sans serif font  ('helvetica' style)
+               f: font with serifs ('times roman' style)
+   letter 2: monospaced or proportional
+               m: monospaced
+               p: proportional
+   letter 3: character set
+               a: ascii only (characters from 32 to 126
+                  available)
+               x: extended set
+   letter 4: type
+               n: normal
+               b: bold
+   letters 5-6: width in pixel for a monospaced font,
+                00 for a proportional font.
+   letters 7-8: depth in pixel for a monospaced font,
+                approximate point size for a proportional
+                font.
+
+
+

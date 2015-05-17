@@ -1,0 +1,211 @@
+                        SCUTILS DOCUMENTATION
+
+
+What is SCUTILS
+
+   SCUTILS is a small utility that makes use of the  PAL Software
+   Carousel API to provide numerous ways of manipulating the Software
+   Carousel program. If you are not familiar with Software Carousel,
+   it is an excellent task-switching program product sold by Sunshine
+   Software Company
+
+
+                 SunShine Software Company
+                 6950 Cypress Road
+                 Plantation, Florida 33317
+                 954-581-2200
+
+   It allows you to have Multiple DOS sessions on your HPx00LX and
+   switch easily between them. SCUtils intention is to provide an
+   alternate method of working with Software Carousel. SCUTils makes
+   extensive use of the SC module from the PAL Software Library.
+
+
+What is the SCUTILS Syntax
+
+   SCUtils is meant to be invoked from the DOS command line or from a
+   batch file. All input is from the command line via switches and all
+   output is to the screen. Output could be redirected.
+
+   All switches should be prefixed with either the "/" symbol or the
+   "-" symbol. Multiple commands may be issued at once but each should
+   be prefixed separately.
+
+   OK:  SCUTILS -z1 -Z2,400 "-N2,NEW NAME"
+
+   BAD: SCUTILS -z1Z2,400 -N2,NEW NAME
+
+   As well as switches having to be separate, when a switch requires
+   One argument to must be adjacent to the switch (-z1 not -z 1). If a
+   switch requires two parameters they are separated by a single Comma
+   ",". If a switch requires a string and the string has a blank in it
+   the entire switch must be wrapped in quotes (see example above).
+
+What Functions are Available
+
+   Reboot Computer                          -b
+
+      This command permits your program to boot the system, removing
+      Carousel and all other software from memory. This command will
+      always be the last executed if a series of switches are given.
+
+
+   Send String to Session number            "-csession,command"
+
+      To send keystrokes to another Work Area. This switch takes two
+      parameters. The first is the session and the second is the
+      string to send. Only one string can be sent to a session before
+      you switch to it.
+
+
+   Get where code is running                -C
+
+      This switch is informational only. It prints a message
+      displaying a number which represents a bitmap of info.
+
+	    bit 0 on = Carousel is running in Extended Memory
+	    bit 1 on = Carousel is running in Expanded Memory
+	    bit 2 on = Carousel is storing code in Expanded Mem
+	    bit 3 on = Carousel is storing code in Extended Mem
+	    bit 4 on = Carousel is storing code on disk.
+
+
+   Show the help screen                    -h|-H|-?
+
+      Any of these three switches will show the quick reference
+      screen.
+
+
+   Kill program in Session number           -ksession
+
+      To command Carousel to KILL the program running in a specified
+      Work Area.  Note: This options also removes any TSR programs
+      loaded in the Work Area being killed. This switch takes a single
+      parameter, the session
+
+
+   Set/Get Key switch status                -Ktype
+
+      To control the operator's ability to use Carousel keyboard
+      commands;  to invoke the menu or switch to another Work Area.
+      This switch takes a single parameter which is interpreted as
+      follows;
+
+
+              0 =  disable keyboard
+              1 =  enable keyboard
+              2 =  disable keyboard during AUTO-START
+              3 =  get present status
+
+      This switch will always print a string telling you what the
+      present status is.
+
+      0 =  keyboard is disabled
+      1 =  keyboard is enabled
+      2 =  keyboard is disabled until AUTO-START finishes
+
+
+
+
+   Invoke SC Menu                           -m
+
+      To display and activate the Carousel Control Menu from within
+      your program. This switch takes no parameters.
+
+   Get Session Name                         -nsession
+
+      To obtain the (menu) name of the Work Area specified. This
+      switch takes one parameter and will display the sessions name.
+
+
+
+   Set Session numbers Name to string       "-Nsession,string"
+
+      To update the (menu) name of the Work Area specified. This
+      switch takes two parameters, a session number and the new name
+      for that session.
+
+
+   Determine if SC is Present               -p
+
+      This command determines whether or not Software Carousel is
+      running.  If Software Carousel is running, this command returns
+      the version number of Software Carousel.
+
+
+
+   Quit SC with(0) or without(1) prompting  -qtype
+
+      To cause the Software Carousel Program to exit.  Use with
+      caution as in-process information in Work Areas will not be
+      saved or updated. This switch takes a single parameter, type. If
+      type is 0 then SC will present the user with an "are you sure"
+      message before quitting. If type is 1 SC will just quit.
+
+
+   Switch to Session number                 -ssession
+
+      To command Carousel to switch to a different Work Area. This
+      switch take the session number as its parameter and will
+      immediately switch.
+
+
+   Show SC Version number                   -v
+
+      This command determines whether or not Software Carousel is
+      running.  If Software Carousel is running, this command returns
+      the version number of Software Carousel.
+
+
+
+
+   Get Session numbers Size                 -zsession
+
+      To return to your program the size of the Work Area specified.
+      This switch takes the session of interest as a parameter and
+      returns that sessions size in kbytes.
+
+
+   Set Session number1s Size to number2     -Zsession,size
+
+      To return to your program the size of the Work Area specified.
+      This switch takes the session of interest and a new size as
+      parameters and sets that sessions size in kbytes.
+
+
+
+Quick Reference
+
+
+                      SCUTILS COMMAND REFERENCE
+
+     SWITCH    ARGUMENTS        DESCRIPTION
+     -b        none             Reboot Computer
+     -c        number,string    Send String to Session number
+     -C        none             Get where code is running
+     -h|-H|-?  none             Show this help screen
+     -k        number           Kill program in Session number
+     -K        number           Set/Get Key switch status
+     -m        none             Invoke SC Menu
+     -n        number           Get Session numbers Name
+     -N        number,string    Set Session numbers Name to string
+     -p        none             Determine if SC is Present
+     -q        number           Quit SC with(0) or without(1) prompting
+     -s        number           Switch to Session number
+     -v        none             Show SC Version number
+     -z        number           Get Session numbers Size
+     -Z        number1,number2  Set Session number1s Size to number2
+
+    example:  Show version  send DIR C: to session 2 and activate it
+            scutils -v \ "-c2,DIR C:\"  -s2
+
+Author
+
+   This utility has been written by Robert Chernow and is offered in
+   its entirety as freeware. If you use it and enjoy it you can let me
+   know at my Compuserve ID of 76711,635.
+'!HTML:You can also send mail <a href="mailto:76711.635@compuserve.com">here</a>
+
+Update History
+    12/06/95 - PAL Sample Version
+

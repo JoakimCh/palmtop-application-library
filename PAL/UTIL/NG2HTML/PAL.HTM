@@ -1,0 +1,740 @@
+<HTML>
+<HEAD><TITLE>PAL - Quickreference</TITLE></HEAD>
+<BODY>
+<H1>PAL - Quickreference</H1>
+<HR>
+<A HREF="lograph.HTM#Low level graphics">Low level graphics</A>
+
+<BR>
+<A HREF="lograph.HTM#GraphMode">GraphMode</A>
+            Switch to 640x200 monochrome graphics mode.
+<BR>
+<A HREF="lograph.HTM#RestoreGraph">RestoreGraph</A>
+         Restores the graphics settings.
+<BR>
+<A HREF="lograph.HTM#TextMode">TextMode</A>
+             Switch to text mode.
+<BR>
+<A HREF="lograph.HTM#SelectFont">SelectFont</A>
+           Selects one of the 3 built-in fonts.
+<BR>
+<A HREF="lograph.HTM#SetColor">SetColor</A>
+             Sets the pen color.
+<BR>
+<A HREF="lograph.HTM#SetRule">SetRule</A>
+              Sets the graphics replacement rule.
+<BR>
+<A HREF="lograph.HTM#SetPos">SetPos</A>
+               Sets the pen position
+<BR>
+<A HREF="lograph.HTM#SetMask">SetMask</A>
+              Sets the fill mask.
+<BR>
+<A HREF="lograph.HTM#SetLineType">SetLineType</A>
+          Defines the shape of the graphic lines.
+<BR>
+<A HREF="lograph.HTM#SetClip">SetClip</A>
+              Defines a clipped screen region.
+<BR>
+<A HREF="lograph.HTM#Scroll">Scroll</A>
+               Scrolls a rectangular area of the screen.
+<BR>
+<A HREF="lograph.HTM#PlotDot">PlotDot</A>
+              Plots a dot to the specified coordinates.
+<BR>
+<A HREF="lograph.HTM#WriteText">WriteText</A>
+            Writes a string of text on the graphics screen.
+<BR>
+<A HREF="lograph.HTM#GetImg">GetImg</A>
+               Get a rectangular bitmap from screen.
+<BR>
+<A HREF="lograph.HTM#PutImg">PutImg</A>
+               Output a bitmap previously saved by GetImg()
+<BR>
+<A HREF="lograph.HTM#DefineCursor">DefineCursor</A>
+         Defines the shape of the graphics cursor.
+<BR>
+<A HREF="lograph.HTM#BlinkRate">BlinkRate</A>
+            Sets the graphics cursor blink rate.
+<BR>
+<A HREF="lograph.HTM#Cursor">Cursor</A>
+               Cursor control function.
+<BR>
+<A HREF="lograph.HTM#MoveCursor">MoveCursor</A>
+           Move cursor to the specified screen coordinates.
+<BR>
+<A HREF="lograph.HTM#SaveState">SaveState</A>
+            Save the PAL graphics state into a structure
+<BR>
+<A HREF="lograph.HTM#RestoreState">RestoreState</A>
+         Restore the PAL graphics state from a structure
+<BR>
+<A HREF="lograph.HTM#GetDot">GetDot</A>
+               Reads the color of a pixel on the screen.
+<BR>
+<P>
+<A HREF="higraph.HTM#High-level graphics">High-level graphics</A>
+
+<BR>
+<A HREF="higraph.HTM#Line">Line</A>
+                 Draw a line on the graphics screen.
+<BR>
+<A HREF="higraph.HTM#Rectangle">Rectangle</A>
+            Draw a rectangle on the graphics screen.
+<BR>
+<A HREF="higraph.HTM#RevBlock">RevBlock</A>
+             Reverse colors of an image block.
+<BR>
+<A HREF="higraph.HTM#ClrBlock">ClrBlock</A>
+             Fill an image block with a color
+<BR>
+<A HREF="higraph.HTM#LoadImg">LoadImg</A>
+              Load an Image file (ICN) in memory.
+<BR>
+<A HREF="higraph.HTM#LoadPcx">LoadPcx</A>
+              Load a PCX Image file into memory.
+<BR>
+<A HREF="higraph.HTM#SaveImg">SaveImg</A>
+              Save an image (.ICN format) to a file.
+<BR>
+<A HREF="higraph.HTM#ShowFKeys">ShowFKeys</A>
+            Show function key definitions.
+<BR>
+<A HREF="higraph.HTM#ShowTopLine">ShowTopLine</A>
+          Display title string and optional time on top line.
+<BR>
+<A HREF="higraph.HTM#ShowTopTime">ShowTopTime</A>
+          Display title and current time on the top line.
+<BR>
+<A HREF="higraph.HTM#FormatDate">FormatDate</A>
+           Format date string, in standard SysMgr format.
+<BR>
+<A HREF="higraph.HTM#FormatTime">FormatTime</A>
+           Format time string, in standard SysMgr format.
+<BR>
+<P>
+<A HREF="hfn.HTM#External font routines">External font routines</A>
+
+<BR>
+<A HREF="hfn.HTM#LoadHfn">LoadHfn</A>
+              Load an external font in memory.
+<BR>
+<A HREF="hfn.HTM#InitHfn">InitHfn</A>
+              Initialize a font.
+<BR>
+<A HREF="hfn.HTM#WriteHfn">WriteHfn</A>
+             Write a string using a loaded font.
+<BR>
+<A HREF="hfn.HTM#TextExtHfn">TextExtHfn</A>
+           Compute text extent of a string in a given font.
+<BR>
+<A HREF="hfn.HTM#FontHeightHfn">FontHeightHfn</A>
+        Returns height of a given font.
+<BR>
+<A HREF="hfn.HTM#DiscardHfn">DiscardHfn</A>
+           Discard a previously loaded font.
+<BR>
+<P>
+<A HREF="font.HTM#Unified font routines">Unified font routines</A>
+
+<BR>
+<A HREF="font.HTM#TextOut">TextOut</A>
+              Write a text string at a given position
+<BR>
+<A HREF="font.HTM#TextExt">TextExt</A>
+              Compute the (pixel) length of a string
+<BR>
+<A HREF="font.HTM#FontHeight">FontHeight</A>
+           Compute the height of a font
+<BR>
+<A HREF="font.HTM#LoadFont">LoadFont</A>
+             Load a proportional font from file or memory
+<BR>
+<A HREF="font.HTM#DiscardFont">DiscardFont</A>
+          Discard a loadable font, recovering its memory
+<BR>
+<P>
+<A HREF="win.HTM#Window functions">Window functions</A>
+
+<BR>
+<A HREF="win.HTM#OpenWin">OpenWin</A>
+              Open a window
+<BR>
+<A HREF="win.HTM#CloseWin">CloseWin</A>
+             Close a window
+<BR>
+<A HREF="win.HTM#WinText">WinText</A>
+              Output text in a window
+<BR>
+<A HREF="win.HTM#PALWIN Structure">PALWIN Structure</A>
+     Records information on a window
+<BR>
+<A HREF="win.HTM#Window Styles">Window Styles</A>
+        Control aspect of a window
+<BR>
+<P>
+<A HREF="mnu.HTM#Menu support">Menu support</A>
+
+<BR>
+<A HREF="mnu.HTM#MNU Introduction">MNU Introduction</A>
+
+<BR>
+<A HREF="mnu.HTM#MENU structure">MENU structure</A>
+       Describes a menu
+<BR>
+<A HREF="mnu.HTM#MENUITEM structure">MENUITEM structure</A>
+   Describes a menu item
+<BR>
+<A HREF="mnu.HTM#HandleMenu">HandleMenu</A>
+           Display and handle a menu
+<BR>
+<A HREF="mnu.HTM#MenuSelect">MenuSelect</A>
+           Show a menu of options to user
+<BR>
+<P>
+<A HREF="dialog.HTM#Dialog box support">Dialog box support</A>
+
+<BR>
+<A HREF="dialog.HTM#DIALOG Introduction">DIALOG Introduction</A>
+
+<BR>
+<A HREF="dialog.HTM#DIALOG structure">DIALOG structure</A>
+     Describes a dialog box
+<BR>
+<A HREF="dialog.HTM#DLGITEM structure">DLGITEM structure</A>
+    Describes a single dialog item
+<BR>
+<A HREF="dialog.HTM#InitDialog">InitDialog</A>
+           Prepare a dialog to be used
+<BR>
+<A HREF="dialog.HTM#SetDlgItem">SetDlgItem</A>
+           Set value(s) of a dialog item
+<BR>
+<A HREF="dialog.HTM#ShowDialog">ShowDialog</A>
+           Display a dialog window
+<BR>
+<A HREF="dialog.HTM#SetFocus">SetFocus</A>
+             Set the focus to an item
+<BR>
+<A HREF="dialog.HTM#GetFocus">GetFocus</A>
+             Retrieve the current focus (index)
+<BR>
+<A HREF="dialog.HTM#HandleDialog">HandleDialog</A>
+         Start user interaction in dialog
+<BR>
+<A HREF="dialog.HTM#GetDlgItem">GetDlgItem</A>
+           Retrieve data from a dialog item
+<BR>
+<A HREF="dialog.HTM#CloseDialog">CloseDialog</A>
+          Close a dialog, free its memory
+<BR>
+<P>
+<A HREF="dialog.HTM#Dialog box items">Dialog box items</A>
+
+<BR>
+<A HREF="dialog.HTM#IhEdit">IhEdit</A>
+               Text input
+<BR>
+<A HREF="dialog.HTM#IhCombo">IhCombo</A>
+              Text input with an attached menu
+<BR>
+<A HREF="dialog.HTM#IhStatic">IhStatic</A>
+             Static text and simple delimiter lines
+<BR>
+<A HREF="dialog.HTM#IhCheck">IhCheck</A>
+              Check boxes
+<BR>
+<A HREF="dialog.HTM#IhBitmap">IhBitmap</A>
+             Bitmap (icons)
+<BR>
+<A HREF="dialog.HTM#IhGroup">IhGroup</A>
+              Group
+<BR>
+<A HREF="dialog.HTM#IhRadio">IhRadio</A>
+              Radio buttons
+<BR>
+<A HREF="dialog.HTM#IhButton">IhButton</A>
+             Pushbuttons
+<BR>
+<A HREF="dialog.HTM#IhListBox">IhListBox</A>
+            Listbox
+<BR>
+<P>
+<A HREF="dialog.HTM#Listbox utility functions">Listbox utility functions</A>
+
+<BR>
+<A HREF="dialog.HTM#LbAddString">LbAddString</A>
+          Add a string to a listbox
+<BR>
+<A HREF="dialog.HTM#LbSetString">LbSetString</A>
+          Set a string in a listbox
+<BR>
+<A HREF="dialog.HTM#LbDelString">LbDelString</A>
+          Delete a string from a listbox
+<BR>
+<A HREF="dialog.HTM#LbGetString">LbGetString</A>
+          Get a string from a listbox
+<BR>
+<A HREF="dialog.HTM#LbGetCount">LbGetCount</A>
+           Return number of strings in listbox
+<BR>
+<A HREF="dialog.HTM#LbGetPos">LbGetPos</A>
+             Return index of currently selected string
+<BR>
+<A HREF="dialog.HTM#LbSetPos">LbSetPos</A>
+             Set currently selected string
+<BR>
+<A HREF="dialog.HTM#LbClear">LbClear</A>
+              Delete all strings from a listbox at once
+<BR>
+<A HREF="dialog.HTM#LbSetCallBack">LbSetCallBack</A>
+        Set listbox callback function
+<BR>
+<A HREF="dialog.HTM#LbSetCount">LbSetCount</A>
+           Set number of strings - callback mode only
+<BR>
+<P>
+<A HREF="cfg.HTM#Configuration file routines">Configuration file routines</A>
+
+<BR>
+<A HREF="cfg.HTM#CFG Introduction">CFG Introduction</A>
+
+<BR>
+<A HREF="cfg.HTM#ReadConfig">ReadConfig</A>
+           Read config file given full name
+<BR>
+<A HREF="cfg.HTM#ReadMyConfig">ReadMyConfig</A>
+         Read config, given program name
+<BR>
+<A HREF="cfg.HTM#NewConfig">NewConfig</A>
+            Create a new config file in memory
+<BR>
+<A HREF="cfg.HTM#GetConfigString">GetConfigString</A>
+      Retrieve a string from config data
+<BR>
+<A HREF="cfg.HTM#GetConfigInt">GetConfigInt</A>
+         Retrieve an int from config data
+<BR>
+<A HREF="cfg.HTM#GetFirstEntry">GetFirstEntry</A>
+        Used to scan sections: init scan
+<BR>
+<A HREF="cfg.HTM#GetNextEntry">GetNextEntry</A>
+         Used to scan sections: continue scan
+<BR>
+<A HREF="cfg.HTM#GetFirstSection">GetFirstSection</A>
+      Used to scan file for sections: init scan
+<BR>
+<A HREF="cfg.HTM#GetNextSection">GetNextSection</A>
+       Used to scan file for sections: continue scan
+<BR>
+<A HREF="cfg.HTM#GetCfgLine">GetCfgLine</A>
+           Retrieve line number info during scan
+<BR>
+<A HREF="cfg.HTM#AddConfigString">AddConfigString</A>
+      Used to add entries to a config file
+<BR>
+<A HREF="cfg.HTM#ReplaceConfigString">ReplaceConfigString</A>
+  Used to replace a keys value in a config file
+<BR>
+<A HREF="cfg.HTM#AddConfigInt">AddConfigInt</A>
+         Used to add entries to a config file
+<BR>
+<A HREF="cfg.HTM#ReplaceConfigInt">ReplaceConfigInt</A>
+     Used to replace a keys value in a config file
+<BR>
+<A HREF="cfg.HTM#DeleteConfigString">DeleteConfigString</A>
+   Used to delete config entries
+<BR>
+<A HREF="cfg.HTM#WriteConfig">WriteConfig</A>
+          Used to write a config file to disk
+<BR>
+<A HREF="cfg.HTM#DiscardConfig">DiscardConfig</A>
+        Frees memory used by CFG database
+<BR>
+<P>
+<A HREF="misc.HTM#Miscellaneous routines">Miscellaneous routines</A>
+
+<BR>
+<A HREF="misc.HTM#AnnuncPos">AnnuncPos</A>
+            Set the annunciators position.
+<BR>
+<A HREF="misc.HTM#Check5f">Check5f</A>
+              Check for presence of INT 5Fh services.
+<BR>
+<A HREF="misc.HTM#CheckSysMgr">CheckSysMgr</A>
+          Check if SysMgr services are available.
+<BR>
+<A HREF="misc.HTM#FatalExit">FatalExit</A>
+            Fatal error exit from PAL and return error code.
+<BR>
+<A HREF="misc.HTM#PalInit">PalInit</A>
+              Initialize PAL library (first thing to do).
+<BR>
+<A HREF="misc.HTM#PalDeInit">PalDeInit</A>
+            Shut down PAL library.
+<BR>
+<A HREF="misc.HTM#WhichHp">WhichHp</A>
+              Returns the model number of the palmtop.
+<BR>
+<A HREF="misc.HTM#GetKey">GetKey</A>
+               Get a key (with ASCII and Scan code).
+<BR>
+<A HREF="misc.HTM#KeyWaiting">KeyWaiting</A>
+           Returns TRUE if a key is waiting
+<BR>
+<A HREF="misc.HTM#PushKeys">PushKeys</A>
+             Push a sequence of Keys which GetKey will deliver.
+<BR>
+<A HREF="misc.HTM#Volume">Volume</A>
+               Set the volume level of the palmtop.
+<BR>
+<A HREF="misc.HTM#SetSerialPort">SetSerialPort</A>
+        Turn on/off the serial port of the palmtop.
+<BR>
+<A HREF="misc.HTM#SetLightSleep">SetLightSleep</A>
+        Enable/disable light-sleep (Power-management).
+<BR>
+<A HREF="misc.HTM#SetTimeOut">SetTimeOut</A>
+           Set the timeout delay of the Auto-Power-Off.
+<BR>
+<A HREF="misc.HTM#MsgBox">MsgBox</A>
+               Display a message box with buttons
+<BR>
+<A HREF="misc.HTM#MsgWin">MsgWin</A>
+               Display a message window
+<BR>
+<A HREF="misc.HTM#AskYesNo">AskYesNo</A>
+             Ask the user Yes or No
+<BR>
+<A HREF="misc.HTM#MsDelay">MsDelay</A>
+              Wait a specified number of milliseconds
+<BR>
+<A HREF="misc.HTM#BattType">BattType</A>
+             Get/Set main battery type
+<BR>
+<A HREF="misc.HTM#BattVoltage">BattVoltage</A>
+          Read main/backup battery voltage.
+<BR>
+<A HREF="misc.HTM#BattStatus">BattStatus</A>
+           Check main/backup/card battery status.
+<BR>
+<A HREF="misc.HTM#ChargeMode">ChargeMode</A>
+           Set/get battery charging mode.
+<BR>
+<A HREF="misc.HTM#DCStatus">DCStatus</A>
+             Detects if an external DC adaptor is used.
+<BR>
+<A HREF="misc.HTM#OpenMeter">OpenMeter</A>
+            Opens (displays) a progress/level meter.
+<BR>
+<A HREF="misc.HTM#CloseMeter">CloseMeter</A>
+           Closes an active prog/level meter.
+<BR>
+<A HREF="misc.HTM#UpdateMeter">UpdateMeter</A>
+          Updates the percentage (level) of a meter.
+<BR>
+<A HREF="misc.HTM#GetVolume">GetVolume</A>
+            Get the volume level of the palmtop.
+<BR>
+<A HREF="misc.HTM#BattFast">BattFast</A>
+             Detects if the battery is fast charging.
+<BR>
+<A HREF="misc.HTM#BattGetTimer">BattGetTimer</A>
+         Reads the battery charging timer.
+<BR>
+<A HREF="misc.HTM#BattSetTimer">BattSetTimer</A>
+         Sets the battery charging timer.
+<BR>
+<A HREF="misc.HTM#SetErrorHandler">SetErrorHandler</A>
+      Set the int 24 handler to be used
+<BR>
+<A HREF="misc.HTM#LastMemoFile">LastMemoFile</A>
+         Return last file edited in MEMO
+<BR>
+<A HREF="misc.HTM#SerialCtl">SerialCtl</A>
+           Toggle SysMgr serial port interference
+<BR>
+<P>
+<A HREF="sm_svc.HTM#System manager access">System manager access</A>
+
+<BR>
+<A HREF="sm_svc.HTM#Sound Services">Sound Services</A>
+
+<BR>
+<A HREF="sm_svc.HTM#m_play">m_play</A>
+              Play a HP compatible sound file.
+<BR>
+<A HREF="sm_svc.HTM#Commands">Commands</A>
+            Command codes for m_play
+<BR>
+<A HREF="sm_svc.HTM#m_asound">m_asound</A>
+            Generate one of several sound patterns
+<BR>
+<A HREF="sm_svc.HTM#m_soundoff">m_soundoff</A>
+          Turn off sounds in progress
+<BR>
+<P>
+<A HREF="sm_svc.HTM#Task Control Block access">Task Control Block access</A>
+
+<BR>
+<A HREF="sm_svc.HTM#m_get_TCB">m_get_TCB</A>
+           Get Task Control Block information
+<BR>
+<A HREF="sm_svc.HTM#m_get_TCB_size">m_get_TCB_size</A>
+      Get Task Control Block size
+<BR>
+<A HREF="sm_svc.HTM#IsAppActive">IsAppActive</A>
+         Checks if a given Application is active.
+<BR>
+<P>
+<A HREF="sm_svc.HTM#Clipboard Management Services">Clipboard Management Services</A>
+
+<BR>
+<A HREF="sm_svc.HTM#m_cb_read">m_cb_read</A>
+           Read data from clipboard
+<BR>
+<A HREF="sm_svc.HTM#m_cb_write">m_cb_write</A>
+          Write data to clipboard
+<BR>
+<A HREF="sm_svc.HTM#m_close_cb">m_close_cb</A>
+          Release the clipboard
+<BR>
+<A HREF="sm_svc.HTM#m_fini_rep">m_fini_rep</A>
+          Terminate writing to clipboard
+<BR>
+<A HREF="sm_svc.HTM#m_get_cb_info">m_get_cb_info</A>
+       Get clipboard state info
+<BR>
+<A HREF="sm_svc.HTM#m_new_rep">m_new_rep</A>
+           Prepare sending a new 'representation'
+<BR>
+<A HREF="sm_svc.HTM#m_open_cb">m_open_cb</A>
+           Claim access to the clipboard and lock it
+<BR>
+<A HREF="sm_svc.HTM#m_rep_index">m_rep_index</A>
+         Get info about a representation
+<BR>
+<A HREF="sm_svc.HTM#m_reset_cb">m_reset_cb</A>
+          Clear clipboard, get ownership
+<BR>
+<A HREF="sm_svc.HTM#Clipboard Status">Clipboard Status</A>
+
+<BR>
+<A HREF="sm_svc.HTM#cbcp.c">cbcp.c</A>
+              Sample clipboard access
+<BR>
+<P>
+<A HREF="ems.HTM#Expanded memory support">Expanded memory support</A>
+
+<BR>
+<A HREF="ems.HTM#EmsInit">EmsInit</A>
+              Check for the presence of an EMS driver.
+<BR>
+<A HREF="ems.HTM#EmsCheck">EmsCheck</A>
+             Check for the presence of an EMS driver.
+<BR>
+<A HREF="ems.HTM#EmsAlloc">EmsAlloc</A>
+             Allocate EMS pages.
+<BR>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+               Map a given logical page into a physical frame.
+<BR>
+<A HREF="ems.HTM#EmsFree">EmsFree</A>
+              Frees as allocated EMS block.
+<BR>
+<A HREF="ems.HTM#EmsFrameSeg">EmsFrameSeg</A>
+          Return segment address of the EMS frame;
+<BR>
+<A HREF="ems.HTM#EmsFreeCnt">EmsFreeCnt</A>
+           Return the number of free EMS pages available
+<BR>
+<A HREF="ems.HTM#EmsLastError">EmsLastError</A>
+         Returns last error reported by an EMS routine
+<BR>
+<A HREF="ems.HTM#EmsPageCnt">EmsPageCnt</A>
+           Return the total number of EMS pages available.
+<BR>
+<A HREF="ems.HTM#EmsVersion">EmsVersion</A>
+           Returns the version of the EMS driver.
+<BR>
+<P>
+<A HREF="amgr.HTM#APPMGR.DAT file management">APPMGR.DAT file management</A>
+
+<BR>
+<A HREF="amgr.HTM#APPMGR.DAT">APPMGR.DAT</A>
+           An introduction to APPMGR.DAT
+<BR>
+<A HREF="amgr.HTM#CloseAppMgr">CloseAppMgr</A>
+          Close Application Manager
+<BR>
+<A HREF="amgr.HTM#LoadAppDat">LoadAppDat</A>
+           Load  application manager control file
+<BR>
+<A HREF="amgr.HTM#SaveAppDat">SaveAppDat</A>
+           Write Application Manager control file
+<BR>
+<A HREF="amgr.HTM#GetAppCnt">GetAppCnt</A>
+            Get number of installed applications
+<BR>
+<A HREF="amgr.HTM#GetAppDef">GetAppDef</A>
+            Get an applications definition
+<BR>
+<A HREF="amgr.HTM#SetAppDef">SetAppDef</A>
+            Set an applications definition
+<BR>
+<A HREF="amgr.HTM#AddAppDef">AddAppDef</A>
+            Add an application definition
+<BR>
+<A HREF="amgr.HTM#DelAppDef">DelAppDef</A>
+            Delete an application definition
+<BR>
+<A HREF="amgr.HTM#ValidIcon">ValidIcon</A>
+            Check IMGHDR pointer for valid icon
+<BR>
+<A HREF="amgr.HTM#GetAppIcn">GetAppIcn</A>
+            Retrieve an icons bitmap
+<BR>
+<A HREF="amgr.HTM#SetAppIcn">SetAppIcn</A>
+            Set an icons bitmap
+<BR>
+<A HREF="amgr.HTM#NewAppIcn">NewAppIcn</A>
+            Return a free user icon slot
+<BR>
+<P>
+<A HREF="filer.HTM#Filer communication routines">Filer communication routines</A>
+
+<BR>
+<A HREF="filer.HTM#FilerConnect">FilerConnect</A>
+         Initiate filer communications.
+<BR>
+<A HREF="filer.HTM#FilerDisconnect">FilerDisconnect</A>
+      Close down filer communications.
+<BR>
+<A HREF="filer.HTM#FilerSendFile">FilerSendFile</A>
+        Send a file to the palmtop.
+<BR>
+<A HREF="filer.HTM#FilerGetFile">FilerGetFile</A>
+         Get a file from the palmtop.
+<BR>
+<A HREF="filer.HTM#FilerDelFile">FilerDelFile</A>
+         Delete a file on the palmtop.
+<BR>
+<A HREF="filer.HTM#FilerMakeDir">FilerMakeDir</A>
+         Create a new directory on the remote.
+<BR>
+<A HREF="filer.HTM#FilerDelDir">FilerDelDir</A>
+          Delete a remote directory on the pamtop.
+<BR>
+<A HREF="filer.HTM#FilerAskDir">FilerAskDir</A>
+          Ask information about a remote directory.
+<BR>
+<A HREF="filer.HTM#FilerGetDir">FilerGetDir</A>
+          Get remote directory information.
+<BR>
+<A HREF="filer.HTM#FilerSync">FilerSync</A>
+            Attempt to re-synchronize with server.
+<BR>
+<A HREF="filer.HTM#FilerCallBack">FilerCallBack</A>
+        Information about Filer Callback functions.
+<BR>
+<P>
+<A HREF="pck.HTM#Picklist routines">Picklist routines</A>
+
+<BR>
+<A HREF="pck.HTM#FilePickList">FilePickList</A>
+         Display a picklist of files.
+<BR>
+<A HREF="pck.HTM#PickList">PickList</A>
+             Display a picklist of strings.
+<BR>
+<A HREF="pck.HTM#QuickPickList">QuickPickList</A>
+        An easier way to display a picklist.
+<BR>
+<A HREF="pck.HTM#FreePickResults">FreePickResults</A>
+      Free storage associated with picklist results.
+<BR>
+<A HREF="pck.HTM#PickCount">PickCount</A>
+            Determine the number of items in a picklist
+<BR>
+<A HREF="pck.HTM#FindLastPick">FindLastPick</A>
+         Find end of linked PICKRESULTS
+<BR>
+<A HREF="pck.HTM#PICKRESULTS">PICKRESULTS</A>
+          Structure returned by PickLists.
+<BR>
+<P>
+<A HREF="mem.HTM#Alternate memory management routines">Alternate memory management routines</A>
+
+<BR>
+<A HREF="mem.HTM#MEM Introduction">MEM Introduction</A>
+
+<BR>
+<A HREF="mem.HTM#PalMalloc">PalMalloc</A>
+            Replacement for malloc
+<BR>
+<A HREF="mem.HTM#PalRealloc">PalRealloc</A>
+           Replacement for realloc
+<BR>
+<A HREF="mem.HTM#PalCalloc">PalCalloc</A>
+            Replacement for calloc
+<BR>
+<A HREF="mem.HTM#PalFree">PalFree</A>
+              Replacement for free
+<BR>
+<A HREF="mem.HTM#PalStrdup">PalStrdup</A>
+            Replacement for strdup
+<BR>
+<A HREF="mem.HTM#SetPalMemFail">SetPalMemFail</A>
+        Define your own out of memory handler
+<BR>
+<P>
+<A HREF="sc.HTM#Software Carousel Interface routines">Software Carousel Interface routines</A>
+
+<BR>
+<A HREF="sc.HTM#SCPresent">SCPresent</A>
+            Is Software Carousel Present?
+<BR>
+<A HREF="sc.HTM#SCVersion">SCVersion</A>
+            Get Software Carousel Version
+<BR>
+<A HREF="sc.HTM#SCMenu">SCMenu</A>
+               Display the Software Carousel menu
+<BR>
+<A HREF="sc.HTM#SCSwitch">SCSwitch</A>
+             Switch to another Work Area
+<BR>
+<A HREF="sc.HTM#SCQuit">SCQuit</A>
+               Terminate SC
+<BR>
+<A HREF="sc.HTM#SCBoot">SCBoot</A>
+               Reboot the computer.
+<BR>
+<A HREF="sc.HTM#SCKill">SCKill</A>
+               Kill a program in a session.
+<BR>
+<A HREF="sc.HTM#SCSizeStatus">SCSizeStatus</A>
+         Get Size and Status of a Work Area
+<BR>
+<A HREF="sc.HTM#SCErrorMessage">SCErrorMessage</A>
+       Convert Errorcode to Text
+<BR>
+<A HREF="sc.HTM#SCGetName">SCGetName</A>
+            Get a Work Areas Name
+<BR>
+<A HREF="sc.HTM#SCSetSize">SCSetSize</A>
+            Set a Work Areas Size
+<BR>
+<A HREF="sc.HTM#SCSetName">SCSetName</A>
+            Set a Work Areas Name
+<BR>
+<A HREF="sc.HTM#SCSendCommand">SCSendCommand</A>
+        Send Keystrokes to a Work Area
+<BR>
+<A HREF="sc.HTM#SCCodeMode">SCCodeMode</A>
+           Where is Software Carousel Running.
+<BR>
+<A HREF="sc.HTM#SCKeyboardCommands">SCKeyboardCommands</A>
+   Enable/Disable Work Area Switching.
+<BR>
+</BODY>
+</HTML>

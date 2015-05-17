@@ -1,0 +1,802 @@
+!short:^u Low level graphics
+^u Low level graphics routines
+
+The low-level graphics routines are interface functions to the INT5h graphics
+calls. With these functions you can set graphics mode, pen color, pen position,
+select and display text using the built-in fonts, scroll, save and restore
+a rectangular area of the graphics screen, define shape and blinkrate of the
+graphics cursor.
+
+Available functions:
+
+  - GraphMode   : Switch to 640x200 monochrome graphics mode.
+  - TextMode    : Switch to text mode.
+  - SelectFont  : Select one of the 3 built-in fonts, small, medium or large.
+  - SetColor    : Select the pen color, black or white.
+  - SetRule     : Set the graphics replacement rule.
+  - SetPos      : Set the graphics pen coordinates.
+  - SetMask     : Set fill mask.
+  - SetLineType : Set the graphics line type.
+  - SetClip     : Define a rectangular clip region.
+  - Scroll      : Scroll a rectangular area of the screen.
+  - PlotDot     : Set a pixel to current color.
+  - WriteText   : Write text on the graphics screen (built-in fonts).
+  - GetImg      : Get a rectangular bitmap from screen and store into a buffer.
+  - PutImg      : Output a bitmap at a given coordinate position, with
+                  a given output rule.
+
+  - DefineCursor: Define the shape of the graphics cursor.
+  - BlinkRate   : Specify the graphics cursor blinking rate (Normal blink=9).
+  - Cursor      : Cursor control function. (on, off, blink, noblink)
+  - MoveCursor  : Move graphics cursor to the specified X:Y location of
+                  the screen.
+  - SaveState   : save the current PAL graphics state into a structure
+  - RestoreState: restore the graphics state from the above structure
+  - GetDot      : Reads the color of a pixel on the screen.
+
+!short: GraphMode            Switch to 640x200 monochrome graphics mode.
+   NAME
+      GraphMode
+
+   DESCRIPTION
+      Graphmode switches to the 640x200 monochrome graphics mode and clears
+      the display. You must set to this mode before using any of the graphics
+      functions.
+
+   SYNOPSIS
+      #include "pal.h"
+      int GraphMode(void);
+
+   INPUTS
+      None.
+
+   RETURN VALUE
+      TRUE if successful. Returns false if no INT 5F support detected -
+      on the desktop, check if CGAGRAPH TSR is resident.
+
+   NOTE
+      Use the TextMode() function to get back to the text mode.
+
+   SAMPLE
+      if(!GraphMode()) {  /* Try to set 640x200 graphics mode */
+         FatalExit("GraphMode() failed - CGAGRAPH not loaded ?", 1);
+      }
+
+!Seealso: PalInit TextMode
+
+!short: RestoreGraph         Restores the graphics settings.
+   NAME
+      RestoreGraph
+
+   DESCRIPTION
+      This function is called by the GetKey() PAL function to restore the
+      graphics settings that may have been altered when another application
+      has been launched. Usually, another application may be launched while
+      in System Manager, by pressing a blue key. The GetKey() function
+      will restore the graphics state just before it returns to its caller,
+      just in case any settings were altered by the other application.
+      RestoreGraph() reads back the settings from a set of global variables
+      that are used by a few LOGRAPH functions.
+
+
+   SYNOPSIS
+      #include "pal.h"
+      void RestoreGraph(void);
+
+   INPUTS
+      None.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      If you're using another function for reading the keyboard (instead
+      of GetKey), you must call RestoreGraph() afterwards to restore
+      any modified settings.
+
+   SAMPLE
+
+      RestoreGraph();   /* restore graphics settings */
+
+!Seealso: GetKey
+
+!short: TextMode             Switch to text mode.
+   NAME
+      TextMode
+
+   DESCRIPTION
+      TextMode switches to the text mode and clears the display.
+      Will check for presence of INT 5F support and return FALSE
+      (and do nothing) if this is not the case.
+
+   SYNOPSIS
+      #include "pal.h"
+      int TextMode(void);
+
+   INPUTS
+      None.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      The PalDeInit() function also sets the text mode.
+
+   SAMPLE
+      TextMode();    /* Set to text mode */
+
+!Seealso: PalDeInit GraphMode
+
+!short: SelectFont           Selects one of the 3 built-in fonts.
+   NAME
+      SelectFont
+
+   DESCRIPTION
+      SelectFont selects one of the 3 built-in fonts, SMALL_FONT, MEDIUM_FONT,
+      or LARGE_FONT.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SelectFont(int Size);
+
+   INPUTS
+      Size - This argument specifies one of the 3 built-in font sizes. You
+             can use one of the following Sizes: SMALL_FONT, MEDIUM_FONT,
+             or LARGE_FONT.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      You can use the WriteText() function to display your text to
+      the graphics screen. You can also use external fonts, see the
+      Unified font routines for more details.
+
+   SAMPLE
+      SelectFont(MEDIUM_FONT);  /* Set medium font */
+
+!Seealso: WriteText TextOut LoadFont
+
+!short: SetColor             Sets the pen color.
+   NAME
+      SetColor
+
+   DESCRIPTION
+      SetColor sets the pen color which can either be BLACK_COLOR
+      or WHITE_COLOR.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetColor(int Color);
+
+   INPUTS
+      Color - Specifies the pen color, BLACK_COLOR or WHITE_COLOR.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      The selected color affects both graphics and text output.
+      With BLACK color LCD pixels are ON, WHITE color are OFF.
+
+   SAMPLE
+      SetColor(BLACK_COLOR);  /* set color to black */
+
+!Seealso: SetRule SetMask SetLineType
+
+!short: SetRule              Sets the graphics replacement rule.
+   NAME
+      SetRule
+
+   DESCRIPTION
+      SetRule sets the graphics replacement rule. The graphics or text output
+      always depend on the selected replacement rule.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetRule(int Rule);
+
+   INPUTS
+      Rule - One of the following definitions can be used:
+
+      FORCE_RULE  : Force output to screen.
+      AND_RULE    : AND output with screen.
+      OR_RULE     : OR output with screen.
+      XOR_RULE    : XOR output with screen.
+      INVFOR_RULE : NOT-force output to screen.
+      INVAND_RULE : NOT-AND output to screen.
+      INVOR_RULE  : NOT-OR output to screen.
+      INVXOR_RULE : NOT-XOR output to screen.
+      TXT_RULE    : TEXT-RULE, clears the background before outputting
+                    a character on the screen.
+
+   RETURN VALUE
+      None.
+
+   SAMPLE
+      SetRule(FORCE_RULE);  /* set FORCE replacement rule */
+
+!Seealso: SetColor SetMask SetLineType
+
+!short: SetPos               Sets the pen position
+   NAME
+      SetPos
+
+   DESCRIPTION
+      Sets the position of the graphics pen.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetPos(int x, int y);
+
+   INPUTS
+      x - This is the X coordinate, (0-639).
+      y - This is the Y coordinate, (0-199).
+
+   RETURN VALUE
+      None.
+
+   SAMPLE
+      SetPos(100,50);  /* set to 100:50 coordinates */
+
+!Seealso: SetClip SetColor SetRule SetMask SetLineType
+
+!short: SetMask              Sets the fill mask.
+   NAME
+      SetMask
+
+   DESCRIPTION
+      The SetMask function defines the fill pattern, used by the
+      Rectangle() function.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetMask(char far *FillMask);
+
+   INPUTS
+      FillMask - This is a pointer pointing to an 8-byte fill pattern
+      definition table.
+
+   RETURN VALUE
+      None.
+
+   SAMPLE
+      BYTE fmask[]= { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa };
+      SetMask(fmask); /* set window shadow fill pattern */
+
+!Seealso: Rectangle SetColor SetRule SetLineType
+
+!short: SetLineType          Defines the shape of the graphic lines.
+   NAME
+      SetLineType
+
+   DESCRIPTION
+      SetLineType defines the shape of the lines displayed by the Line()
+      and Rectangle() functions.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetLineType(unsigned int LineType);
+
+   INPUTS
+      LineType - This is a 16-bit (integer) which defines the shape of
+                 the line. Use  value 0xffff for solid line (default).
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      When initializing graphics with the PalInit() function, the line-type
+      is solid by default.
+
+   SAMPLE
+      SetLineType(0x5555);  /* set dotted line */
+
+!Seealso: SetColor SetRule Rectangle Line
+
+!short: SetClip              Defines a clipped screen region.
+   NAME
+      SetClip
+
+   DESCRIPTION
+      SetClip sets the coordinates of the upper-left and lower-right
+      corners of the clip rectangle.
+      All reading/writing of the display in this graphics system is limited
+      by the current CLIP REGION.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetClip(int x1, int y1, int x2, int y2);
+
+   INPUTS
+      x1:y1 - Top left corner coordinates of the clipped area.
+      x2:y2 - Bottom right corner coordinates of the clipped area.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      After a clip region is defined, all graphics reading and writing
+      is limited within the clipped region.
+
+   SAMPLE
+      SetClip(50,60,200,100);  /* clipping area */
+      line(40,30,210,120); /* this line exceeds clip region, so it's clipped */
+
+!Seealso: SetPos Rectangle Line
+
+!short: Scroll               Scrolls a rectangular area of the screen.
+   NAME
+      Scroll
+
+   DESCRIPTION
+      This function scrolls in the given direction a defined rectangular
+      area of the graphics screen.
+
+   SYNOPSIS
+      #include "pal.h"
+      void Scroll(int Direction, int Distance, int Color,
+            int x1, int y1, int x2, int y2);
+
+   INPUTS
+      Direction - specifies the direction of the scrolling. There are 4
+                  possible directions: SCROLL_UP, SCROLL_DOWN, SCROLL_LEFT
+                  and SCROLL_RIGHT.
+
+      Distance  - This is a 16-bit value which specifies the number of
+                  pixels to scroll in the given direction.
+
+      Color     - Specifies in what color the scrolled area should be filled
+                  with. There are 2 colors, BLACK_COLOR and WHITE_COLOR.
+
+      x1:y1     - Top left coordinates of the rectangular area.
+      x2:y2     - Bottom right coordinates of the rectangular area.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      The bits scrolled out of the rectangle are lost, the bits scrolled
+      in are either set or cleared depending on specified color.
+
+   SAMPLE
+      Scroll(SCROLL_UP,10,WHITE_COLOR,50,60,250,120);
+
+!Seealso: SetColor Rectangle
+
+!short: PlotDot              Plots a dot to the specified coordinates.
+   NAME
+      PlotDot
+
+   DESCRIPTION
+      This function plots a dot (point) at the specified location of the
+      graphics screen.
+
+   SYNOPSIS
+      #include "pal.h"
+      void PlotDot(int x, int y);
+
+   INPUTS
+      x:y     - X:Y coordinates of the dot. The x value can be
+                between 0 and 639, and the y value from 0 to 199.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      The color of the pen must be set to BLACK_COLOR for the dot to
+      be visible. To erase a dot, set the color to WHITE_COLOR
+      before using the PlotDot() function.
+
+   SAMPLE
+      SetColor(BLACK_COLOR);
+      PlotDot(50,100);     /* plot dot to 50:100 coordinates */
+
+!Seealso: SetColor Line Rectangle
+
+!short: WriteText            Writes a string of text on the graphics screen.
+   NAME
+      WriteText
+
+   DESCRIPTION
+      This function writes a string of text at the specified location of the
+      graphics screen, using one of the 3 built-in fonts.
+
+   SYNOPSIS
+      #include "pal.h"
+      void WriteText(int x, int y, char far *Str);
+
+   INPUTS
+      x:y  - The X:Y coordinates on the screen.
+      Str  - Pointer to the string.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      You can select one of the three built-in fonts with the SelectFont()
+      function. The graphics replacement rule can be set with the SetRule()
+      function. The color of the text (black or white) can be set with
+      the SetColor() function. Another alternative for outputting text
+      to the graphics screen is the TextOut() function. With this function
+      external fonts can be used by calling LoadFont().
+
+   SAMPLE
+      SelectFont(MEDIUM_FONT);             /* set to medium font */
+      WriteText(100,50,"Hello world.");    /* display string */
+
+!Seealso: TextOut LoadFont SelectFont SetRule SetColor
+
+!short: GetImg               Get a rectangular bitmap from screen.
+   NAME
+      GetImg
+
+   DESCRIPTION
+      This function gets a rectangular area of the screen and stores it in
+      a buffer. If you pass NULL as the address of your buffer, GetImg
+      will allocate sufficient storage itself. It will return a pointer to
+      the buffer (either the allocated one or the one that you passed).
+
+   SYNOPSIS
+      #include "pal.h"
+      IMGHDR *GetImg(int x1, int y1, int x2, int y2, void far *Bitmap);
+
+   INPUTS
+      x1:y1  - Specifies the top left corner of the rectangular area.
+      x2:y2  - Specifies the bottom right corner of the rectangular area.
+      Bitmap - Pointer to the image buffer.
+
+   RETURN VALUE
+      When you passed a non-NULL Bitmap pointer, GetImg will return this
+      pointer. Otherwise, it will allocate sufficient space for the
+      bitmap and return a pointer to it. In this case, you will need to
+      free() the pointer again when you don't need the bitmap any more.
+
+   NOTE
+      The stored image can be displayed anywhere on the screen using
+      the PutImg() function. The size of the bitmap buffer can be
+      calculated with the following formula:
+
+      Size(bytes) = 8 + ((x2-x1+8)/8) * (y2-y1+1)
+
+      You can use the prefined macro IMGSIZE(x1,y1,x2,y2) to
+      compute the size of the bitmap buffer. Or you can simply pass
+      NULL as the buffer address to have GetImg allocate sufficient
+      space prior to doing the bitmap transfer, and return the address
+      of that buffer to you.
+
+      Bits with a value of 0 are added to the right end of each row of
+      pixels (if necessary) to fill out an integral number of bytes of
+      data for that row.  The image is always left justified within the
+      buffer regardless of its byte-alignment on the display.
+
+   SAMPLE
+      IMGHDR *pImg;
+      int x1, y1, x1, x2;
+      x1 = 50;
+      y1 = 60;
+      x2 = 220;
+      x3 = 110;
+
+      pImg = GetImg(x1, y1, x2, y2, NULL);   /* Store Image */
+      PutImg(x1, y1, FORCE_RULE, pImg);      /* Restore saved Image */
+      free(pImg); /* free memory that got allocated by GetImg */
+
+!Seealso: PutImg
+
+!short: PutImg               Output a bitmap previously saved by GetImg()
+   NAME
+      PutImg
+
+   DESCRIPTION
+      This function displays at the specified coordinates the bitmap
+      that was saved previously by the GetImg() function, with a
+      given replacement rule.
+
+   SYNOPSIS
+      #include "pal.h"
+      void PutImg(int x1, int y1, int Rule, void far *Bitmap);
+
+   INPUTS
+      x1:y1  - Specifies the top left corner of the rectangular image.
+      Bitmap - Pointer to the saved image buffer.
+      Rule   - Specifies the graphics replacement rule, which can be one
+               of the following:
+
+               FORCE_RULE  : Force output to screen.
+               AND_RULE    : AND output with screen.
+               OR_RULE     : OR output with screen.
+               XOR_RULE    : XOR output with screen.
+               INVFOR_RULE : NOT-force output to screen.
+               INVAND_RULE : NOT-AND output to screen.
+               INVOR_RULE  : NOT-OR output to screen.
+               INVXOR_RULE : NOT-XOR output to screen.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      If the entire image doesn't fit on the display, none of it's drawn.
+
+   SAMPLE
+      char far *pBuffer;
+      int length, x1, y1, x1, x2;
+      x1 = 50;
+      y1 = 60;
+      x2 = 220;
+      x3 = 110;
+      length = 8 + ((x2-x1+8)/8) * (y2-y1+1);   /* calculate buffer length */
+      pBuffer = malloc(length);                 /* allocate buffer space   */
+
+      GetImg(x1, y1, x2, y2, pBuffer);          /* Store Image */
+      PutImg(x1, y1, FORCE_RULE, pBuffer);      /* Restore saved Image */
+
+!Seealso: GetImg
+
+!short: DefineCursor         Defines the shape of the graphics cursor.
+   NAME
+      DefineCursor
+
+   DESCRIPTION
+      This function defines the shape of the graphics cursor. The cursor
+      definition is a 130-byte table.
+
+   SYNOPSIS
+      #include "pal.h"
+      void DefineCursor(char far *CursorDef);
+
+   INPUTS
+      CursorDef - Pointer to the 130-byte cursor definition. The first 2
+                  bytes are always zero. The next 64 bytes are the cursor
+                  definition. The last 64 bytes are the AND RULE of the
+                  defined shape.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      You can use the default cursor shape by calling the Cursor(CURSOR_INIT)
+      function. Use the MoveCursor() function to place the cursor on the
+      desired screen coordinates, and BlinkRate() to set the blink rate.
+
+   SAMPLE
+
+    /* This is the default cursor shape */
+    unsigned char cursordef[]={
+
+    0,0,
+
+    0x80,0x0f, 0x80,0x0f, 0x80,0x0f, 0x80,0x0f,
+    0x80,0x0f, 0x80,0x0f, 0x80,0x0f, 0x80,0x0f,
+    0x80,0x0f, 0x80,0x0f, 0x80,0x0f, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+    0xff,0xff, 0xff,0xff, 0xff,0xff, 0xff,0xff,
+
+    0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0,
+    0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0,
+    0x7f,0xf0, 0x7f,0xf0, 0x7f,0xf0, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+
+    };
+
+    DefineCursor(cursordef);   /* define cursor shape */
+
+!Seealso: Cursor MoveCursor BlinkRate
+
+!short: BlinkRate            Sets the graphics cursor blink rate.
+   NAME
+      BlinkRate
+
+   DESCRIPTION
+      This function sets the graphics cursor blink rate.
+
+   SYNOPSIS
+      #include "pal.h"
+      void BlinkRate(int Rate);
+
+   INPUTS
+      BlinkRate - This integer specifies the blink rate value, 0-0xffff.
+                  The normal blink rate is 9. The value is actually the
+                  number of clock ticks (18.2 per second).
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      You can use the Cursor(CURSOR_INIT) call to define the default shape
+      and blink rate of the cursor. You can also turn on or off the
+      blinking by calling Cursor(CURSOR_BLINK) or Cursor(CURSOR_NOBLINK).
+
+   SAMPLE
+      BlinkRate(9);        /* default blinking rate */
+      Cursor(CURSOR_ON);   /* enable cursor */
+
+!Seealso: Cursor MoveCursor
+
+!short: Cursor               Cursor control function.
+   NAME
+      Cursor
+
+   DESCRIPTION
+      This function initializes, turns on, off, or blink the graphics cursor.
+
+   SYNOPSIS
+      #include "pal.h"
+      void Cursor(WORD Function);
+
+   INPUTS
+      Function - This specifies the type of action Cursor() should take.
+                 Here are the available functions:
+
+                 CURSOR_ON      : Turn cursor on.
+                 CURSOR_OFF     : Turn cursor off.
+                 CURSOR_BLINK   : Enable cursor blinking.
+                 CURSOR_NOBLINK : Disable cursor blinking.
+                 CURSOR_INIT    : Initialize cursor to default shape
+                                  and blink rate.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      You can set the cursor coordinates with the MoveCursor() function.
+
+   SAMPLE
+      Cursor(CURSOR_INIT);   /* default cursor shape & blink rate */
+      Cursor(CURSOR_ON);     /* enable cursor */
+
+!Seealso: MoveCursor
+
+!short: MoveCursor           Move cursor to the specified screen coordinates.
+   NAME
+      MoveCursor
+
+   DESCRIPTION
+      MoveCursor moves the graphics cursor at the specified screen
+      coordinates.
+
+   SYNOPSIS
+      #include "pal.h"
+      void MoveCursor(int x, int y);
+
+   INPUTS
+      x:y - Screen coordinates of the cursor position. X can be between
+            0-639, and Y between 0-199.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      You can use the Cursor() function to enable/disable display and
+      blinking of the cursor.
+
+   SAMPLE
+      Cursor(CURSOR_INIT);   /* default cursor shape & blink rate */
+      MoveCursor(100,60);    /* Place cursor at 100:60 screen coordinates */
+      Cursor(CURSOR_ON);     /* enable cursor */
+
+!Seealso: Cursor BlinkRate
+
+!short: SaveState            Save the PAL graphics state into a structure
+   NAME
+      SaveState
+
+   DESCRIPTION
+      SaveState saves the PAL graphics state (settings like color, pattern,
+      line type etc.) into a SAVEDSTATE structure.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SaveState(SAVEDSTATE *pState);
+
+   INPUTS
+      pState - pointer to a structure of type SAVEDSTATE that you must
+      provide - the current graphics settings are copied into this
+      structure.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      This is the definition of the SAVEDSTATE structure:
+
+      /* Structure representing saved graphics state */
+      typedef struct {
+         int sh_xpos;           /* shadow xpos      */
+         int sh_ypos;           /* shadow ypos      */
+         int sh_font;           /* shadow font type */
+         int sh_rule;           /* shadow rep. rule */
+         int sh_color;          /* shadow color     */
+         unsigned int sh_Ltype; /* shadow line type */
+         BYTE sh_mask[8];       /* shadow fill mask */
+      } SAVEDSTATE;
+
+   SAMPLE
+      SAVEDSTATE MyState;
+
+      SaveState(&MyState);    /* save the current state for future use */
+      SetColor(WHITE_COLOR);  /* these functions ... */
+      SetRule(AND_RULE);
+      SetLineType(0xAAAA);    /* ... modify the state */
+      RestoreState(&MyState); /* now restore the state */
+
+!Seealso: SetColor SetRule SetMask SetLineType SetPos SelectFont RestoreState
+
+!short: RestoreState         Restore the PAL graphics state from a structure
+   NAME
+      RestoreState
+
+   DESCRIPTION
+      RestoreState recalls the PAL graphics state (settings like
+      color, pattern, line type etc.) from a SAVEDSTATE structure,
+      where you previously saved it into.
+
+   SYNOPSIS
+      #include "pal.h"
+      void RestoreState(SAVEDSTATE *pState);
+
+   INPUTS
+      pState - pointer to a structure of type SAVEDSTATE that you must
+      provide - the graphics settings are set from the data in this
+      structure.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      This is the definition of the SAVEDSTATE structure:
+
+      /* Structure representing saved graphics state */
+      typedef struct {
+         int sh_xpos;           /* shadow xpos      */
+         int sh_ypos;           /* shadow ypos      */
+         int sh_font;           /* shadow font type */
+         int sh_rule;           /* shadow rep. rule */
+         int sh_color;          /* shadow color     */
+         unsigned int sh_Ltype; /* shadow line type */
+         BYTE sh_mask[8];       /* shadow fill mask */
+      } SAVEDSTATE;
+
+   SAMPLE
+      SAVEDSTATE MyState;
+
+      SaveState(&MyState);    /* save the current state for future use */
+      SetColor(WHITE_COLOR);  /* these functions ... */
+      SetRule(AND_RULE);
+      SetLineType(0xAAAA);    /* ... modify the state */
+      RestoreState(&MyState); /* now restore the state */
+
+!Seealso: SetColor SetRule SetMask SetLineType SetPos SelectFont SaveState
+
+!short: GetDot               Reads the color of a pixel on the screen.
+   NAME
+      GetDot
+
+   DESCRIPTION
+      This function returns the color of the pixel at the
+      specified screen coordinates.
+
+   SYNOPSIS
+      #include "pal.h"
+
+      int Getdot(int x, int y);
+
+   INPUTS
+      x, y - The screen coordinates of the pixel.
+
+   RETURN VALUE
+     Returns the color of the pixel, BLACK_COLOR or WHITE_COLOR.
+
+   SAMPLE
+
+     color = GetDot(50,100);
+
+!Seealso: PlotDot
+

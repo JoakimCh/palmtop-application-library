@@ -1,0 +1,23 @@
+To convert the PAL docs to HTML enter DO_HTML on the command
+line in this directory. This will first build the NG2HTML utility,
+and then use it to generate a number of .HTM files, one for each
+source file plus the following files that are entry points:
+
+  OVER.HTM      -   PAL overview
+  PAL.HTM       -   PAL reference
+
+
+NG2HTML takes a set of Norton Guide sources and compiles them to
+a set of HTML documents. NG2HTML is called as follows:
+
+  NG2HTML <filelist> <output file> <title>
+
+e.g.:
+
+  NG2HTML PAL.LST PAL.HTM "PAL - Palmtop Application Library"
+
+<filelist> is a file containing all file names of the NG sources you want
+to have included in the HTML file. <output file> is the name of the main
+file that you can use as entry point. <title> is the title to be put into
+the main file.
+

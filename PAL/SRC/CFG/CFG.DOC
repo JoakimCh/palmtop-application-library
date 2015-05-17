@@ -1,0 +1,769 @@
+!short:
+!short:^u Configuration file routines
+^u Configuration file routines
+
+The functions in this module allow easy retrieval, addition,
+deletion and storage of information from user-editable
+plain-text config files, much like the Windows WIN.INI files.
+
+
+Available functions:
+
+  - ReadConfig          : Read config file given full name.
+  - ReadMyconfig        : Read config, given program name.
+  - GetConfigString     : Retrieve a string from config data.
+  - GetConfigInt        : Retrieve an integer from config data.
+  - GetFirstEntry       : Used to scan sections: init scan.
+  - GetNextEntry        : Used to scan sections: continue scan.
+  - GetCfgLine          : Retrieve line number info during scan.
+  - GetFirstSection     : Scan file for sections: init scan
+  - GetNextSection      : Scan file for sections: continue scan
+  - AddConfigString     : Add entries to a config file
+  - ReplaceConfigString : Replace a  keys value in a config file
+  - DeleteConfigString  : Delete a config entry
+  - WriteConfig         : Write a config file back to disk
+
+!short: CFG Introduction
+
+Here's an example of what a config file looks like:
+
+  ; -------------------------------------------
+  ; Configuration file for MYAPP
+  ; -------------------------------------------
+  ;
+  ; Comments are introduced with a semicolon
+  ;
+
+  [Printer]
+  Port = LPT1
+  Driver = LaserJet
+
+  [User]
+  Name   = 'John Doe'
+  Serial = 123456
+
+The name in angular brackets is called a section, the left side
+of an assignment name is called a key, and the right side is
+called a value.
+
+The routines in the CFG allow easy reading in and retrieval of
+the data in such a file. (In general, after loading the config
+file you provide a section and a key and get the corresponding
+value, or a default that you can specify). Once the config file
+has been read into memory, there are routine that allow you to
+add new sections, and new key=value pairs to an existing
+section, replace the value of an existing key, delete any key,
+keys or even a complete section, and finally a routine to write
+to file the results.
+
+Use ReadConfig(), or ReadMyConfig() to load the config file, and
+GetConfigString() or GetConfigInt() to retrieve data. That's all
+you usually need for retrieval.
+
+You can also use the function NewConfig() to initialize a new "memory"
+image of a config file that can later be saved.
+
+GetFirstEntry() and GetNextEntry() can be used to scan entire
+sections. GetFirstSection( and GetNextSection() can be used to
+enumerate all the sections in the config file. GetCfgLine
+retrieves the line number (for error messages) during such a
+scan. Once the file is in memory use AddConfigString() and
+AddConfigInt() to add new sections and key=value pairs. Use
+ReplaceConfigString() and ReplaceConfigInt() to replace the
+value for an existing key. Use DeleteConfigString() to delete a
+key=value pair, or all keys that match a given string, or all
+entries for a complete section.
+
+Use WriteConfig() to write the file back to either the same,
+or a different filename.
+
+Finally, call DiscardConfig() to free up the memory used by
+the config database.
+
+!short: ReadConfig           Read config file given full name
+   NAME
+      ReadConfig
+
+   DESCRIPTION
+      Reads a config file and stores the settings in an internal
+      database for later retrieval.
+
+   SYNOPSIS
+      #include "pal.h"
+      void  ReadConfig(char *CfgName);
+
+   INPUTS
+      CfgName - the name of the config file - including the
+                extension.
+
+   NOTE
+      ReadConfig has no return value - if the file is not found,
+      that is not considered an error, since your program may
+      still use the default value system supported by the
+      GetConfigXXX functions. If you need a mandatory entry in
+      the config file, you can detect its absence - see
+      GetConfigString for a tip how this can be done.
+
+      An extra section is created in memory when the file is read.
+      This section is called the "Prolog" section. The actual section
+      name is the fully qualified file specification of the config
+      file. This section header is NOT written back to the file. It
+      is used solely to keep track of and maintain comments in the
+      config file, prior to the first real section.
+
+   SAMPLE
+      void main(void)
+      {
+         ReadConfig("MYAPP.CFG"); /* Load config data for future use */
+         /* ... */
+      }
+!Seealso: GetConfigString ReadMyConfig DiscardConfig WriteConfig
+
+!short: ReadMyConfig         Read config, given program name
+   NAME
+      ReadMyConfig
+
+   DESCRIPTION
+      This function is very similar to ReadConfig, but is able to infer the
+      name of the config file from the full pathname of your application.
+      This is available as the argv[0] argument to C programs. Whatever
+      your program is called and wherever it is stored, using this
+      device will find the config file located in the same directory under
+      the same name.
+
+   SYNOPSIS
+      #include "pal.h"
+      void  ReadMyConfig(char *MyName);
+
+   INPUTS
+      MyName - the name of your application, including the '.EXE' extension.
+
+   NOTE
+      ReadMyConfig has no return value - if the file is not found,
+      that is not considered an error, since your program may
+      still use the default value system supported by the
+      GetConfigXXX functions. If you need a mandatory entry in
+      the config file, you can detect its absence - see
+      GetConfigString for a tip how this can be done.
+
+      An extra section is created in memory when the file is read.
+      This section is called the "Prolog" section. The actual section
+      name is the fully qualified file specification of the config
+      file. This section header is NOT written back to the file. It
+      is used solely to keep track of and maintain comments in the
+      config file, prior to the first real section.
+
+   SAMPLE
+      int main(int argc, char *argv[])
+      {
+         /* read config file, whatever program is called and
+            wherever it is stored. */
+         ReadMyConfig(argv[0]);
+         /* ... */
+      }
+
+!Seealso: GetConfigString ReadConfig DiscardConfig WriteConfig
+
+!short: NewConfig            Create a new config file in memory
+   NAME
+      NewConfig
+
+   DESCRIPTION
+      Creates a new config file in memory. Once created you can add to
+      it as usual.
+
+   SYNOPSIS
+      #include "pal.h"
+      void  NewConfig(char *CfgName);
+
+   INPUTS
+      CfgName - the name of the config file - this does NOT have to be
+                a real file name. It is used only for the Prolog
+                section.
+
+   NOTE
+      NewConfig has no return value
+
+      An extra section is created in memory when the file is read. This
+      section is called the "Prolog" section. The actual section name
+      is what you passed in in CfgName This section header is NOT
+      written back to the file. It is used solely to keep track of and
+      maintain comments in the config file, prior to the first real
+      section.
+
+   SAMPLE
+      void main(void)
+      {
+         NewConfig("MYAPP.CFG"); /* Create config file for future use */
+         /* ... */
+      }
+!Seealso: GetConfigString ReadMyConfig DiscardConfig WriteConfig
+
+!short: GetConfigString      Retrieve a string from config data
+   NAME
+      GetConfigString
+
+   DESCRIPTION
+      GetConfigString will retrieve a string value from the config file,
+      given a section name and a key. If the section and/or the key does
+      not exist, it will return a default value that you provide.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *GetConfigString(char *Section, char *Key, char *Default);
+
+   INPUTS
+      Section - The name of the section (in angular brackets in the CFG)
+                where you want your value retrieved from.
+      Key     - The key, i.e. the left hand side of the assignment in the
+                CFG file.
+      Default - what should be returned if the section/key pair cannot be
+                found.
+
+   RETURN VALUE
+      A pointer to the value, or the default. Note that you should not
+      write to this pointer since its storage belongs to the config
+      routines. Copy the string to a local buffer if you need to modify
+      it.
+
+   NOTE
+      You can also pass NULL as default string. This is useful to detect
+      the absence of a certain section/key pair in the config file. (Or
+      the absence of the config file altogether) If you pass NULL as
+      default value and get NULL as return value, you can be certain that
+      the section/key was not present - GetConfigString will never return
+      NULL otherwise.
+
+   SAMPLE
+      char *SerialCode;
+
+      SerialCode = GetConfigString("User", "Serial", NULL);
+      if(SerialCode == NULL) {
+         FatalExit("No 'Serial =' in [User] section of CFG file);
+      }
+
+!Seealso: GetConfigInt
+
+!short: GetConfigInt         Retrieve an int from config data
+   NAME
+      GetConfigInt
+
+   DESCRIPTION
+      GetConfigInt will retrieve a integer value from the config file,
+      given a section name and a key. If the section and/or the key does
+      not exist or is not valid, it will return a default value that you
+      provide.
+
+   SYNOPSIS
+      #include "pal.h"
+      int GetConfigInt(char *Section, char *Key, int Default);
+
+   INPUTS
+      Section - The name of the section (in angular brackets in the CFG)
+                where you want your value retrieved from.
+      Key     - The key, i.e. the left hand side of the assignment in the
+                CFG file.
+      Default - what should be returned if the section/key pair cannot be
+                found. Note that 'Default' is an int here. There is no error
+                condition, the default is returned if the entry does not
+                exist or is not valid.
+
+   RETURN VALUE
+      The integer value, or the default. (If the section/key pair does
+      not exist or if the value is syntactically wrong)
+
+   NOTE
+      GetConfigInt can also handle hexadecimal and octal values. It assumes
+      hex when a value starts with 0x or 0X. Octal is assumed for values
+      starting with a zero.
+
+   SAMPLE
+      int ComBase;
+
+      /* Get COM base address */
+      ComBase = GetConfigInt("SerialPort", "Address", 0x3f8);
+
+!Seealso: GetConfigString
+
+!short: GetFirstEntry        Used to scan sections: init scan
+   NAME
+      GetFirstEntry
+
+   DESCRIPTION
+      Used to scan all entries of a given section - initiates scan. Returns
+      a pointer to the first value string if the section exists, or NULL if
+      it does not. Can also return a pointer to the key.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *GetFirstEntry(char *Section, char **pKey);
+
+   INPUTS
+      Section - The name of the section you want to scan.
+      pKey    - a pointer to a string pointer - if not NULL, will be
+                set to point to the first key string if found.
+
+   RETURN VALUE
+      Will return a pointer to the first value in the section, or NULL if
+      the specified section/key pair does not exist.
+
+   NOTE
+      GetFirstEntry and GetNextEntry use internal static variables to
+      store state information. You can only have one active
+      GetFirst/NextEntry loop at a time. (That is, in such a loop, you
+      can't call a function that itself uses these routines)
+
+   SAMPLE
+      See the GetNextEntry description for a complete example.
+
+!Seealso: GetNextEntry GetCfgLine
+
+!short: GetNextEntry         Used to scan sections: continue scan
+   NAME
+      GetNextEntry
+
+   DESCRIPTION
+      Returns the next entry in a section scan. If char **pKey is not NULL,
+      the pointer *pKey will be set to point to the key string too.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *GetNextEntry(char **pKey);
+
+   INPUTS
+      pKey    - a pointer to a string pointer - if not NULL, will be
+                set to point to the next key string if found.
+
+   RETURN VALUE
+      Will return a pointer to the next value in the section, or NULL if
+      there is no next value. (i.e. you have retrieved the last one)
+
+   NOTE
+      GetFirstEntry and GetNextEntry use internal static variables to
+      store state information. You can only have one active
+      GetFirst/NextEntry loop at a time. (That is, in such a loop, you
+      can't call a function that itself uses these routines)
+
+   SAMPLE
+      This program will scan and print all key/name pairs of the 'Printer'
+      section in 'SETUP.CFG'. It also illustrates a typical GetFirst/Next
+      loop.
+
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      void main(void)
+      {
+         char *Key;
+         char *Value;
+
+         ReadConfig("SETUP.CFG");
+
+         if(Value = GetFirstEntry("Printer", &Key)) do {
+            printf("The key %s has the value '%s'", Key, Value);
+         } while(Value = GetNextEntry(&Key);
+         else printf("Section 'Printer' not found or empty\n");
+
+         DiscardConfig();
+      }
+
+!Seealso: GetFirstEntry GetCfgLine
+
+
+!short: GetFirstSection      Used to scan file for sections: init scan
+   NAME
+      GetFirstSection
+
+   DESCRIPTION
+      Used to scan all sections  of a given file - initiates scan. Returns
+      a pointer to the first section string if a section exists, or NULL if
+      it does not.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *GetFirstSection( void );
+
+   RETURN VALUE
+      Will return a pointer to the first section in the file, or NULL if
+      no sections exist.
+
+   NOTE
+      GetFirstSection and GetNextSection use internal static variables to
+      store state information. You can only have one active
+      GetFirst/NextSection loop at a time. (That is, in such a loop, you
+      can't call a function that itself uses these routines)
+
+      An extra section is created in memory when the file is read.
+      This section is called the "Prolog" section. The actual section
+      name is the fully qualified file specification of the config
+      file. This section header is NOT written back to the file. It
+      is used solely to keep track of and maintain comments in the
+      config file, prior to the first real section.
+
+   SAMPLE
+      See the GetNextSection description for a complete example.
+
+!Seealso: GetNextSection
+
+!short: GetNextSection       Used to scan file for sections: continue scan
+   NAME
+      GetNextSection
+
+   DESCRIPTION
+      Returns the next section in a config file scan.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *GetNextSection( void );
+
+   RETURN VALUE
+      Will return a pointer to the next section in the config file, or NULL if
+      there is no next section. (i.e. you have retrieved the last one)
+
+   NOTE
+      GetFirstSection and GetNextSection use internal static variables to
+      store state information. You can only have one active
+      GetFirst/NextSection loop at a time. (That is, in such a loop, you
+      can't call a function that itself uses these routines)
+
+      An extra section is created in memory when the file is read.
+      This section is called the "Prolog" section. The actual section
+      name is the fully qualified file specification of the config
+      file. This section header is NOT written back to the file. It
+      is used solely to keep track of and maintain comments in the
+      config file, prior to the first real section.
+
+
+   SAMPLE
+      This program will scan and print sections in the config file 'SETUP.CFG'.
+      It also illustrates a typical GetFirst/Next loop.
+
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      void main(void)
+      {
+         char *Section;
+
+         ReadConfig("SETUP.CFG");
+
+         if(Section = GetFirstSection()) do {
+            printf("The section is %s\n", Section);
+         } while(Section = GetNextSection();
+         else printf("No Sections found\n");
+
+         DiscardConfig();
+      }
+
+!Seealso: GetFirstSection
+
+!short: GetCfgLine           Retrieve line number info during scan
+   NAME
+      GetCfgLine
+
+   DESCRIPTION
+      Returns, for the last entry retrieved via GetFirstEntry/GetNextEntry,
+      the line number of the config file this entry was defined on - useful
+      if you need to output line number information in an error message.
+
+   SYNOPSIS
+      #include "pal.h"
+      int GetCfgLine(void);
+
+   SAMPLE
+      printf("The last line was %d\n", GetCfgLine());
+
+!Seealso: GetNextEntry GetCfgLine
+
+
+!short: AddConfigString      Used to add entries to a config file
+   NAME
+      AddConfigString
+
+   DESCRIPTION
+      This function will add a new key=value pair to the currently opened
+      config file. It will search for the Section provided and if found add
+      the new pair as the last entry in that section. If the Section dows
+      not exist, it will be created and the entry added to it.
+      AddConfigString does not check to see if there is another key of the
+      same name already there. This allows multiple values with the same
+      key. If you need to just replace the value for a key use
+      ReplaceConfigString.
+
+   SYNOPSIS
+      #include "pal.h"
+      void  AddConfigString(char *Section, char *Key, char *Value );
+
+   INPUTS
+      char *Section  - Section header in config file. Do not include the
+                       surrounding [].
+
+      char *Key      - Key of the key=value pair. If this is a NULL string
+                       ("") then the value takes on a special meaning.
+
+      char *Value    - Value of the key=value pair. If Key is a NULL string
+                       ("") then if value starts with a ; a comment is
+                       inserted in the config file. If value is also a NULL
+                       string then a blank line is inserted in the config
+                       file.
+
+   RETURN VALUE
+      None
+
+   SAMPLE
+      This sample reads in the config file "Setup.Cfg", adds the
+      printer=lpt1: pair to the DEVICES section, writes the file to disk,
+      and cleans up the storage that was allocated for the file.
+
+      #include "pal.h"
+
+      void main(void)
+      {
+         ReadConfig("SETUP.CFG");
+         AddConfigString("DEVICES","printer","lpt1:");
+         WriteConfig("SETUP.CFG")
+         DiscardConfig();
+      }
+
+!Seealso: ReplaceConfigString
+
+!short: ReplaceConfigString  Used to replace a keys value in a config file
+   NAME
+      ReplaceConfigString
+
+   DESCRIPTION
+      This function will replace the value from an existing key=value pair
+      if it exists in a config file. If the key does not exist it will be
+      added similr to AddConfigString().
+
+
+   SYNOPSIS
+      #include "pal.h"
+      void  ReplaceConfigString(char *Section, char *Key, char *Value );
+
+      char *Section  - Section header in config file. Do not include the
+                       surrounding [].
+
+      char *Key      - Key of the key=value pair. This is the value
+                       searched for in the given Section.
+
+      char *Value    - Value of the key=value pair.
+
+   RETURN VALUE
+      None
+
+   SAMPLE
+      This sample reads in the config file "Setup.Cfg", replaces the
+      printer keys value with the value lpt2: in the DEVICES section,
+      writes the file to disk, and cleans up the storage that was allocated
+      for the file.
+
+      #include "pal.h"
+
+      void main(void)
+      {
+         ReadConfig("SETUP.CFG");
+         ReplaceConfigString("DEVICES","printer","lpt2:");
+         WriteConfig("SETUP.CFG")
+         DiscardConfig();
+      }
+
+!Seealso: AddConfigString
+
+!short: AddConfigInt         Used to add entries to a config file
+   NAME
+      AddConfigInt
+
+   DESCRIPTION
+
+      This function will add a new key=value pair to the currently opened
+      config file. It will search for the Section provided and if found add
+      the new pair as the last entry in that section. If the Section dows
+      not exist, it will be created and the entry added to it.
+      AddConfigInt does not check to see if there is another key of the
+      same name already there. This allows multiple values with the same
+      key. If you need to just replace the value for a key use
+      ReplaceConfigInt.
+
+   SYNOPSIS
+      #include "pal.h"
+      void  AddConfigInt(char *Section, char *Key, int Value );
+
+   INPUTS
+      char *Section  - Section header in config file. Do not include the
+                       surrounding [].
+
+      char *Key      - Key of the key=value pair.
+
+      int   Value    - Value of the key=value pair.
+
+   RETURN VALUE
+      None
+
+   SAMPLE
+      This sample reads in the config file "Setup.Cfg", adds the
+      printers=1 pair to the DEVICES section, writes the file to disk,
+      and cleans up the storage that was allocated for the file.
+
+      #include "pal.h"
+
+      void main(void)
+      {
+         ReadConfig("SETUP.CFG");
+         AddConfigInt("DEVICES","printers=,1);
+         WriteConfig("SETUP.CFG")
+         DiscardConfig();
+      }
+
+!Seealso: ReplaceConfigInt
+
+!short: ReplaceConfigInt     Used to replace a keys value in a config file
+   NAME
+      ReplaceConfigInt
+
+   DESCRIPTION
+      This function will replace the value from an existing key=value pair
+      if it exists in a config file. If the key does not exist it will be
+      added similr to AddConfigString().
+
+
+   SYNOPSIS
+      #include "pal.h"
+      void  ReplaceConfigInt(char *Section, char *Key, int Value );
+
+   INPUTS
+      char *Section  - Section header in config file. Do not include the
+                       surrounding [].
+
+      char *Key      - Key of the key=value pair. This is the value
+                       searched for in the given Section.
+
+      int   Value    - Value of the key=value pair.
+
+   RETURN VALUE
+      None
+
+   SAMPLE
+      This sample reads in the config file "Setup.Cfg", replaces the
+      printers keys value with the value 2 in the DEVICES section,
+      writes the file to disk, and cleans up the storage that was allocated
+      for the file.
+
+      #include "pal.h"
+
+      void main(void)
+      {
+         ReadConfig("SETUP.CFG");
+         ReplaceConfigString("DEVICES","printers",2);
+         WriteConfig("SETUP.CFG")
+         DiscardConfig();
+      }
+
+!Seealso: AddConfigInt
+
+!short: DeleteConfigString   Used to delete config entries
+
+   NAME
+     DeleteConfigString
+
+   DESCRIPTION
+     Deletes a ConfigEntry. If Section is found then the action depends on
+      Key. If Key is NULL then the complete section is removed. If Key is
+      provided and is not found nothing is done. If Key is found then the
+      action depends on Value. If Value is NULL then all Matching keys are
+      deleted. If Value is provided and it is not found then nothing is
+      done. If Value is provided and found it is deleted.
+
+   SYNOPSIS
+      #include "pal.h"
+      int   DeleteConfigString(char *Section, char *Key, char *Value);
+
+   INPUTS
+      parm    - parm description
+
+   RETURN VALUE
+      Number of lines/entries deleted.
+
+   NOTE
+      Section must be provided and found or nothing is done.
+
+   SAMPLE
+      This sample reads in the config file "Setup.Cfg", deletes the printer
+      key that has a value of lpt2: in the DEVICES section, writes the file
+      to disk, and cleans up the storage that was allocated for the file.
+
+      #include "pal.h"
+
+      void main(void)
+      {
+         ReadConfig("SETUP.CFG");
+         DeleteConfigString("DEVICES","printer","lpt2:");
+         WriteConfig("SETUP.CFG")
+         DiscardConfig();
+      }
+
+!Seealso: AddConfigString ReplaceConfigString
+
+!short: WriteConfig          Used to write a config file to disk
+   NAME
+      WriteConfig
+
+   DESCRIPTION
+      Write the current Config file data from memory to a file.
+
+   SYNOPSIS
+      #include "pal.h"
+      int   WriteConfig(char *CfgName);
+
+   INPUTS
+      CfgName - the name of the config file - including the
+                extension.
+
+
+   RETURN VALUE
+      1 = Success, 0 = Failure
+
+   NOTE
+      All comments and blank lines from the original config file are
+      preserved.
+
+   SAMPLE
+      This sample reads in the config file "Setup.Cfg", replaces the
+      printer keys value with the value lpt2: in the DEVICES section,
+      writes the file to disk, and cleans up the storage that was allocated
+      for the file.
+
+      #include "pal.h"
+
+      void main(void)
+      {
+         ReadConfig("SETUP.CFG");
+         ReplaceConfigString("DEVICES","printer","lpt2:");
+         WriteConfig("SETUP.CFG")
+         DiscardConfig();
+      }
+
+!Seealso: ReadConfig ReadMyConfig
+
+!short: DiscardConfig        Frees memory used by CFG database
+   NAME
+      DiscardConfig
+
+   DESCRIPTION
+      Call this function when you don't need access to the config data
+      any more. You must again load a config file before you may
+      retrieve data again.
+
+   SYNOPSIS
+      #include "pal.h"
+      void DiscardConfig(void);
+
+   SAMPLE
+      See the GetNextEntry description for a sample call to DiscardConfig.
+
+!Seealso: ReadConfig ReadMyConfig GetNextEntry
+

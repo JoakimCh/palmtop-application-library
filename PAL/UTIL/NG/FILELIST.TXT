@@ -1,0 +1,27 @@
+The NG directory is where the 'Norton Guide' for PAL is built.
+Norton Guides are simple hypertexts that can be popped up at the
+touch of a key. They work in text mode and don't need color or
+graphics - ideal for use on the palmtop itself. OTOH, Norton
+Guide viewers for DOS and Windows are readily available. If you
+can't find one, ask in section 15 of the CompuServe HPHAND forum.
+
+Files in this directory:
+
+FILELIST.TXT: This file
+
+NGREADME.TXT: Explains what Norton Guides are - also lists some
+              viewers with their respective advantages, and
+              contains a special offer for one of them.
+              (ExpertHelp). Contributed by Dave Vickers.
+
+MAKENG.BAT  : Makefile that compiles the PAL documentation into
+              an NG file. Requires a Norton Guide compiler
+              tool - either the NGC or EHC
+              - see comments inside batch file.
+
+PAL.NGL     : 'link' file that describes the toplevel menues of
+              the NG that is to be built.
+
+PAL.NG      : The completed Norton Guide. Copy it to the
+              directory where you keep your NGs all together.
+

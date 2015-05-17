@@ -1,0 +1,1137 @@
+!short:
+!short:^u Miscellaneous routines
+^u Miscellaneous routines
+
+This set of functions is for special operations, such as control
+of the volume, serial port, light-sleep and timeout of the
+palmtop, get scancode and ASCII code from a pressed key, and
+much more.
+
+Available functions:
+
+  - AnnuncPos       : Set the annunciators position (Shift,CAPS,Fn indicators).
+  - Check5f         : Check for presence of INT 5Fh services.
+  - CheckSysMgr     : Check for presence of INT 7Eh (SysMgr) services.
+  - FatalExit       : Fatal error exit from PAL and return error code to DOS.
+  - PalInit         : Initialize PAL library (the first thing to do).
+  - PalDeInit       : Shut down PAL library (just before exiting program).
+  - WhichHp         : Returns the model number of the palmtop we're running upon.
+  - GetKey          : Get a key (with ASCII and Scan code).
+  - KeyWaiting      : Check if a key is waiting
+  - PushKeys        : Push a sequence of Keys which GetKey will deliver.
+  - Volume          : Set the volume level of the palmtop.
+  - GetVolume       : Get the current volume level.
+  - SetSerialPort   : Turn on/off the serial port COM1 of the palmtop.
+  - SetLightSleep   : Enable/disable light-sleep (Power-management).
+  - SetTimeOut      : Set the timeout delay of the Auto-Power-Off feature.
+  - MsgBox          : Display a message box with title, text and buttons
+  - MsgWin          : Display a message window without waiting
+  - AskYesNo        : Ask user Yes or No
+  - MsDelay         : Wait a specific number of milliseconds
+  - BattType        : Set/get battery type.
+  - BattVoltage     : Read main/backup battery voltage.
+  - BattStatus      : Check main/backup/card battery status (OK/LOW)
+  - ChargeMode      : Enable/Disable battery charging.
+  - BattFast        : Detect if battery is fast charging.
+  - BattGetTimer    : Read battery charging timer.
+  - BattSetTimer    : Set battery charging timer.
+  - DCStatus        : Detects if an external DC adaptor is used.
+  - OpenMeter       : Opens (displays) a progress/level meter.
+  - UpdateMeter     : Updates the percentage (level) of an active meter.
+  - CloseMeter      : Closes an active meter.
+  - SetErrorHandler : specify alternate error handler
+  - LastMemoFile    : return last file edited in MEMO
+  - SerialCtl       : Toggle SysMgr serial port interference
+
+  - Protect         : Enable hardware RAM protection.   (Internal use).
+  - Unprotect       : Disable hardware RAM protection.  (Internal use).
+  - AsmSTI          : Enable interrupts.                (Internal use).
+  - AsmCLI          : Disable interrupts.               (Internal use).
+
+
+!short: AnnuncPos            Set the annunciators position.
+   NAME
+      AnnuncPos
+
+   DESCRIPTION
+      This function places the annunciators (Shift,Caps,Fn indicators) on
+      the bottom left or right of the screen. It is useful to place the
+      annunciators to the left of the screen in your programs, so they don't
+      get over the F1 label on the screen (like in the PIMs).
+
+   SYNOPSIS
+      #include "pal.h"
+      void AnnuncPos(int position);
+
+   INPUTS
+      position - The position of the annunciators. You can use one of
+                 the following values:
+
+                 AN_LEFT : place annunciators to the bottom left,
+                 AN_RIGHT: place annunciators to the bottom right.
+
+   RETURN VALUE
+      None
+
+   NOTE
+      The annunciators are usually to the right side of the screen while
+      in DOS, and to the left when in the System Manager PIMs.
+
+   SAMPLE
+      AnnuncPos(AN_LEFT);  /* place annunciators to the left side */
+
+!Seealso: GraphMode TextMode
+
+!short: Check5f              Check for presence of INT 5Fh services.
+   NAME
+      Check5f
+
+   DESCRIPTION
+      This function checks for the presence of INT 5Fh services
+      (Either running on palmtop or on PC with emulator). Returns
+      TRUE if services are present.
+
+   SYNOPSIS
+      #include "pal.h"
+      int  Check5f(void);
+
+   INPUTS
+      None
+
+   RETURN VALUE
+      TRUE if INT 5Fh services are present.
+
+   NOTE
+      You can use the CGAGRAPH.COM or CG.COM emulator to have access
+      of the INT 5Fh services on your desktop (286+ only).
+      The GraphMode() function includes the Check5f() test.
+
+   SAMPLE
+      if(!Check5f()) FatalExit("Init failed - CGAGRAPH not loaded ?", 1);
+
+!Seealso: PalInit FatalExit
+
+!short: CheckSysMgr          Check if SysMgr services are available.
+   NAME
+      CheckSysMgr
+
+   DESCRIPTION
+      This function checks if the System manager is loaded.
+
+   SYNOPSIS
+      #include "pal.h"
+      int CheckSysMgr(void);
+
+   INPUTS
+      None.
+
+   RETURN VALUE
+      Returns TRUE (1) if SysMgr is loaded, FALSE (0) otherwise.
+
+   NOTE
+      Checking for SysMgr presence is mandatory for PAL applications
+      that use functions from the SM_SVC module - these will not
+      work and even crash without the presence of SysMgr.
+
+   SAMPLE
+    if(!CheckSysMgr()) printf("SysMgr not loaded!\n");
+    else printf("SysMgr is loaded...\n");
+
+!short: FatalExit            Fatal error exit from PAL and return error code.
+   NAME
+      FatalExit
+
+   DESCRIPTION
+      This function is used to exit the program when a fatal error occurs.
+      You can specify the error message to be displayed and the error
+      code to be returned to DOS.
+
+   SYNOPSIS
+      #include "pal.h"
+      void FatalExit(char *Msg, int ExitCode);
+
+   INPUTS
+      Msg      - The error message you want to be displayed.
+      ExitCode - The error code (number) to be returned to DOS.
+
+   RETURN VALUE
+      Returns the error code to DOS and quits program.
+
+   NOTE
+      This function automatically resets the screen mode to text
+      upon exit.
+
+   SAMPLE
+
+   if(!(pFont = LoadFont("span0015.hfn"))) FatalExit("Load Font failed", 1);
+
+!Seealso: TextMode
+
+!short: PalInit              Initialize PAL library (first thing to do).
+   NAME
+      PalInit
+
+   DESCRIPTION
+      This function initializes the PAL library. It can optionally
+      switch to graphics mode and also sets the 'Palmtop'
+      variable to non-zero if running on HP palmtop. This is the
+      first function that is usually called in a program using
+      the PAL library.
+
+   SYNOPSIS
+      #include "pal.h"
+      int  PalInit(int Graphics);
+
+   INPUTS
+      Graphics - a flag: pass 1 if you want PalInit to switch to
+                 graphics mode. (Generally the case)
+
+   RETURN VALUE
+      Returns TRUE if successful.
+
+   NOTE
+      The opposite function of PalInit() is PalDeInit().
+
+   SAMPLE
+   if(!PalInit(1)) FatalExit("PalInit failed.", 1);
+
+!Seealso: FatalExit SetRule SetColor SelectFont PalDeInit
+
+!short: PalDeInit            Shut down PAL library.
+
+   NAME
+      PalDeInit
+
+   DESCRIPTION
+      This function shuts down the PAL library. It is normally
+      called just before exiting the program.
+
+   SYNOPSIS
+      #include "pal.h"
+      void PalDeInit(int Text);
+
+   INPUTS
+      Text  -  a flag: pass 1 if you want PalDeInit to switch
+               to text mode for you.
+
+   RETURN VALUE
+      None
+
+   NOTE
+      This function is the opposite of PalInit().
+
+   SAMPLE
+      PalDeInit(1);  /* shut down PAL services, switch to text */
+
+!Seealso: PalInit TextMode
+
+!short: WhichHp              Returns the model number of the palmtop.
+
+   NAME
+      WhichHp
+
+   DESCRIPTION
+      This function returns the HP model number of the palmtop we're
+      running upon.
+
+   SYNOPSIS
+      #include "pal.h"
+      int  WhichHp(void);
+
+   INPUTS
+      None
+
+   RETURN VALUE
+        0 --> no palmtop, PC
+       95 --> HP95LX
+      100 --> HP100LX
+
+   SAMPLE
+      if(WhichHp() == 0) printf("This is not an HP palmtop!");
+
+!Seealso: Check5f
+
+!short: GetKey               Get a key (with ASCII and Scan code).
+
+   NAME
+      GetKey
+
+   DESCRIPTION
+      This function will wait for a keystroke and return it in both ASCII
+      and scancode. The upper byte of the result will hold the scancode,
+      the lower byte the ASCII code. This function can also detect the
+      palmtop-specific keys like MENU.
+
+   SYNOPSIS
+      #include "pal.h"
+      WORD GetKey(void);
+
+   INPUTS
+      None
+
+   RETURN VALUE
+      A 16-bit value (WORD) with the most significant byte for the scancode,
+      and the least significant byte for the ASCII code.
+
+   NOTE
+      This function can work in conjunction with the PushKeys() function
+      which allows to push a sequence of Keys which GetKey will deliver.
+
+   SAMPLE
+      int key;
+
+      /* Get scancode and ASCII code */
+      key = GetKey();  /* wait for a key press */
+
+!Seealso: PushKeys KeyWaiting
+
+!short: KeyWaiting           Returns TRUE if a key is waiting
+
+   NAME
+      KeyWaiting
+
+   DESCRIPTION
+      Return TRUE if a keystroke is waiting to be retrieved via
+      GetKey
+
+   SYNOPSIS
+      #include "pal.h"
+      int KeyWaiting(void);
+
+   INPUTS
+      None
+
+   RETURN VALUE
+      TRUE if a key is waiting, else FALSE.
+
+   NOTE
+      This function respects keys pushed with the PushKeys function.
+      Using kbhit() will not know about these.
+
+   SAMPLE
+      if(KeyWaiting()) break; /* leave loop if user presses a key */
+
+!Seealso: PushKeys GetKey
+
+!short: PushKeys             Push a sequence of Keys which GetKey will deliver.
+
+   NAME
+      PushKeys
+
+   DESCRIPTION
+      This function is used in conjunction with GetKey() and pushes a
+      sequence of keys that GetKey() can deliver.
+
+   SYNOPSIS
+      #include "pal.h"
+      void PushKeys(WORD *pKeys);
+
+   INPUTS
+      pKeys - pointer to a 0-terminated array of WORDs, with the most
+              significant byte as scancode and the least significant
+              one as ASCII code.
+
+   RETURN VALUE
+      None
+
+   NOTE
+      This function is using a global int array called KStack[MAX_KEYSTACK]
+      which can hold up to MAX_KEYSTACK entries. It is used in recursive
+      calls to PushKeys - this way, pushed keystrokes that cause PushKeys
+      to be called again when being retrieved by GetKey don't cause a
+      problem. Note that the Menu module calls PushKeys itself.
+
+   SAMPLE
+      Not available at this moment.
+
+!Seealso: GetKey KeyWaiting
+
+!short: Volume               Set the volume level of the palmtop.
+
+   NAME
+      Volume
+
+   DESCRIPTION
+      This function sets the volume level of the palmtop.
+
+   SYNOPSIS
+      #include "pal.h"
+      void Volume(int Level);
+
+   INPUTS
+      Level - The volume level, which can be one of the 4 possible
+              settings:
+
+                VOL_OFF   : Set volume completely off.
+                VOL_LOW   : Set volume to the lowest level.
+                VOL_MEDIUM: Set volume to the middle level.
+                VOL_HI    : Set volume to the maximum level.
+
+   RETURN VALUE
+      None
+
+   NOTE
+      The default setting is VOL_HI.
+
+   SAMPLE
+      Volume(VOL_HI);  /* set volume to maximum */
+
+!Seealso: m_play m_asound
+
+!short: SetSerialPort        Turn on/off the serial port of the palmtop.
+
+   NAME
+      SetSerialPort
+
+   DESCRIPTION
+      This function turns on or off the serial port COM1 (wire) of the
+      palmtop.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetSerialPort(int Mode);
+
+   INPUTS
+      Mode - Can be either SERIAL_ON, or SERIAL_OFF.
+
+   RETURN VALUE
+      None
+
+   NOTE
+      When the serial port is ON, the palmtop drains the batteries faster.
+      Do not forget to turn it off when not in use. The baudrate settings
+      are not affected when calling this function. The Infared (I.R.) port
+      is not affected either.
+
+   SAMPLE
+      SetSerialPort(SERIAL_OFF); /* turn off serial port */
+
+!Seealso: SetLightSleep
+
+!short: SetLightSleep        Enable/disable light-sleep (Power-management).
+
+   NAME
+      SetLightSleep
+
+   DESCRIPTION
+      This function enables/disables the power-management feature called
+      'light-sleep'. This does accelerate the computer's speed somehow,
+      but decreases battery life. It is useful to turn it off while doing
+      a search for example, to speed-up the search process.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetLightSleep(int Mode);
+
+   INPUTS
+      Mode - Can be either SLEEP_ON, or SLEEP_OFF.
+
+   RETURN VALUE
+      None
+
+   NOTE
+      When the light sleep feature is disabled, the battery life is reduced
+      dramatically. It is important to remember to turn this feature back ON
+      before exiting your program.
+
+   SAMPLE
+      SetLightSleep(SLEEP_ON); /* enable light-sleep */
+
+!Seealso: SetSerialPort SetTimeOut
+
+!short: SetTimeOut           Set the timeout delay of the Auto-Power-Off.
+
+   NAME
+      SetTimeOut
+
+   DESCRIPTION
+      This function will change the time-out delay of the Auto-Shut-Off
+      feature of the palmtop.
+
+   SYNOPSIS
+      #include "pal.h"
+      void SetTimeOut(WORD value);
+
+   INPUTS
+      value - A 16-bit value for the time-out delay. The value is actually
+              the number of clock ticks (18.2 per second), so a time-out
+              delay of ten seconds should be 182.
+
+   RETURN VALUE
+      None
+
+   NOTE
+      WARNING!!! If the time-out value is too small the palmtop will turn
+      off as soon as you turn it on, and only a CTL-ALT-DEL (warm boot)
+      will bring it back to normal!
+
+   SAMPLE
+      SetTimeOut(2184); /* set timeout to 2 minutes */
+
+!Seealso: SetLightSleep
+
+!short: MsgBox               Display a message box with buttons
+   NAME
+      MsgBox
+
+   DESCRIPTION
+      MsgBox will display a message window with a title and text that
+      you specify, and lets the user select one of up to five buttons
+      that you also define. It will return the index of the button that
+      the user selected. Optionally, a pointer to an input buffer may
+      be passed - the message box will then also have an input field
+      where the user can type text. The buffer will contain that text
+      when MsgBox returns.
+
+      MsgBox can also display a function key bar at the bottom of
+      the screen. This is triggered by embedding function key names
+      and optionally labels in the button label strings. See the
+      description of the 'Buttons' parameter below for details.
+
+   SYNOPSIS
+      #include "pal.h"
+      int MsgBox(char *Title, char *Msg, char *Inp, char *Buttons, ...);
+
+   INPUTS
+      Title   - a short title string, will be displayed at the top of
+                the window. If you don't want a title, use NULL here.
+
+      Msg     - the message that will be displayed inside the message
+                window. If you want line breaks, use the '|' character
+                to insert them. (See example below). There may be ten
+                lines of text at most. You may use printf format
+                specifiers in the message. The corresponding parameters
+                must be specified _following_ the Buttons argument.
+
+      Inp     - if this pointer is not NULL, it should point to an
+                input buffer of at least 80 characters. The message
+                box will contain an input field in this case, and the
+                input that the user types will end up in that buffer.
+                If you pass NULL for this parameter, there will not
+                be an input field.
+
+                Note: If Inp is not NULL, the two last lines of the
+                Msg string (that is, the two last segments delimited
+                by '|') have special meaning. The first one is the
+                prompt that will appear before the input field,
+                the second one is the initial contents of that field.
+
+      Buttons - the legends to be displayed on the buttons. Separate
+                them with a '|' character. (see example below)
+                If you don't want buttons, use NULL here. You may
+                have a maximum of five buttons. Start the legend of
+                a button with '!' if you want it to be the one that
+                initially has the focus. If you want your button to
+                be associated with a function key (and the labels
+                displayed), append [Fn] to your button legend,
+                replacing 'n' by the function key number. To e.g.
+                assign a button labeled 'Yes' to the F6 key, you would
+                use this: " Yes [F6]". You can have an alternate
+                text displayed on the key - add a colon and the key
+                label that you would like. Sample Buttons string:
+                " Integrate [F2:Int]|Differentiate [F3:Dif]".
+
+                Note: If you just want the default function key
+                labels displayed, use [F] in any of your button
+                labesl.
+
+
+      ...     - a variable number of parameters - corresponding to
+                the printf format specifiers in the Msg string.
+                The resulting message may not exceed 1K in length !
+
+   RETURN VALUE
+      The index of the selected button (starting at zero for the first
+      one), or the predefined constants DN_OK and DN_CANCEL, if the user
+      hit F10 or ESC, respectively.
+
+   NOTE
+      You may want to pad button labels with blanks for better optics.
+      That is, instead of "OK|Cancel" use "  OK  |Cancel" to give both
+      buttons the same width.
+
+   SAMPLE
+      int r;
+
+      r = MsgBox("Attention", " | Sure delete %s ? | ",
+                 NULL, "  OK  |!Cancel", FileName);
+      if(r == 0 || r == DN_OK) DeleteFile(FileName);
+
+!Seealso: AskYesNo MsgWin
+
+!short: MsgWin               Display a message window
+   NAME
+      MsgWin
+
+   DESCRIPTION
+      MsgWin will display a message window with a title and text that
+      you specify. Unlike MsgBox, MsgWin does not wait for a keystroke,
+      it immediately returns, leaving the window on-screen. You can
+      close the window and free associated memory by calling MsgWin
+      again, specifying a NULL Msg pointer. Intermediate calls with
+      a different Msg are OK too - the window will be closed and then
+      reopened, displaying the new text.
+
+   SYNOPSIS
+      #include "pal.h"
+      int MsgWin(char *Title, char *Msg, ...);
+
+   INPUTS
+      Title   - a short title string, will be displayed at the top of
+                the window. If you don't want a title, use NULL here.
+
+      Msg     - the message that will be displayed inside the message
+                window. If you want line breaks, use the '|' character
+                to insert them. (See example below). There may be ten
+                lines of text at most. You may use printf format
+                specifiers in the message. The corresponding parameters
+                must be specified following the Msg argument.
+                To close the window, call MsgWin again, and specify
+                NULL for this parameter.
+
+      ...     - a variable number of parameters - corresponding to
+                the printf format specifiers in the Msg string.
+                The resulting message may not exceed 1K in length !
+
+   RETURN VALUE
+
+   NOTE
+
+   SAMPLE
+      int i;
+
+      for(i = 0; i < FileCount; i++) {
+         MsgWin(" Search in progress ",
+             " Searching file #%d | (Hit a key to abort)", i);
+         SearchFile(i);
+         if(KeyWaiting()) break;
+      }
+
+!Seealso: AskYesNo MsgBox
+
+
+!short: AskYesNo             Ask the user Yes or No
+   NAME
+      AskYesNo
+
+   DESCRIPTION
+      AskYesNo will display a message window with a question that you
+      specify, and lets the user select either the YES or the NO
+      button. It will return TRUE for YES and FALSE for NO
+
+   SYNOPSIS
+      #include "pal.h"
+      int AskYesNo(char *Question);
+
+   INPUTS
+      Question - the question that you want to ask the user.
+
+   RETURN VALUE
+      TRUE if the user selected the YES button or hit F10, FALSE if
+      he selected the NO button.
+
+   SAMPLE
+      if(AskYesNo("Will you marry me ?")) Celebrate();
+
+!Seealso: MsgBox
+
+!short: MsDelay              Wait a specified number of milliseconds
+   NAME
+      MsDelay
+
+   DESCRIPTION
+      MsDelay will wait for a specified number of milliseconds.
+
+   SYNOPSIS
+      #include "pal.h"
+      void MsDelay(unsigned int MilliSecs)
+
+   INPUTS
+      MilliSecs - the number of milliseconds to wait.
+
+   NOTE
+      Although the waiting period is specified in milliseconds, the
+      actual resolution is of an 18th of a second only. Also note that
+      since the parameter is an unsigned int, about 65 seconds is
+      the longest period that you can wait for.
+      Finally, this function will not work if the 18 Hz interrupt
+      is disabled.
+
+   SAMPLE
+      MsDelay(2000); /* wait 2 seconds */
+
+!short: BattType             Get/Set main battery type
+   NAME
+      BattType
+
+   DESCRIPTION
+      Get/set main battery type to either ALK_BATT or NICD_BATT.
+
+   SYNOPSIS
+      #include "pal.h"
+      int BattType(int type);
+
+   INPUTS
+      type -  Can set to either ALK_BATT for alkaline, NICD_BATT for
+              NiCd, or BATT_STAT to get the battery type only.
+
+   RETURN VALUE
+      if the specified type is BATT_STAT, BattType() returns the
+      battery type, and does not alter the battery type setting.
+      It returns ALK_BATT for alkaline, NICD_BATT for Nickel Cadmium.
+
+   SAMPLE
+
+      /* set battery type */
+      BattType(NICD_BATT);
+
+      /* read battery type */
+      if(BattType(BATT_STAT)==ALK_BATT) printf("Battery is Alkaline\n");
+
+!Seealso: BattStatus
+
+!short: BattVoltage          Read main/backup battery voltage.
+   NAME
+      BattVoltage
+
+   DESCRIPTION
+      Read the MAIN or BACKUP battery voltage.
+
+   SYNOPSIS
+      #include "pal.h"
+      int BattVoltage(int battery);
+
+   INPUTS
+      battery -  Specify which battery voltage to read,
+                 MAIN_BATT for main, BACK_BATT for lithium backup.
+
+   RETURN VALUE
+      Returns an integer specifying the battery voltage. The
+      returned value range is from 157 to 330, where 157 is
+      for 1.57 volts, and 330 for 3.30 volts.
+
+   SAMPLE
+
+      /* get main battery voltage */
+      printf("Main battery voltage=%u", BattVoltage(MAIN_BATT));
+
+!Seealso: BattStatus ChargeMode DCStatus
+
+
+!short: BattStatus           Check main/backup/card battery status.
+   NAME
+      BattStatus
+
+   DESCRIPTION
+      Gets the MAIN, BACKUP or CARD battery status (OK or LOW).
+
+   SYNOPSIS
+      #include "pal.h"
+      int BattStatus(int battery);
+
+   INPUTS
+      battery -  Specify which battery status to check: CARD_BATT
+                 for drive's A: card battery, MAIN_BATT for main,
+                 BACK_BATT for lithium backup battery.
+   RETURN VALUE
+      Returns TRUE (1) if battery is LOW, FALSE (0) otherwise.
+      It returns (2) when main battery is VERY LOW.
+
+   SAMPLE
+
+      /* check main battery status */
+      if(BattStatus(MAIN_BATT)) printf("Main battery low!\n");
+      if(!BattStatus(MAIN_BATT)) printf("Main battery ok.\n");
+
+!Seealso: BattType ChargeMode DCStatus
+
+!short: ChargeMode           Set/get battery charging mode.
+   NAME
+      ChargeMode
+
+   DESCRIPTION
+      Enable/disable battery charging, or read the charging status.
+
+   SYNOPSIS
+      #include "pal.h"
+      int ChargeMode(int mode);
+
+   INPUTS
+      mode - Use CHG_ENA to enable charging, CHG_DIS to disable
+             charging, CHG_STAT to read the charging state.
+
+   RETURN VALUE
+      Returns TRUE if charging is enabled, FALSE otherwise.
+
+   NOTES
+      Warning! Enable charging for NiCad batteries only!
+
+   SAMPLE
+
+      /* enable NiCad charging */
+      ChargeMode(CHG_ENA);
+
+      /* check if charging is enabled */
+      if(ChargeMode(CHG_STAT)) printf("Charging is enabled\n");
+      if(!ChargeMode(CHG_STAT)) printf("Charging is disabled\n");
+
+!Seealso: BattType BattStatus DCStatus
+
+!short: DCStatus             Detects if an external DC adaptor is used.
+   NAME
+      DCStatus
+
+   DESCRIPTION
+      Detects if an external DC adaptor is used.
+
+   SYNOPSIS
+      #include "pal.h"
+      int DCStatus(void);
+
+   INPUTS
+      none.
+
+   RETURN VALUE
+      Returns TRUE if the palmtop is powered by an external
+      DC adaptor.
+
+   SAMPLE
+
+      /* check DC adaptor's presence */
+      if(DCStatus()) printf("DC adaptor is connected\n");
+      if(!DCStatus()) printf("DC adaptor is not connected\n");
+
+
+!Seealso: BattType BattStatus BattVoltage
+
+!short: OpenMeter            Opens (displays) a progress/level meter.
+   NAME
+      OpenMeter
+
+   DESCRIPTION
+      This function opens and displays a progress or level
+      meter. The screen background is automatically saved
+      (like a window function).
+
+   SYNOPSIS
+      #include "pal.h"
+
+      METER *OpenMeter(int type, int Xpos, int Ypos, int size,
+                 WORD BegVal, WORD EndVal, char *title);
+
+
+   INPUTS
+
+      type - Can be PROG_METER for a progress meter, LEVEL_METER
+             for a level meter.
+
+      size - Can be a value from 1 to 4. This determines the
+             lenght of the meter on the screen.
+
+      title- The title of the meter. If no title is given,
+             no title is displayed.
+
+      Xpos, Ypos - The top left corner screen coordinates of
+                   the meter.
+
+      BegVal- Starting index value of level meter.
+      EndVal- Ending index value of level meter.
+
+   RETURN VALUE
+
+     A METER structure pointer.
+
+
+   SAMPLE
+
+#include "pal.h"
+
+void main(void)
+{
+   METER *pMtr;
+   int f, min = 10, max = 250;
+
+   PalInit(1);
+
+   pMtr  = OpenMeter(PROG_METER, 100,50, 3, min, max, "Progress level:");
+
+   for(f=min;f<max+1;f+=1) {
+      UpdateMeter(pMtr,f);
+      GetKey();
+   }
+
+   CloseMeter(pMtr);
+   PalDeInit(1);
+}
+
+
+!Seealso: CloseMeter UpdateMeter
+
+!short: CloseMeter           Closes an active prog/level meter.
+   NAME
+      CloseMeter
+
+   DESCRIPTION
+      Closes an active progress/level meter and restore the
+      screen contents behind it.
+
+   SYNOPSIS
+      #include "pal.h"
+      void CloseMeter(METER *pMtr);
+
+   INPUTS
+      METER - A pointer of type METER of an active level meter.
+
+   RETURN VALUE
+      none.
+
+   SAMPLE
+      See the OpenMeter function.
+
+!Seealso: OpenMeter UpdateMeter
+
+!short: UpdateMeter          Updates the percentage (level) of a meter.
+   NAME
+      UpdateMeter
+
+   DESCRIPTION
+      This function updates the level of an active meter.
+      The specified level is a value between the specified
+      BegVal & EndVal in the OpenMeter() function.
+
+   SYNOPSIS
+      #include "pal.h"
+      void UpdateMeter(METER *pMtr, int Level);
+
+   INPUTS
+
+      METER - A pointer of type METER of an active level meter.
+      level - The BegVal - EndVal index value.
+
+   RETURN VALUE
+      None.
+
+   SAMPLE
+
+      See the OpenMeter function.
+
+!Seealso: OpenMeter CloseMeter
+
+!short: GetVolume            Get the volume level of the palmtop.
+
+   NAME
+      GetVolume
+
+   DESCRIPTION
+      This function gets the volume level of the palmtop.
+
+   SYNOPSIS
+      #include "pal.h"
+      int GetVolume(void);
+
+   INPUTS
+      None
+
+   RETURN VALUE
+      Returns the volume level of the built-in speaker.
+      Return values: (VOL_OFF, VOL_LOW, VOL_MEDIUM, VOL_HI)
+
+   NOTE
+
+   SAMPLE
+      vol=GetVolume();
+
+!Seealso: m_play m_asound
+
+!short: BattFast             Detects if the battery is fast charging.
+   NAME
+      BattFast
+
+   DESCRIPTION
+      Detects if the battery is fast charging.
+
+   SYNOPSIS
+      #include "pal.h"
+      int BattFast(void);
+
+   INPUTS
+      none.
+
+   RETURN VALUE
+      Returns TRUE if the battery is fast charging, FALSE if
+      trickle charging.
+
+   SAMPLE
+
+      if(BattFast()) printf("Battery is fast charging!\n");
+
+!Seealso: BattType BattStatus BattVoltage
+
+!short: BattGetTimer         Reads the battery charging timer.
+   NAME
+      BattGetTimer
+
+   DESCRIPTION
+      Reads the battery charging timer value (seconds).
+
+   SYNOPSIS
+      #include "pal.h"
+      int BattGetTimer(void);
+
+   INPUTS
+      none.
+
+   RETURN VALUE
+      Returns the time that the battery has been charging in
+      seconds.
+
+   SAMPLE
+
+      seconds = BattGetTimer(); /* how long is it charging? */
+
+!Seealso: BattType BattStatus BattVoltage
+
+!short: BattSetTimer         Sets the battery charging timer.
+   NAME
+      BattSetTimer
+
+   DESCRIPTION
+      Sets the battery charging timer value in seconds.
+
+   SYNOPSIS
+      #include "pal.h"
+      void BattSetTimer(int secs);
+
+   INPUTS
+
+      secs - Value in seconds for the charging period.
+
+   RETURN VALUE
+      None.
+   SAMPLE
+
+      BattSetTimer(60); /* charge for 60 seconds */
+
+!Seealso: BattType BattStatus BattVoltage
+
+!short: SetErrorHandler      Set the int 24 handler to be used
+   NAME
+      SetErrorHandler
+
+   DESCRIPTION
+      This function replaces the DOS default errorhandler (DEF_ERRH).
+      If an error occurs in a system function DOS will normally
+      display the error and asks what to do with it (Abort,
+      Retry, Ignore or Fail). If you specify the NOE_ERRH
+      handlertype the errorhandler will be replaced by one
+      supplied in the PAL library. This errorhandler will suppress
+      any DOS message. It acts as if the user selected 'fail' or
+      'ignore'. The function that was called will returned with
+      a corresponding error indication - your program should check
+      for this.
+
+
+   SYNOPSIS
+      #include "pal.h"
+      int SetErrorHandler(int HandlerType);
+
+   INPUTS
+      HandlerType - The handler to be used. You can use one of the
+                    following values:
+
+                    DEF_ERRH : The default errorhandler from DOS.
+                    NOE_ERRH : No errors errorhandler.
+
+   RETURN VALUE
+      This function will always return 0 if one of the defined
+      handlers is used. If an unknown handler type is used it will
+      return 1.
+
+   NOTE
+      To work safe use it only when you use some system function
+      like access to disk. After the function is executed turn
+      the DEF_ERRH on. This way the DOS errors will be displayed
+      in places you did not check if anything could go wrong. It
+      is not necessary to switch back to DEF_ERRH before
+      quitting your program. If an program ends DOS will turn
+      the default errorhandler on itself.
+
+   SAMPLE
+      int file_exist;
+
+      SetErrorHandler(NOE_ERRH);
+      file_exist = access("a:\\test.xyz", 0);       /* check if file exist */
+      SetErrorHandler(DEF_ERRH);
+      if (file_exist != 0 ) printf("File does not exist or no disk in drive\n");
+
+!Seealso: FatalExit
+
+!short: LastMemoFile         Return last file edited in MEMO
+   NAME
+      LastMemoFile
+
+   DESCRIPTION
+      This function returns the filename of the last
+      file edited (more precisely: saved) in the MEMO editor.
+      The full path is included.
+
+   SYNOPSIS
+      #include "pal.h"
+      void *LastMemoFile(void)
+
+   INPUTS
+      None
+
+   RETURN VALUE
+      A pointer to the filename (static buffer !) or NULL
+      on error.
+
+   SAMPLE
+      char *Name;
+
+      Name = LastMemoFile();
+      MsgBox(" Note ", "The last MEMO file was | %s | right ?", NULL,
+             " OK ", Name);
+
+!Seealso:
+
+!short:  SerialCtl           Toggle SysMgr serial port interference
+   NAME
+      SerialCtl
+
+   DESCRIPTION
+      SerialCtl will disable/enable SysMgr serial port interference.
+      DOS applications that do serial port I/O cannot run correctly
+      under SysMgr unless they are installed with task-switching
+      disabled in the application manager. SerialCtl will switch
+      off SysMgr interference, while maintaining switchability.
+
+   SYNOPSIS
+      #include "pal.h"
+      int SerialCtl(int State);
+
+   INPUTS
+      int State         Whether to disable interference or not.
+                        a 1 will disable interference, a 0 will
+                        enable it again.
+
+   RETURNS
+      TRUE if SysMgr is not running or if action could be
+      performed, FALSE otherwise
+
+   NOTE
+      SerialCtl writes to an undocumented SysMgr control
+      variable to do its thing. Since this variable is not
+      at the same location in the various ROM releases, it
+      uses some heuristics to find it. It tries to make sure
+      that it writes to the right location - if this routine
+      returns FALSE to indicate that it did not succeed, it
+      is probably not compatible with your ROM release. Some
+      TSRs that hook interrupt 1C may also keep it from
+      working.
+
+   SAMPLE
+     SerialCtl(1); /* turn interference off */
+     SerialTransfer();
+     SerialCtl(0); /* allow interference again */
+

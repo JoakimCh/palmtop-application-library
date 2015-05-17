@@ -1,0 +1,35 @@
+This directory contains several samples that illustrate/test
+various PAL functions. Here is a description of the files and
+directories contained:
+
+FILELIST.TXT : This file.
+
+CBCP   :       Illustrates clipboard access - run under TKERNEL
+               or on the palmtop only, will NOT work with
+               CGAGRAPH on the desktop.
+
+SOUND  :       Access SysMgr m_play sound function from DOS -
+               run under TKERNEL or on the palmtop only, will
+               NOT work with CGAGRAPH on the desktop.
+
+ICNVU  :       An icon viewing utility, can also shell to an
+               icon editor. This is a larger sample that tries
+               to use a multitude of PAL modules.
+
+MENU   :       Illustrates the PAL menu routines
+
+PCX    :       Loading and display of PCX files
+
+FONT   :       Illustrates the unified font routines and 'emergency'
+               font handling.
+
+DIALOG :       Illustrates the definition and use of dialogs in PAL
+
+EMS    :       Demonstrates use of the EMS routines
+
+FILER  :       A sample / test program for the filer communication routines
+
+TASK   :       SysMgr task control block access sample
+
+SCUTILS:       Illustrates the usage of the Software Carousel API
+

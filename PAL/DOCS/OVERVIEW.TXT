@@ -1,0 +1,837 @@
+!short:^u 1. PAL Introduction.
+'!HTML:<!-
+^u 1. PAL Introduction.
+'!HTML:->
+
+ PAL stands for 'Palmtop Application Library'. It provides you
+with a set of C functions that will give your programs the look
+& feel of the built-in applications of the HP100/200LX. PAL was
+originally suggested as a common development effort by
+CompuServe's HPHAND sysop Mark Scardina, and the project is
+being coordinated by the team leader, Gilles Kohl.
+'!HTML:Updates and 'sneak previews' will be made available via his
+'!HTML:<A HREF="http://ourworld.compuserve.com/homepages/gilles">homepage.</A>
+'!HTML:<p>
+'!HTML:You can also send him
+'!HTML:<a href="mailto:100114.3146@compuserve.com">e-mail</a> here
+
+ Contributors communicate via email and messages on section 15
+(Palmtop Programmers) of the HPHAND forum.
+
+ PAL is copyrighted freeware, and may be used to develop public
+domain, shareware, or commercial applications - no royalties or
+obligations beyond giving credit to the PAL group.
+
+ PAL comes complete with all the sources and many useful
+utilities. All you need is a good ANSI C compiler to get you
+started. You can use PAL on both the desktop (targeting the
+palmtop) and the palmtop itself. It also comes with complete
+documentation and several examples.
+
+'!HTML:<p>
+'!HTML:Click here to jump to the <a href="pal.htm">PAL quickreference</a>.
+
+At this moment, the following compilers are supported:
+
+'!HTML:<pre>
+ Borland Turbo C,
+ Borland C++
+ Microsoft MSC
+ Microsoft QuickC.
+ MIX PowerC.
+ Symantec C++
+ LCI C
+'!HTML:</pre>
+
+ The creation of the library and any application written with
+PAL is made very easy by the included PalMake (PM) utility.
+You only need to specify which compiler you are using in the PM
+configuration file, run PM and the complete PAL library or
+application will be created for you.
+
+
+!short:^u 2. Quick Overview.
+'!HTML:<!-
+^u 2. Quick Overview.
+'!HTML:->
+
+ PAL comes compressed in the .ZIP format. The files inside the
+ZIP are organized in 5 subdirectories. The general documentation
+files are kept in the subdirectory \DOCS. There is also a
+directory reserved for the library files. In order to keep the
+size of the ZIP file as small as possible, there are no library
+files included in the \LIBS directory. All you have to do once
+you have installed PAL on your computer, is to specify the
+compiler you're using in the PM.CFG configuration file, and run
+PM from the \SRC directory. The library files will automatically
+be created by the PalMake utility, and stored in the \LIBS
+directory for you. It's that simple.
+
+'!HTML:<p>
+ The \UTIL subdirectory has a set of utilities that simplify
+development. You will find the PalMake utility, The PAL
+dialog Editor, the PAL font editor, an HTML viewer, some
+conversion utilities, and the CGAGRAPH (TSR) that enables you to
+run any PAL written application on your desktop for debugging.
+
+'!HTML:<p>
+ PAL comes loaded with the source code of each and every
+function the subdirectories under \SRC have them all.
+
+The functions are splitted in several groups, each group having
+its own directory. When  the library files are created, the
+object (.OBJ) files will also be stored in these directories.
+The PM utility has the option to remove the object files from
+every directory once the library files have been created.
+
+'!HTML:<p>
+ There are 16 function groups in the \SRC directory, each group
+having a set of functions. There are functions for displaying
+windows, menus and dialog (or data-entry) screens. There are
+also other functions that are hardware related, such as volume,
+serial port control and power management. Functions for
+clipboard services and multi-font support are also included.
+
+'!HTML:<p>
+'!HTML:Click here to jump to the <a href="pal.htm">PAL quickreference</a>.
+
+'!HTML:<p>
+Each function group (aka directory) has a .DOC file with the
+descriptions of all the functions in a standardized format.
+These descriptions can be read with any text editor, but PAL
+also includes utilities to create Norton Guide and even HTML
+(the popular World Wide Web format) versions of the
+documentation, for easy and fast reference.
+
+'!HTML:<p>
+ Finally, there is a \SAMPLES directory, which has a number of
+samples in different subdirectories, to get you started.
+
+'!HTML:<p>
+PAL currently has the following directory structure:
+
+'!HTML:<pre>
+ .\DOCS           = Text files & documents.
+ .\LIBS           = Directory for the library files
+                    (must run the PM utility to create them 1st).
+
+ .\UTIL \PM       = The PAL MAKE utility.
+        \PDE      = The PAL Dialog Editor
+        \PFE      = The PAL Font Editor
+        \HFN      = Fonts directory.
+        \HV       = HTML viewer
+        \VFN2HFN  = Vertical->Horizontal font conversion utility.
+        \PCX2IMG  = PCX->IMG file conversion utility.
+        \MKBIN    = Binary file -> source (array) converter.
+        \TSR      = CGAGRAPH TSR utility, for desktop development.
+        \NG       = Support files to build the PAL Norton Guide
+        \NG2HTML  = A tool to build the HTML version of the docs
+        \PATCH    = A patch utility which corrects a bug found
+                    in some versions of Borland's TC libraries.
+
+ .\SRC  \INC      = The PAL #include files.
+        \LOGRAPH  = Low-level graphics functions.
+        \HIGRAPH  = High-level graphics functions.
+        \MISC     = Miscellaneous functions.
+        \WIN      = Window functions.
+        \MNU      = Menu functions.
+        \DIALOG   = Dialog functions.
+        \SM_SVC   = System Manager specific functions.
+        \CFG      = Configuration routines.
+        \FONT     = Unified font support routines.
+        \HFN      = External font support functions.
+        \AMGR     = APPMGR.DAT file management.
+        \EMS      = Expanded Memory Management routines.
+        \FILER    = Filer communications.
+        \PCK      = Picklist functions.
+        \MEM      = Memory handling functions.
+        \SC       = Software Carousel API.
+
+ .\SAMPLES
+        \AMGR     = APPMGR.DAT management sample.
+        \EMS      = Expanded memory sample.
+        \CBCP     = Clipboard samples.
+        \MENU     = Menu samples.
+        \PCX      = PCX functions samples.
+        \SOUND    = Sound effects samples.
+        \FONT     = Unified font functions samples.
+        \DIALOG   = A dialog (data-entry) screen sample.
+        \ICNVU    = A PAL application sample, an icon viewer.
+        \FILER    = FILER communication sample.
+        \TASK     = Task control block retrieval sample
+        \SCUTILS  = Software Carousel utility/sample
+
+'!HTML:</pre>
+
+!short:^u 3. Function list and description.
+'!HTML:<!-
+^u 3. Function list and description.
+'!HTML:->
+
+'!HTML:<p>
+'!HTML:Click here to jump to the <a href="pal.htm">PAL quickreference</a>.
+'!HTML:<p>
+
+ The PAL library consists of several groups of functions, found
+in the \SRC directory. Each group has its own subdirectory, with
+the source code for each function in that group. There are
+currently 16 function groups. Here's a brief description of
+each group and its functions:
+
+
+!short:^u               a) LOGRAPH: Low level Graphics.
+'!HTML:<!-
+^u               a) LOGRAPH: Low level Graphics.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="LOGRAPH.htm">LOGRAPH</a> quickreference.
+'!HTML:<p>
+
+ The low-level graphics routines are interface functions to the
+INT5h graphics calls. With these functions you can set graphics
+mode, pen color, pen position, select and display text using the
+built-in fonts, scroll, save and restore a rectangular area of the
+graphics screen, or define shape and blinkrate of the graphics
+cursor.
+
+'!HTML:<pre>
+Available functions:
+
+  - GraphMode   : Switch to 640x200 monochrome graphics mode.
+  - TextMode    : Switch to text mode.
+  - SelectFont  : Select one of the 3 built-in fonts.
+  - SetColor    : Select the pen color, black or white.
+  - SetRule     : Set the graphics replacement rule.
+  - SetPos      : Set the graphics pen coordinates.
+  - SetMask     : Set fill mask.
+  - SetLineType : Set the graphics line type.
+  - SetClip     : Define a rectangular clip region.
+  - Scroll      : Scroll a rectangular area of the screen.
+  - PlotDot     : Set a pixel to current color.
+  - WriteText   : Write text on the graphics screen.
+  - GetImg      : Get and store a rectangular bitmap from screen.
+  - PutImg      : Output a bitmap at a given coordinate position,
+                  with a given output rule.
+  - DefineCursor: Define the shape of the graphics cursor.
+  - BlinkRate   : Specify the graphics cursor blinking rate.
+  - Cursor      : Cursor control function: ( CURSOR_ON, CURSOR_OFF,
+                  CURSOR_BLINK, CURSOR_NOBLINK, CURSOR_INIT ).
+  - MoveCursor  : Move graphics cursor to the specified X:Y
+                  location of the screen.
+  - SaveState   : save the current PAL graphics state into a structure
+  - RestoreState: restore the graphics state from the above structure
+'!HTML:</pre>
+
+
+
+!short:^u               b) HIGRAPH: High level Graphics.
+'!HTML:<!-
+^u               b) HIGRAPH: High level Graphics.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="HIGRAPH.htm">HIGRAPH</a> quickreference.
+'!HTML:<p>
+
+ The High-level graphics routines is a set of functions for
+creating lines, rectangles, and handling of PCX and ICN images.
+Some of these functions are calling low-level graphics
+functions, and are used by higher-level routines in PAL such
+as windows and menus.
+
+'!HTML:<pre>
+Available functions:
+
+  - Line        : Draw a line on the screen.
+  - Rectangle   : Draw a rectangle on the screen.
+  - RevBlock    : Reverse colors of an image block.
+  - ClrBlock    : Fill an image block with WHITE or BLACK
+  - LoadImg     : Load an image file (.ICN format) in memory.
+  - LoadPcx     : Load an image file (.PCX format) in memory.
+  - SaveImg     : Save an image (.ICN format) to a file.
+  - ShowKeys    : Show function key definitions.
+  - ShowTopLine : Display title/time strings on the top line.
+  - ShowTopTime : Display title & time on the top display line.
+  - FormatDate  : Format a date string, in SysMgr format.
+  - FormatTime  : Format a time string, in SysMgr format.
+'!HTML:</pre>
+
+
+
+!short:^u               c) MISC:    Miscellaneous functions.
+'!HTML:<!-
+^u               c) MISC: Miscellaneous functions.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="MISC.htm">MISC</a> quickreference.
+'!HTML:<p>
+
+ This set of functions is for special operations, such as control
+of the volume, serial port, light-sleep and timeout of the palmtop,
+reading scan and ASCII codes from a pressed key, and much more.
+
+'!HTML:<pre>
+Available functions:
+
+  - AnnuncPos       : Set the annunciators position (Shift,CAPS,Fn indicators).
+  - Check5f         : Check for presence of INT 5Fh services.
+  - CheckSysMgr     : Check for presence of INT 7Eh (SysMgr) services.
+  - FatalExit       : Fatal error exit from PAL and return error code to DOS.
+  - PalInit         : Initialize PAL library (the first thing to do).
+  - PalDeInit       : Shut down PAL library (just before exiting program).
+  - WhichHp         : Returns the model number of the palmtop we're running upon.
+  - GetKey          : Get a key (with ASCII and Scan code).
+  - KeyWaiting      : Check if a key is waiting
+  - PushKeys        : Push a sequence of Keys which GetKey will deliver.
+  - Volume          : Set the volume level of the palmtop.
+  - GetVolume       : Get the current volume level.
+  - SetSerialPort   : Turn on/off the serial port COM1 of the palmtop.
+  - SetLightSleep   : Enable/disable light-sleep (Power-management).
+  - SetTimeOut      : Set the timeout delay of the Auto-Power-Off feature.
+  - MsgBox          : Display a message box with title, text and buttons
+  - MsgWin          : Display a message window without waiting
+  - AskYesNo        : Ask user Yes or No
+  - MsDelay         : Wait a specific number of milliseconds
+  - BattType        : Set/get battery type.
+  - BattVoltage     : Read main/backup battery voltage.
+  - BattStatus      : Check main/backup/card battery status (OK/LOW)
+  - ChargeMode      : Enable/Disable battery charging.
+  - BattFast        : Detect if battery is fast charging.
+  - BattGetTimer    : Read battery charging timer.
+  - BattSetTimer    : Set battery charging timer.
+  - DCStatus        : Detects if an external DC adaptor is used.
+  - OpenMeter       : Opens (displays) a progress/level meter.
+  - UpdateMeter     : Updates the percentage (level) of an active meter.
+  - CloseMeter      : Closes an active meter.
+  - Protect         : Enable hardware RAM protection.
+  - Unprotect       : Disable hardware RAM protection.
+  - AsmSTI          : Enable interrupts.
+  - AsmCLI          : Disable interrupts.
+  - SetErrorHandler : specify alternate error handler
+  - LastMemoFile    : return last file edited in MEMO
+  - SerialCtl       : Toggle SysMgr serial port interference
+
+  - Protect         : Enable hardware RAM protection.   (Internal use).
+  - Unprotect       : Disable hardware RAM protection.  (Internal use).
+  - AsmSTI          : Enable interrupts.                (Internal use).
+  - AsmCLI          : Disable interrupts.               (Internal use).
+'!HTML:</pre>
+
+!short:^u               d) WIN:     Window functions.
+'!HTML:<!-
+^u               d) WIN: Window functions.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="WIN.htm">WIN</a> quickreference.
+'!HTML:<p>
+
+ Use the window functions to create or remove a graphical
+window that you can display information in. You can open
+as many windows the memory allows you to do. PAL windows
+come in different styles, for both 100 and 200LX.
+
+'!HTML:<pre>
+Available functions:
+
+  - OpenWin  : Open a window with a given style
+  - CloseWin : Closes a window
+  - WinText  : Output text in a window
+'!HTML:</pre>
+
+!short:^u               e) MNU:     Menu functions.
+'!HTML:<!-
+^u               e) MNU: Menu functions.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="MNU.htm">MNU</a> quickreference.
+'!HTML:<p>
+
+ PAL menu functions support horizontal & vertical pull-down
+menus, hotkeys, line separators and even scrollable menus.
+
+'!HTML:<pre>
+Available functions:
+
+  - HandleMenu:      Handles the complete menu process.
+  - MenuSelect:      Show a menu and let user select from it -
+                     simplified selection menu interface
+'!HTML:</pre>
+
+!short:^u               f) DIALOG:  Dialog (data-entry) functions.
+'!HTML:<!-
+^u               f) DIALOG: Dialog (data-entry) functions.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="DIALOG.htm">DIALOG</a> quickreference.
+'!HTML:<p>
+
+
+ A dialog box is a special kind of window that handles user
+interaction in PAL. Inside of it, interface elements called
+'controls' or 'dialog items' contain and handle the actual
+information. PAL currently has edit fields, check boxes, radio
+and control buttons, combo boxes, bitmap boxes, group frames,
+static labels, lines, and the possibility to add your own
+custom-made items and handlers.
+
+ You can use the included PDE utility, PAL's Dialog Editor to
+create all of your program's dialogs. PDE can create the
+required structures in C-format, ready to be compiled and linked
+to your program.
+
+'!HTML:<pre>
+Available functions:
+
+  - InitDialog:   prepares a dialog to be used.
+  - SetDlgItem:   used to set the value of a dialog item.
+  - ShowDialog:   will show the dialog window and all its items.
+  - HandleDialog: will take care of user interaction.
+  - GetDlgItem:   retrieve data from a dialog item
+  - GetFocus:     get the index of the active item
+  - CloseDialog:  close the dialog window, free all resources
+'!HTML:</pre>
+
+!short:^u               g) SM_SVC:  System Manager services.
+'!HTML:<!-
+^u               g) SM_SVC: System Manager services.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="SM_SVC.htm">SM_SVC</a> quickreference.
+'!HTML:<p>
+
+
+ This is a sub-set of the HP System Manager functions that can
+be successfully called from non-SysMgr compliant DOS programs.
+These functions can only be used when the System Manager is
+running. There is a function available to check for System
+Manager's presence. Functions for Sound & Clipboard Management
+as well as task information services are currently available.
+
+'!HTML:<pre>
+Available functions:
+
+  - m_play        : Play a sound string in HP alarm sound format.
+  - m_sound       : Generate one of several sound patterns.
+  - m_soundoff    : Turns off sounds generated by m_asound.
+
+  - m_open_cb     : Claim access to the clipboard and lock it.
+  - m_cb_read     : Read data from clipboard.
+  - m_cb_write    : Write data to clipboard.
+  - m_fini_rep    : Terminate writing to clipboard.
+  - m_close_cb    : Release the clipboard to other applications.
+
+  - m_new_rep     : Prepare sending a new 'representation'.
+  - m_rep_index   : Get info about a representation.
+  - m_reset_cb    : Clear clipboard, get ownership.
+  - m_get_cb_info : Get clipboard state info.
+
+  - m_get_TCB     : Get Task Control Block.
+  - m_get_TCB_size: Get Task Control Block size.
+
+  - IsAppActive   : Check if a specified application is active.
+
+'!HTML:</pre>
+
+!short:^u               h) CFG:     Configuration file functions.
+'!HTML:<!-
+^u               h) CFG: Configuration file functions.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="CFG.htm">CFG</a> quickreference.
+'!HTML:<p>
+
+ This set of functions allows easy retrieval and storage of
+information from user-editable plain-text config files, much
+like the Windows WIN.INI files.
+
+'!HTML:<pre>
+Available functions:
+
+  - ReadConfig          : Read config file given full name.
+  - ReadMyconfig        : Read config, given program name.
+  - NewConfig           : Create a new config file in memory
+  - GetConfigString     : Retrieve a string from config data.
+  - GetConfigInt        : Retrieve an integer from config data.
+  - GetFirstEntry       : Used to scan sections: init scan.
+  - GetNextEntry        : Used to scan sections: continue scan.
+  - GetFirstSection     : Scan file for sections: init scan
+  - GetNextSection      : Scan file for sections: continue scan
+  - GetCfgLine          : Retrieve line number info during scan.
+  - AddConfigString     : Add (string) entries to a config file
+  - AddConfigInt        : Add (int) entries to a config file
+  - ReplaceConfigString : Replace a  keys value in a config file
+  - ReplaceConfigInt    : Replace a keys value in a config file
+  - DeleteConfigString  : Delete a config entry
+  - WriteConfig         : Write a config file back to disk
+  - DiscardConfig       : Frees memory used by CFG database
+'!HTML:</pre>
+
+!short:^u               i) FONT:    Unified font routines.
+'!HTML:<!-
+^u               i) FONT: Unified font routines.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="FONT.htm">FONT</a> quickreference.
+'!HTML:<p>
+
+ The unified font routines permit transparent usage of both the
+built-in fonts and the loadable fonts that the HFN module supports.
+A font is always identified by an integer with the unified font
+routines - regardless whether it is a built-in or a loadable font.
+There are few loadable fonts that are provided with PAL.
+
+'!HTML:<pre>
+Available functions:
+
+  - TextOut    : Output a string at a given screen position in
+                 a font you specify.
+
+  - TextExt    : Compute the length (in pixels) of a string in
+                 a given font, without actually drawing the
+                 characters.
+
+  - FontHeight : Returns the height of a given font in pixels.
+  - LoadFont   : Loads an external font in memory.
+  - DiscardFont: Discards a font loaded by LoadFont, and
+                 recovers the memory associated with it.
+'!HTML:</pre>
+
+!short:^u               j) HFN:     External font routines.
+'!HTML:<!-
+^u               j) HFN: External font routines.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="HFN.htm">HFN</a> quickreference.
+'!HTML:<p>
+
+ These are functions that enable you to use other than the
+built-in fonts. You can load multiple fonts in memory and use
+them all at the same time. There is a set of Unified font
+support functions also available in PAL which allows the user
+to control both internal and external fonts with the same set
+of functions.
+
+'!HTML:<pre>
+Available functions:
+
+  - LoadHfn      : Load a font in memory.
+  - InitHfn      : Initialize a given font.
+  - WriteHfn     : Writes a string using one of the loaded fonts.
+  - TextExtHfn   : Compute text extent of a string in a given font.
+  - FontHeightHfn: Returns height of a given font.
+  - DiscardHfn   : Discard a loaded font.
+'!HTML:</pre>
+
+
+!short:^u               k) EMS:     Expanded memory support
+'!HTML:<!-
+^u               k) EMS: Expanded memory support
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="EMS.htm">EMS</a> quickreference.
+'!HTML:<p>
+
+ This set of routines provides EMS support. That is, they provide
+C-level access to the services of an EMS driver. To use them, an
+EMS driver needs to be installed - this can be your plain
+vanilla EMM386 on the desktop, or the special EMM200 driver that
+provides EMS support using the HORNET hardware for the palmtop.
+
+'!HTML:<pre>
+Available functions:
+
+  - EmsInit     : Initialize and check EMS for driver presence.
+  - EmsCheck    : Check for the presence of an EMS driver.
+  - EmsAlloc    : Allocate a specified number of EMS pages.
+  - EmsMap      : Map a given logical page into the physical frame.
+  - EmsFree     : Free an allocated EMS block.
+  - EmsFrameSeg : Return segment address of the EMS frame.
+  - EmsFreeCnt  : Return the number of free EMS pages available.
+  - EmsLastError: Return last error reported by an EMS routine.
+  - EmsPageCnt  : Return the total number of EMS pages available.
+  - EmsVersion  : Return version of EMS driver.
+'!HTML:</pre>
+
+
+!short:^u               l) AMGR:    APPMGR.DAT file management
+'!HTML:<!-
+^u               l) AMGR: APPMGR.DAT file management
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="AMGR.htm">AMGR</a> quickreference.
+'!HTML:<p>
+
+ The routines in this module permit modification of the
+Application Manager control file APPMGR.DAT, located in C:\_DAT.
+This file determines what icons appear in the [More]
+application, and their properties. You can add, remove, and
+alter applications. You also have access to the icons stored
+in the file.
+
+'!HTML:<pre>
+Available Functions:
+
+  - CloseAppMgr : Close the Application Manager aka [More]. This
+                  will ensure that your modifications won't be
+                  overwritten by AppMgr when it exits.
+
+  - LoadAppDat  : Load the APPMGR.DAT file into memory.
+  - SaveAppDat  : Write the APPMGR.DAT file back to the C: drive.
+  - GetAppCnt   : Return a count of installed applications
+  - GetAppDef   : Get an application definition by its number
+  - SetAppDef   : Modify an application definition
+  - AddAppDef   : Add an application definition
+  - DelAppDef   : Delete an application definition
+
+  - ValidIcon   : Check if a pointer is a valid icon bitmap
+  - GetAppIcn   : retrieve an icon
+  - SetAppIcn   : set an icon
+  - NewAppIcn   : find an unused icon slot
+'!HTML:</pre>
+
+
+!short:^u               m) FILER:   Filer communications.
+'!HTML:<!-
+^u               m) FILER: Filer communications.
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="FILER.htm">FILER</a> quickreference.
+'!HTML:<p>
+
+ This set of functions can be used to exchange files between a
+desktop and the palmtop, by using the palmtop's Filer
+application. The user has to launch the Filer on the palmtop,
+and these functions will put the palmtop in Server mode and
+enable file transfers to and from the desktop.
+
+'!HTML:<pre>
+Available functions:
+
+  - FilerConnect   : Establish connection with filer.
+  - FilerSendFile  : Send a file to the palmtop.
+  - FilerGetFile   : Get a file from the palmtop.
+  - FilerDelFile   : Delete a file on the palmtop.
+  - FilerMakeDir   : Create a directory on the palmtop.
+  - FilerDelDir    : Delete a directory from the palmtop.
+  - FilerAskDir    : Request directory info from the palmtop.
+  - FilerGetDir    : Get directory entries from the palmtop.
+  - FilerSync      : Attempt re-synchronization with filer.
+  - FilerDisconnect: Shut down Filer communications.
+'!HTML:</pre>
+
+!short:^u               n) PCK:     Picklist Functions
+'!HTML:<!-
+^u               n) PCK: Picklist Functions
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="PCK.htm">PCK</a> quickreference.
+'!HTML:<p>
+
+ This set of functions present a menu where the user can select
+multiple Items.
+
+'!HTML:<pre>
+Available functions:
+
+  - FilePickList    : Display a picklist of files.
+  - PickList        : Display a picklist of strings.
+  - QuickPickList   : An easier way to display a picklist.
+  - FreePickResults : Free storage associated with picklist results.
+  - PickCount       : Determine the number of items in a picklist
+  - FindLastPick    : Find end of linked PICKRESULTS
+'!HTML:</pre>
+
+!short:^u               o) MEM:     Alternate memory handling
+'!HTML:<!-
+^u               o) MEM: Alternate memory handling
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="MEM.htm">MEM</a> quickreference.
+'!HTML:<p>
+
+ The alternate memory management routines are used in PAL to
+provide a way to handle out-of memory conditions. When a request
+for memory is made inside PAL and an out of memory results, an
+error handling routine is called. This routine, by default, does
+a FatalExit. You can instruct PAL to call a routine of your own
+in case an out-of-mem condition happens though. And you can of
+course also use these routines in your own programs, in a
+variety of ways.
+
+'!HTML:<pre>
+Available functions:
+
+  - PalMalloc       : Malloc replacement with out-of-mem handling
+  - PalRealloc      : Realloc replacement with out-of-mem handling
+  - PalCalloc       : Calloc replacement with out-of-mem handling
+  - PalFree         : Free replacement
+  - PalStrdup       : Strdup replacement with out-of-mem handling
+  - SetPalMemFail   : Define your own out-of memory handler
+'!HTML:</pre>
+
+!short:^u               p) SC: Software Carousel Functions
+'!HTML:<!-
+^u               p) SC: Software Carousel Functions
+'!HTML:->
+'!HTML:<p>
+'!HTML:Jump to the <a href="SC.htm">SC</a> quickreference.
+'!HTML:<p>
+
+This set of functions allows the manipulation of the Software Carousel
+product.
+
+'!HTML:<pre>
+Available functions:
+
+      - SCPresent          : Is Software Carousel Present?
+      - SCVersion          : Get Software Carousel Version
+      - SCMenu             : Display the Software Carousel menu
+      - SCSwitch           : Switch to another Work Area
+      - SCQuit             : Terminate SC
+      - SCBoot             : Reboot the computer.
+      - SCKill             : Kill a program in a session.
+      - SCSizeStatus       : Get Size and Status of a Work Area
+      - SCErrorMessage     : Convert Errorcode to Text
+      - SCGetName          : Get a Work Areas Name
+      - SCSetSize          : Set a Work Areas Size
+      - SCSetName          : Set a Work Areas Name
+      - SCSendCommand      : Send Keystrokes to a Work Area
+      - SCCodeMode         : Where is Software Carousel Running.
+      - SCKeyboardCommands : Enable/Disable Work Area Switching.
+'!HTML:</pre>
+
+!short:^u 4. The Utilities.
+'!HTML:<!-
+^u 4. The Utilities.
+'!HTML:->
+
+ Presently, PAL comes with seven utilities: The PalMake utility,
+The Pal Dialog Editor, an HTML viewer, 3 conversion utilities,
+PCX2IMG, MKBIN, and VFN2HFN. CGAGRAPH is also included, it is a
+TSR that allows you to run programs written with PAL on the
+desktop for easier development. Here is what each utility is
+used for:
+
+
+!short:^u               a) The PalMake utility.
+'!HTML:<!-
+^u               a) The PalMake utility.
+'!HTML:->
+
+ PalMake (PM for short) is a make utility that is tailor-made
+for PAL. It simplifies the building of the library, and the
+compiling process of any application written with PAL. PM
+supports several compilers, Borland, Microsoft, MIX and
+Symantec. You only need to specify in the PM.CFG configuration
+file the compiler you are using, run PM from the \SRC directory,
+and the complete library will be created.
+
+ Similary, when running PM from any other directory, PM can
+create a SRCLIST (Source List) file from all the source files
+in the current directory, compile the modified sources, and
+link everything together to an executable file.
+
+'!HTML:<p>
+'!HTML:Contact the author,
+'!HTML:<a href="mailto:100114.3146@compuserve.com">Gilles Kohl</a>
+
+
+!short:^u               b) The Pal Font Editor
+'!HTML:<!-
+^u               b) The Pal Font Editor
+'!HTML:->
+
+
+ PFE (written by Harry Konstas) is a small font editor which
+supports character sets from 4x4 to 16x16 bits of size. PFE can
+load any .HFN, .VFN, or FCL font file, and save it in any of
+these 3 formats:
+
+'!HTML:<pre>
+  - HFN: PAL's (Palmtop Application Library) horizontal fonts.
+  - VFN: Gilles Kohl's VR (Vertical reader) vertical fonts.
+  - FCL: FCL definition file, ready to be compiled by
+        Gilles Kohl's FCL font compiler/loader.
+'!HTML:</pre>
+
+'!HTML:<p>
+'!HTML:Contact the author,
+'!HTML:<a href="mailto:72540.620@compuserve.com">Harry Konstas</a>
+
+
+!short:^u               c) The Pal Dialog Editor.
+'!HTML:<!-
+^u               c) The Pal Dialog Editor.
+'!HTML:->
+
+ PDE is PAL's dialog editor. It simplifies the design of PAL
+dialogs by letting the user create a visual image of his
+dialog on the screen. Once the dialog has been 'drawn' on
+the screen, PDE's saving option will create the required
+resource files in plain C-source format, ready to link
+to your program. PDE can also read back any saved resource
+file for editing. PDE can also generate ready-to-compile test
+files of your defined dialogs, so you can test them in runtime.
+
+'!HTML:<p>
+'!HTML:Contact the author,
+'!HTML:<a href="mailto:72540.620@compuserve.com">Harry Konstas</a>
+
+!short:^u               d) HV: an HTML viewer for the palmtop
+'!HTML:<!-
+^u               d) HV: an HTML viewer for the palmtop
+'!HTML:->
+
+ HV (courtesy of Andreas Garzotto) can display hypertext
+documents in the increasingly popular HTML format - the same
+that is being used on the World Wide Web. HV is included here
+because the PAL reference can be converted into HTML format
+using NG2HTML - see 'Conversion utilities' below.
+
+'!HTML:<p>
+'!HTML:Contact the author,
+'!HTML:<a href="mailto:73064.1657@compuserve.com">Andreas Garzotto</a>
+
+
+!short:^u               e) Conversion utilities
+'!HTML:<!-
+^u               e) Conversion utilities
+'!HTML:->
+
+'!HTML:<p>
+ PCX2IMG can convert a black & white PCX file into the native
+HP100/200LX 'IMG' format.
+
+'!HTML:<p>
+ MKBIN is a small utility that simply converts a binary file
+into a 'C' source that can be compiled and linked into your
+main program.
+
+'!HTML:<p>
+ VFN2HFN converts any vertical 8/16 bit font (.VFN) to a
+horizontal font (.HFN).
+
+'!HTML:<p>
+ NG2HTML is a conversion tool that will create a .HTM file
+from the PAL .DOC files. The resulting file can then be
+viewed with the HV utility on the palmtop. Moreover it can
+be viewed with a WWW browser of your choice - whether it be
+Spry Mosaic, NetScape, Cello ...
+
+'!HTML:<p>
+'!HTML:Contact the author,
+'!HTML:<a href="mailto:73064.1657@compuserve.com">Andreas Garzotto</a>
+
+!short:^u               f) CGAGRAPH and PATCH Utilities.
+'!HTML:<!-
+^u               f) CGAGRAPH and PATCH Utilities.
+'!HTML:->
+
+'!HTML:<p>
+ CGAGRAPH.COM is a TSR which provides INT5fh support to the
+desktops. Programs can be developed on a desktop computer
+and executed by first running this utility.
+
+'!HTML:<p>
+ PATCH is a small patch program correcting a bug that was
+found in some versions of the Borland TC libraries.
+

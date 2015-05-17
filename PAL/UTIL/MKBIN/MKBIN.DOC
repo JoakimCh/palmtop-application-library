@@ -1,0 +1,48 @@
+!short:^u MKBIN:   include binary data into your C programs
+^u MKBIN Utility: include binary data into your C programs
+
+   MKBIN is a small utility that simply converts a binary file
+   into a C 'source' that can be compiled and then linked to
+   your main program. (#including that source will also work,
+   but if the binaries are large, this will result in a
+   compile-time penalty since you're always recompiling the
+   binary along with your real source)
+
+   Say you want to include the file 'MYICON.ICN'  in a program
+   of yours (to output it via PAL PutImg(), for example)
+
+   Here's how you would call MKBIN:
+
+      mkbin myicon.icn MyIcon > myicon.c
+
+   and this is what the MYICON.C file will look like:
+
+    unsigned char MyIcon[] = {
+      /* Lots of hex data */
+    };
+
+   In your program (say, myprog.c), you will need the line:
+
+     extern unsigned char MyIcon[];
+
+   to tell the compiler that there will be such an object at
+   link time. Then, to output the image, you'd simply call
+
+      PutImg(0, 0, FORCE_RULE, MyIcon);
+
+   (Check your compilers documentation about how to compile two
+   .C files into a single EXE. You usually only have to list
+   both files on the compilers command line, e.g. for Borland C,
+   you'd use: bcc myprog.c myicon.c  to compile the above
+   sample)
+
+   Another example: To create a .C file containing an HFN font
+   called MYFONT.HFN, you'd issue this MKBIN command:
+
+      mkbin myfont.hfn ResidentFont >myfont.c
+
+   Check the .\SRC\SAMPLES\FONT directory for an example of a
+   program using this technique to have a built-in 'emergency'
+   font for message output if dynamically loading other font
+   files fails. (.\SRC\SAMPLES\ICNVU also uses this technique)
+

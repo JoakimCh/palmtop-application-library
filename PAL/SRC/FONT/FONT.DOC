@@ -1,0 +1,273 @@
+!short:
+!short:^u Unified font routines
+^u Unified font routines
+
+The unified font routines permit transparent usage of both the built-in
+fonts and the loadable fonts that the HFN module supports. A font is
+always identified by an integer with the unified font routines -
+regardless whether it is a built-in or a loadable font.
+
+A number of loadable fonts are provided with PAL - they have the '.HFN'
+file extension. (Check the .\UTIL\HFN directory)
+
+Available functions:
+
+  - TextOut     : Output a string at (x,y) in a font you specify.
+  - TextExt     : Compute the pixel length of a string in a given font.
+  - FontHeight  : Returns the height of a given font in pixels.
+  - LoadFont    : Load a font file by name.
+  - DiscardFont : Discard a font loaded by LoadFont.
+
+
+Note that TextOut, TextExt and TextHeight actually are pointers
+to functions, not functions. You can transparently call them if
+they were functions though. (If your C compiler is ANSI
+compatible).
+
+The reason for this device is space efficiency. Even if you use
+the 'unified' font functions, proportional font support is only
+drawn into your application if you call LoadFont somewhere.
+Otherwise, using the .\FONT module adds only very little
+overhead over using the lowlevel output routine WriteText (from
+the LOGRAPH module). In this way, your application can be
+'proportional font-enabled' without having to pay a large price
+for it. The additional overhead is about 100 bytes that are
+added to the size of your application for using the 'unified'
+functions instead of directly using WriteText. Should you
+require loadable fonts later, you can simply add a "LoadFont"
+somewhere, and use the integer that it returns with your old
+code. (At this moment, your code size will increase by a few K
+because proportional font support is added.)
+
+!short: TextOut              Write a text string at a given position
+   NAME
+      TextOut
+
+   DESCRIPTION
+      TextOut outputs a text string at a given screen position, with
+      a style and font you specify.
+
+   SYNOPSIS
+      #include "pal.h"
+      int TextOut(int x, int y, int Style, int FntId, char *s);
+
+   INPUTS
+      x, y   - the output position on the screen
+      Style  - one of the following output rules:
+               FORCE_RULE,  AND_RULE,    OR_RULE,
+               XOR_RULE, INVFOR_RULE, INVAND_RULE,
+               INVOR_RULE,  INVXOR_RULE, TXT_RULE
+               (See the PutImg documentation for more info on these)
+      FntId  - a font id - either one of the constants SMALL_FONT,
+               MEDIUM_FONT, LARGE_FONT (for built-in fonts), or an integer
+               returned by LoadFont.
+      s      - the string to be output
+
+   RETURN VALUE
+      Returns the length of the string (in pixels), or 0 on error.
+
+   NOTE
+      Note that TextOut is not a function, but a pointer to a function,
+      also see the general remarks at the start of this modules
+      description. (Under 'Unified font routines')
+
+   SAMPLE
+      TextOut(10, 10, TXT_RULE, LARGE_FONT, "Hello PAL !");
+      (for a more general sample, see the one under FontHeight
+       or even better: LoadFont)
+
+!Seealso: TextExt FontHeight LoadFont DiscardFont
+
+!short: TextExt              Compute the (pixel) length of a string
+   NAME
+      TextExt
+
+   DESCRIPTION
+     Returns the length (in pixels) of the string s on the display, if
+     a given font would be used to display it. The font (specified by
+     an integer id) can be a proportional font as loaded by LoadFont, or a
+     built-in one.
+
+   SYNOPSIS
+      #include "pal.h"
+      int TextExt(int FntId, char *s);
+
+   INPUTS
+      FntId  - a font id - either one of the constants SMALL_FONT,
+               MEDIUM_FONT, LARGE_FONT (for built-in fonts), or an integer
+               returned by LoadFont.
+      s      - the string that you want to compute the length of.
+
+   RETURN VALUE
+      Returns the length of the string (in pixels), or 0 on error.
+
+   NOTE
+      Note that TextExt is not a function, but a pointer to a function,
+      also see the general remarks at the start of this modules
+      description. (Under 'Unified font routines')
+
+   SAMPLE
+      int PosX;
+      int Len;
+      char *Welcome = "Hello PAL !;
+
+      Len = TextExt(LARGE_FONT, Welcome); /* get length of string */
+      PosX = (MAX_X - Len)/2; /* center string horizontally */
+      TextOut(PosX, 10, TXT_RULE, LARGE_FONT, Welcome); /* display it */
+
+!Seealso:TextOut FontHeight LoadFont DiscardFont
+
+!short: FontHeight           Compute the height of a font
+   NAME
+      FontHeight
+
+   DESCRIPTION
+      int FontHeight(int FontId): returns the height of either a loadable
+      or a built-in font.
+
+   SYNOPSIS
+      #include "pal.h"
+      int FontHeight(int FntId);
+
+   INPUTS
+      FntId  - a font id - either one of the constants SMALL_FONT,
+               MEDIUM_FONT, LARGE_FONT (for built-in fonts), or an integer
+               returned by LoadFont.
+
+   RETURN VALUE
+      The height of the font in pixels
+
+   NOTE
+      Note that FontHeight is not a function, but a pointer to a function,
+      also see the general remarks at the start of this modules
+      description. (Under 'Unified font routines')
+
+   SAMPLE
+      int PosX;
+      int PosY;
+      int Len;
+      int Height;
+      char *Welcome = "Hello PAL !;
+
+      Len    = TextExt(LARGE_FONT, Welcome); /* get length of string */
+      Height = FontHeight(LARGE_FONT);
+      PosX = (MAX_X - Len)/2;    /* center string horizontally */
+      PosY = (MAX_Y - Height)/2; /* center string vertically   */
+      TextOut(PosX, PosY, TXT_RULE, LARGE_FONT, Welcome); /* display it */
+
+!Seealso:TextOut TextExt LoadFont DiscardFont
+
+!short: LoadFont             Load a proportional font from file or memory
+   NAME
+      LoadFont
+   DESCRIPTION
+      loads a proportional font, returns an integer that identifies the
+      font. (A font 'handle', if you prefer). An additional parameter
+      permits initialization of 'resident' fonts that are already in
+      memory.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LoadFont(void *Font, int Resident);
+
+   INPUTS
+      Font     - a pointer to either a font name (usually the case), or to
+                 the binary image of a resident font.
+      Resident - If your font doesn't reside in a file, but is contained
+                 in your application (as a binary image of the file in an
+                 initialized array), pass a pointer to the image as the
+                 'Font' parameter, and pass 1 as the 'Resident' flag.
+                 Also see the documentation of the MKBIN utility for
+                 information on how to create binary images of files
+                 for inclusion in a C program.
+                 Otherwise, pass 0 here.
+
+   RETURN VALUE
+      Returns an integer that identifies the font - store it and use it to
+      refer to the font in other functions of this module like TextOut,
+      TextExt, DiscardFont ...
+
+   NOTE
+      Note that a call to LoadFont will actually draw in proportional font
+      support into your application. LoadFont always returns negative Ids
+      or zero to indicate an error. This is to be able to differ from
+      the built-in font Ids which are always positive. Your application
+      can handle both types of ids exactly in the same way, though - the
+      differentiation is handled inside of the unified font routines.
+      That's what the reason why they exist in the first place, actually.
+
+   SAMPLE
+      int PosX;
+      int PosY;
+      int Len;
+      int Height;
+      int FontId;
+      char *Welcome = "Hello PAL !;
+
+      FontId = LoadFont("SPAB0015.HFN", 0);
+      if(FontId == 0) FatalExit("Loading font failed !", 1);
+
+      Len    = TextExt(FontId, Welcome); /* get length of string */
+      Height = FontHeight(FontId);
+      PosX = (MAX_X - Len)/2;    /* center string horizontally */
+      PosY = (MAX_Y - Height)/2; /* center string vertically   */
+      TextOut(PosX, PosY, TXT_RULE, FontId, Welcome); /* display it */
+
+!Seealso:TextOut TextExt FontHeight DiscardFont
+
+!short: DiscardFont          Discard a loadable font, recovering its memory
+   NAME
+      DiscardFont
+   DESCRIPTION
+      Throws away a font, recovering the memory associated with it.
+      Attempts to discard built-in or resident fonts are simply ignored.
+
+   SYNOPSIS
+      #include "pal.h"
+      void DiscardFont(int FntId);
+
+   INPUTS
+      FntId  - a font id - either one of the constants SMALL_FONT,
+               MEDIUM_FONT, LARGE_FONT (for built-in fonts), or an integer
+               returned by LoadFont.
+
+   NOTE
+      DiscardFont simply ignores attempts to discard a built-in font
+      (constants SMALL_FONT, MEDIUM_FONT, LARGE_FONT) or a resident font
+      (one which is contained as a binary image in your application, see
+      the description of the 'Resident' parameter in the LoadFont function
+      for details).
+
+   SAMPLE
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      int main(int argc, char *argv[]);
+      {
+         int PosX;
+         int PosY;
+         int Len;
+         int Height;
+         int FontId;
+         char *Welcome = "Hello PAL !;
+
+         if(argc != 0)  FatalExit("Must specify font to load", 1);
+         if(!PalInit(1)) FatalExit("PalInit failed", 1);
+
+         FontId = LoadFont(argv[1], 0);
+         if(FontId == 0) FatalExit("Loading font failed !", 1);
+
+         Len    = TextExt(FontId, Welcome); /* get length of string */
+         Height = FontHeight(FontId);
+         PosX = (MAX_X - Len)/2;    /* center string horizontally */
+         PosY = (MAX_Y - Height)/2; /* center string vertically   */
+         TextOut(PosX, PosY, TXT_RULE, FontId, Welcome); /* display it */
+         GetKey();
+         DiscardFont(FontId);
+         PalDeinit(1);
+         return 0;
+      }
+
+!Seealso:TextOut TextExt FontHeight LoadFont

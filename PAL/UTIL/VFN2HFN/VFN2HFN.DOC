@@ -1,0 +1,52 @@
+!short:^u VFN2HFN: convert VFN fonts to HFN fonts.
+^u VFN2HFN: Convert a vertical .VFN font to a horizontal .HFN font.
+
+DESCRIPTION
+
+  VFN2HFN converts any VFN font, 8 or 16 bit wide, to an HFN font.
+  The command line arguments are:
+
+  VFN2HFN <font.vfn> <font I.D.>
+
+  where,
+
+  font.vfn - The VFN font filename that needs to be converted.
+  font I.D.- This is a 16-bit value which specifies the type of the font.
+
+
+  Here's the 16-bit ID format:
+
+             BIT  DESCRIPTION
+             --------------------------------
+             15 : Proportional flag (1=prop.)
+             14 : Bold flag.
+             13 : Italic flag.
+             12 : Underlined flag.
+             11 : Reverse (negative) flag.
+             10 : Special flag.
+
+             9,8: Unused for the moment.
+
+             7-0: Font type ID.
+
+ * For normal text all the bits 8-15 are cleared.
+
+ The bits 0-7 can describe the type of font which can be one of the
+ following:
+
+             0 =  ?
+             1 = Courier.
+             2 = Roman.
+             3 = Sans Serif.
+             4 = Prestige.
+             5 = Script.
+             6 = Orator.
+             . =  ?
+             . =  ?
+             . =  ?
+           255 = Special.
+
+ The VFN2HFN utility will convert the specified VFN font and create a
+ file with the new font having the same filename but with the HFN
+ extension.
+

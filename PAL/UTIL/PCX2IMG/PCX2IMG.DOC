@@ -1,0 +1,27 @@
+!short:^u PCX2IMG: convert B&W PCX files into IMG files and icons
+^u PCX2IMG: Convert B&W PCX files into IMG files
+
+   PCX2IMG can convert a black and white PCX file into the
+   native HP100/200LX 'IMG' format. To use it, run PCX2IMG and
+   give the name of the file to be converted, including the .PCX
+   extension.
+
+   Example: To convert MYPICT.PCX, you would enter
+
+      PCX2IMG MYPICT.PCX
+
+   If PCX2IMG is successful, it will briefly display the
+   converted file, and store it under the .IMG extension, i.e.
+   MYPICT.IMG in this case.
+
+   You can then use the PAL LoadImg() function to load your
+   picture, and PutImg() to display it. LoadImg() is much faster
+   than LoadPcx().
+
+   Quick Tip: If your PCX file is 44x32 in size (44 pixels wide
+   and 32 pixel high), you can rename the resulting .IMG file to
+   .ICN, and use as an icon, for example for application manager
+   installation. Icons actually are files in .IMG format, but
+   with a constant size.
+
+

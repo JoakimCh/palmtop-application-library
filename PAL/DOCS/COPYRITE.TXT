@@ -1,0 +1,72 @@
+
+
+                    Palmtop Application Library (PAL)
+                 for the HP LX series Palmtop computers
+                     Copyright (c) 1995 The PAL Group.
+
+
+     COPYRIGHT.  The Software is owned by The PAL Group, its
+     participants and contributors, and is protected by United
+     States copyright laws and international treaty provisions.
+     You may not remove this copyright notice from any copy of the
+     Software.
+
+     TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND USE.
+
+     1. You may copy and distribute verbatim copies of the PAL
+        Library as you receive it, in any medium, provided that:
+
+        a)   All files are kept intact; and
+
+        b)   This Copyright Notice And Disclaimer Of Warranty is
+             included in all copies.
+
+        c)   You may charge a copy fee not to exceed $10 US. This
+             maximum does not apply to on-line charges for
+             Bulletin Board Systems and Information Services.
+
+     2. You may include this software or any portion of it as a
+        part of other programs, and copy and distribute those
+        programs in any way you see fit, both commercial and
+        non-commercial, provided that you also do the following:
+
+        a)   Cause any and all executables produced from this
+             library to include the ASCII string, "Portions
+             Copyright 1995, The PAL Group"; and
+
+        b)   Include in all text documentation, both machine
+             readable and printed, the text, "Portions Copyright,
+             1995, The PAL Group" as part of that printed
+             documentation
+
+        c)   You may, at your option, offer warranty protection
+             for any programs using this library.
+
+     3. You may not copy, modify, sublicense, distribute or
+        transfer the software except as expressly provided under
+        this License.  Doing so will automatically terminate your
+        rights to use the software under this License.  This
+        prohibition includes, but is not limited to:
+
+        a)   Any attempt otherwise to copy, modify, sublicense,
+             distribute or transfer the software; and
+
+        b)   Inclusion of any part of this library in another
+             general purpose programming library.
+
+     4. By copying, distributing or using this software (or any
+        work based on the software) you indicate your acceptance
+        of this license, and all its terms and conditions.
+
+     NO WARRANTY.  Because this software is licensed free of
+     charge, there is no warranty for the software, to the extent
+     permitted by applicable law.  Except when otherwise stated in
+     writing the copyright holders and/or other parties provide
+     the software "as is" without warranty of any kind, either
+     expressed or implied, including, but not limited to, the
+     implied warranties of merchantability and fitness for a
+     particular purpose. The entire risk as to the quality and
+     performance of the software is with the user. Should the
+     software prove defective, you assume the cost of all
+     necessary servicing, repair or correction.
+

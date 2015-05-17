@@ -1,0 +1,483 @@
+What's new in V1.6 ?
+====================
+
+A couple of additions and a number of bug fixes:
+
+  Additions:
+  ----------
+
+  - new SerialCtl function : switch off SysMgr serial port interference
+  - new MsgWin function: display a message window without waiting
+  - Flag to left-align static text items
+  - return index of Listbox when user hits RETURN
+  - first-letter quicksearch in Listboxes
+  - added code to suppress trailing blanks in MsgBox input field
+  - new flag for dialogs: idle return when no key pressed
+
+
+  Bug fixes:
+  ----------
+
+  - fixed a bug in WhichHP function - added 200LX detection
+  - added LbGetString prototype to paldlg.h
+  - fixed && IF_FRT bug in DhStandard
+  - changed type of Key to WORD in IhEdit
+  - changed error handler type to 'interrupt far'
+  - fixed a bug in DiscardConfig due to 'free()' modification
+  - fixed a bug in ReplaceConfigString (memory loss)
+  - portability fixes for QC and PC
+
+
+What's new in V1.5 ?
+====================
+
+A lot. There are entirely new modules, and important
+additions to existing ones.
+
+New modules:
+============
+
+ Application manager support module
+ ----------------------------------
+
+  - CloseAppMgr : Close the Application Manager aka [More].
+  - LoadAppDat  : Load the APPMGR.DAT file into memory.
+  - SaveAppDat  : Write the APPMGR.DAT file back to the C: drive.
+  - GetAppCnt   : Return a count of installed applications
+  - GetAppDef   : Get an application definition by its number
+  - SetAppDef   : Modify an application definition
+  - AddAppDef   : Add an application definition
+  - DelAppDef   : Delete an application definition
+
+  - ValidIcon   : Check if a pointer is a valid icon bitmap
+  - GetAppIcn   : retrieve an icon
+  - SetAppIcn   : set an icon
+  - NewAppIcn   : find an unused icon slot
+
+
+ EMS support module
+ ------------------
+
+  - EmsInit     : Initialize and check EMS for driver presence.
+  - EmsCheck    : Check for the presence of an EMS driver.
+  - EmsAlloc    : Allocate a specified number of EMS pages.
+  - EmsMap      : Map a given logical page into the physical frame.
+  - EmsFree     : Free an allocated EMS block.
+  - EmsFrameSeg : Return segment address of the EMS frame.
+  - EmsFreeCnt  : Return the number of free EMS pages available.
+  - EmsLastError: Return last error reported by an EMS routine.
+  - EmsPageCnt  : Return the total number of EMS pages available.
+  - EmsVersion  : Return version of EMS driver.
+
+
+ FILER communication module
+ --------------------------
+
+  - FilerConnect    : Establish connection with filer.
+  - FilerDisconnect : Shut down Filer communications.
+  - FilerSendFile   : Send a file to the palmtop.
+  - FilerGetFile    : Get a file from the palmtop.
+  - FilerDelFile    : Delete a file on the palmtop.
+  - FilerMakeDir    : Create a directory on the palmtop.
+  - FilerDelDir     : Delete a directory from the palmtop.
+  - FilerAskDir     : Request directory info from the palmtop.
+  - FilerGetDir     : Get directory entries from the palmtop.
+  - FilerSync       : Attempt re-synchronization with filer.
+
+
+ Memory management module
+ ------------------------
+
+  - PalMalloc       : Malloc replacement with out-of-mem handling
+  - PalRealloc      : Realloc replacement with out-of-mem handling
+  - PalCalloc       : Calloc replacement with out-of-mem handling
+  - PalFree         : Free replacement
+  - PalStrdup       : Strdup replacement with out-of-mem handling
+  - SetPalMemFail   : Define your own out-of memory handler
+
+
+ Picklist module
+ ---------------
+
+  - FilePickList    : Display a picklist of files.
+  - PickList        : Display a picklist of strings.
+  - QuickPickList   : An easier way to display a picklist.
+  - FreePickResults : Free storage associated with picklist results.
+  - PickCount       : Determine the number of items in a picklist
+  - FindLastPick    : Find end of linked PICKRESULTS NAME
+
+
+ Software Carousel API module
+ ----------------------------
+
+  - SCPresent          : Is Software Carousel Present?
+  - SCVersion          : Get Software Carousel Version
+  - SCMenu             : Display the Software Carousel menu
+  - SCSwitch           : Switch to another Work Area
+  - SCQuit             : Terminate SC
+  - SCBoot             : Reboot the computer.
+  - SCKill             : Kill a program in a session.
+  - SCSizeStatus       : Get Size and Status of a Work Area
+  - SCSetSize          : Set a Work Areas Size
+  - SCErrorMessage     : Convert Errorcode to Text
+  - SCGetName          : Get a Work Areas Name
+  - SCSetName          : Set a Work Areas Name
+  - SCSendCommand      : Send Keystrokes to a Work Area
+  - SCCodeMode         : Where is Software Carousel Running.
+  - SCKeyboardCommands : Enable/Disable Work Area Switching.
+
+
+Additions, Modifications, Improvements:
+=======================================
+
+ Additional CFG file functions
+ -----------------------------
+
+  - GetFirstSection     : Scan file for sections: init scan
+  - GetNextSection      : Scan file for sections: continue scan
+  - AddConfigString     : Add entries to a config file
+  - ReplaceConfigString : Replace a  keys value in a config file
+  - DeleteConfigString  : Delete a config entry
+  - WriteConfig         : Write a config file back to disk
+
+ Dialog improvements
+ -------------------
+
+  - new Listbox dialog item, associated functions
+    - LbAddString    : Add a string to a listbox
+    - LbSetString    : Set a string in a listbox
+    - LbDelString    : Delete a string from a listbox
+    - LbGetCount     : Return number of strings in listbox
+    - LbGetPos       : Return index of currently selected string
+    - LbSetPos       : Set currently selected string
+    - LbClear        : Delete all strings from a listbox at once
+    - LbSetCallBack  : Set listbox callback function
+    - LbSetCount     : Set number of strings - callback mode only
+  - Ctrl-S will be replaced by '&' in label strings
+  - Combo box now allows empty list
+  - 'Default' buttons will be shown in bold
+  - cursor keys can be used to move between items
+  - radio button selection can be changed with cursor
+  - central insert mode flag common to all edit items
+  - ESC in edit item will restore previous contents
+  - system manager clipboard cut and paste supported in edit items
+  - letter moves focus in addition to ALT-Letter, where possible
+  - edit item contents now gets inverted when it gets focus
+  - DEL and Backspace delete selected edit item contents
+  - typing in selected edit item replaces old contents
+  - checkboxes and buttons can now be triggered with ALT-Letter
+  - GetFocus     : Find out which item is currently active
+  - AskYesNo now supports function keys and letters [Y] and [N]
+  - Digits may now be used as '&' hotkeys in labels, on buttons etc.
+
+
+ System manager access
+ ---------------------
+
+  - m_get_TCB     : Get Task Control Block.
+  - m_get_TCB_size: Get Task Control Block size.
+  - IsAppActive   : Check if a specified application is active.
+
+
+ Miscellaneous
+ -------------
+
+   - SetErrorHandler : specify alternate error handler
+   - LastMemoFile    : return last file edited in MEMO
+   - BattFast        : Detect if battery is fast charging.
+   - BattGetTimer    : Read battery charging timer.
+   - BattSetTimer    : Set battery charging timer.
+   - page down/up now supported in menues
+   - GetImg now allocates space automatically if passed NULL
+   - IMGSIZE macro to compute image size
+   - ELMS macro to compute number of elements in array
+   - MsgBox now supports sophisticated function key bar
+   - Application key constant definitions in PALKEYS.H
+
+  Utilities
+  ---------
+
+   - EMM200 EMS emulator included
+
+
+What's new in V1.11 ?
+=====================
+
+V1.11 has new functions for battery access / control, progress
+meter display functions, and a few bug fixes.
+
+
+Functions
+---------
+
+  - BattType     : Set/get battery type.
+  - BattVoltage  : Read main/backup battery voltage.
+  - BattStatus   : Check main/backup/card battery status (OK/LOW)
+  - ChargeMode   : Enable/Disable battery charging.
+  - DCStatus     : Detects if an external DC adaptor is used.
+
+  - OpenMeter    : Opens (displays) a progress/level meter.
+  - UpdateMeter  : Updates the percentage (level) of an active meter.
+  - CloseMeter   : Closes an active meter.
+
+
+Fixes and mods:
+---------------
+
+  - Bug in LoadPcx - not enough memory was being allocated for the loaded
+    picture. Thanks to Mojgan Akhavan for first reporting it, and to Huib
+    Simonsz for the fix.
+
+  - KeyWaiting had a test modification still in there that made it
+    inoperative.
+
+  - upon popular demand, the ENTER key now moves on to the next item
+    in radio and checkbox items. (It doesn't toggle them any more),
+    the SPACE key does this alone
+
+  - buttons now have rounded corners thanks to Harry.
+
+  - fix in PM utility - when the dependency list grew longer that 64
+    characters. Thanks to Doug Thistlethwaite for reporting it !
+
+
+What's new in V1.1  ?
+=====================
+
+Here's a list of new stuff in the V1.1 update:
+
+UTILITIES:
+----------
+
++ NG2HTML permits conversion of the PAL reference docs to HTML
+format (the format used on the World-Wide Web). View it with
+your favorite viewer on the desktop (NetScape, Cello, Mosaic),
+or with ...
+
++ HV - the HTML hypertext viewer/browser for the palmtop
+
++ PFE, the PAL font editor can edit and convert fonts in Vertical
+Reader VFN, PAL HFN, or FCL file format.
+
+
+DOCUMENTATION:
+--------------
+
+There is now a single README.TXT in the PAL 'root' directory -
+so that it should catch your eye. The other files have been
+moved to the .\DOCS directory. The much-awaited OVERVIEW.TXT
+is now here. The documentation of the various modules (under .\SRC)
+has been checked and updated. On popular demand, support for the
+standard Norton guide tools is back - check out MAKENG.BAT under
+.\UTIL\NG.
+
+
+FUNCTIONS:
+----------
+
+A number of additions, especially on the 'easier user interface'
+front:
+
+ - MenuSelect: present a picklist to the user, return index
+ - MsgBox: powerful message dialog with optional buttons and
+   an optional input line, all in one call without structures
+ - AskYesNo: for those "are you sure you want to FORMAT C:"
+   type questions.
+ - KeyWaiting: detect if a key has been pressed or is waiting
+   in the PAL 'PushKeys' input queue
+ - MsDelay: wait a specified number of milliseconds
+ - SaveState and RestoreState: get and set the graphics state
+
+
+MISCELLANEOUS:
+--------------
+
+ - bug fixes in some modules
+ - scrollbars in scrolling menues
+ - Auto-load CGAGRAPH support on the desktop
+   (see the README.TXT file under .\UTIL\TSR)
+ - state management now implemented
+ - the NG directory moved to the .\UTIL tree.
+
+
+
+What's new in V1.0  ?
+=====================
+
+This is the first 'official' PAL release - it should now be stable and
+documented enough that you can start building applications with it.
+
+The single new thing in 1.0 - besides a few bug fixes and more complete
+documentation, is dialogs - see .\SRC\DIALOG\DIALOG.DOC for a description
+of what is available.
+
+Note that:
+
+- no libraries are included in this version to keep the archive size
+small. First install the PM utility as described in .\UTIL\PM\PM.DOC,
+then build the libs for your compiler by changing to the .\SRC directory
+and entering PM [RETURN].
+
+- the MENU structure changed to allow for scrollable menues. See PAL.H and
+the sample source (under .\SAMPLES\MENU\MENU.C) for details. The last
+'terminator' item in the menu item array is no longer required.
+OTOH, the menu structure now has these fields:
+
+   typedef struct {
+      PALWIN *pMnuWin;     /* a menu has an associated window */
+      WORD Flags;          /* flags: kind of menu */
+      int CurItem;         /* currently selected item */
+      int TopItem;         /* first visible item in menu (NEW) */
+      int ItmDisp;         /* number of visible items (NEW) */
+      int ItmCount;        /* total number of items (NEW) */
+      MENUITEM *Items;     /* array of items */
+   } MENU;
+
+If you want a standard, non-scrolling menu, set TopItem to zero, and ItmDisp
+and ItmCount to the number of elements in your item array. (Which should
+NOT contain any terminator element at this moment)
+
+- radio buttons in dialogs have a slightly different behaviour than their
+SM counterpart.
+
+
+What's new in V0.41 ?
+=====================
+
+0.41 introduces a numbering scheme - the fourth upload
+got christened 0.40, and this one is 0.41. It adds
+compiled ready-to-use libraries for MSC and MIX Power C.
+
+The ICNVU sample is now included in a compiled version,
+as a demo for those who want to see what is possible with PAL
+right now.
+
+What's new in V0.40 ?
+=====================
+
+While dialogs didn't quite make it into this version, this
+release has much better documentation and a number of new
+samples and utilities.
+
+UTILITIES:
+----------
+
+  PAL MAKE
+  --------
+  or PM in short, makes it easier to create the PAL
+  libraries for your compiler, compile PAL samples, and even
+  compile your own programs that you write with PAL. No
+  bothering with makefiles - if your compiler is supported,
+  all that you have to do is tell PM where PAL is located on
+  your drives, and what compiler you have. Compilers currently
+  supported by PM are Borland C, Microsoft C, Turbo C, Quick C
+  and Mix Power C.
+
+  See .\UTIL\PM\PM.DOC, or refer to the corresponding section
+  under 'Utilities' in the Norton Guide.
+
+
+  HFN Fonts
+  ---------
+  The .\UTIL\HFN directory now contains a complete collection of
+  proportional fonts. See .\UTIL\HFN\FILELIST.TXT.
+
+
+  VFN2HFN
+  -------
+  courtesy of Harry Konstas, there's a font converter now that
+  can convert VR 'VFN' fonts into the HFN font format used by
+  PAL. See .\UTIL\VFN2HFN\VFN2HFN.DOC.
+
+  MKBIN
+  -----
+  allows easy inclusion of binary data like bitmaps, icons or
+  fonts, into your C sources - see .\UTIL\MKBIN\MKBIN.DOC
+
+  PCX2IMG
+  -------
+  can convert PCX files to IMG files and icons (for use with
+  LoadImg, PutImg etc.). Check .\UTIL\PCX2IMG\PCX2IMG.DOC, or
+  the corresponding section in the PAL Norton Guide.
+
+
+SAMPLES:
+--------
+
+  ICNVU
+  -----
+  This is an actual useful program: a shell for your icon editor
+  and a viewer for your icon collection as well. Illustrates
+  usage of a number of various PAL modules, instead of focusing
+  on just one. No documentation file yet, but should be easy to
+  use. Check ICNVU.CFG to customize the icon editor and the icon
+  directories that ICNVU should check.
+
+
+DOCUMENTATION
+-------------
+
+  Lots of new documentation - in addition to what was present in
+  upload #3, here's the list of the modules that are now
+  extensively documented.
+
+  - Proportional font routines
+  - Lowlevel graphics routines
+  - Highlevel graphics routines
+  - Miscellaneous functions
+  - System manager access support
+  - Window functions
+
+  This makes the docs to about 95% complete.
+
+  - We now also have a Copyright statement, thanks to Ron Crain.
+  Can be found in COPYRITE.TXT in the PAL root directory.
+
+  - PAL.NG, the Pal Norton guide, now has a 'Utilities' menu
+  where you can directly access the documentation of the various
+  utilities included with PAL.
+
+  - .\NG\NGREADME.TXT, contributed by Dave Vickers, explains
+  what Norton Guides are all about, lists two good viewers (a
+  commercial and a shareware one) and also contains an
+  interesting group purchase deal that Dave worked out with one
+  of the suppliers.
+
+
+MISCELLANEOUS
+-------------
+
+   There's out-of-range checking for menus now
+
+   The SAMPLES directory moved: it is no more under .\SRC. This
+   is cleaner, especially in view of a 'user version' of PAL
+   that doesn't include all the source code.
+
+   The MAKEFILE directory is no more - it got supplemented by PM.
+
+   There's a new ShowFKeys function in HIGRAPH that permits to
+   display function labels at the bottom of the screen.
+
+   The new CheckSysMgr function (in the MISC module) allows to
+   test for SysMgr presence. The SOUND and CBCP sample programs
+   now check this and won't crash any more if launched without
+   SysMgr loaded.
+
+   PAL.H now has a MENU_KEY constant.
+
+   The handling of resident fonts has been improved. (See ICNVU
+   or FONT samples)
+
+   The Norton Guide batch file now creates error files - useful if
+   there are unresolved hyperlinks.
+
+
+BUG FIXES
+---------
+
+   - Corrected bug in LoadImg (missing fclose)
+   - corrected small bug in fontload.c
+   - fixed a bug in LoadPcx (didn't set .Planes and .Bits in IMGHDR)
+   - fixed a bug in SaveImg (saved rubbish)
+   - fixed a bug in CBCP (wrote a zero byte to output)
+

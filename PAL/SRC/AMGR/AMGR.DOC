@@ -1,0 +1,738 @@
+!short:
+!short:^u APPMGR.DAT file management
+^u APPMGR.DAT file management
+
+The routines in this module permit modification of the
+Application Manager control file APPMGR.DAT, located in C:\_DAT.
+This file determines what icons appear in the [More]
+application, and their properties. You can add, remove, and
+alter applications. You also have access to the icons stored
+in the file.
+
+You should first make sure that the [More] application is closed
+by calling CloseAppMgr(). Then, you load the file into memory
+using LoadAppDat(). After modifying it in memory using the
+functions of this module, write APPMGR.DAT back to disk with
+SaveAppDat().
+
+Available Functions:
+
+  - CloseAppMgr : Close the Application Manager aka [More].
+  - LoadAppDat  : Load the APPMGR.DAT file into memory.
+  - SaveAppDat  : Write the APPMGR.DAT file back to the C: drive.
+  - GetAppCnt   : Return a count of installed applications
+  - GetAppDef   : Get an application definition by its number
+  - SetAppDef   : Modify an application definition
+  - AddAppDef   : Add an application definition
+  - DelAppDef   : Delete an application definition
+
+  - ValidIcon   : Check if a pointer is a valid icon bitmap
+  - GetAppIcn   : retrieve an icon
+  - SetAppIcn   : set an icon
+  - NewAppIcn   : find an unused icon slot
+
+!short: APPMGR.DAT           An introduction to APPMGR.DAT
+
+APPMGR.DAT is the file that determines which icons are visible
+in the Application Manager, and what properties they have.
+Every installed application has:
+
+  - a Title: a string of max 15 characters (including the '\0'
+    terminator)
+
+  - a Path: for DOS applications. Max 64 characters (including
+    '\0') long, may include commandline arguments as well.
+
+  - a Comments line: max 25 characters (including '\0').
+
+  - a hotkey: a 16 bit scancode - relevant for EXMs only
+
+  - a 'flags' integer. Currently, three (bit) flags are known/used:
+        AMGR_ROMAPP: if set, application is a built-in (ROM)
+        AMGR_SYSMGR: if set, application is of EXM type
+    AMGR_PERSISTENT: if set, application cannot be closed (Filer)
+
+  - an icon number. In the PAL APPMGR interface, the icon number
+    is negative to indicate a built-in icon, and positive for
+    a user-provided icon.
+
+APPMGR.DAT can hold a maximum of 38 applications. On the HP100LX,
+there are 16 built-in applications, which leaves room for 22
+DOS applications the user can add. On the HP200LX, there are 18
+built-in applications, leaving 20 add-in slots for the user.
+
+In addition to the application descriptions, APPMGR.DAT also holds
+the images of the 22 (HP100LX) or 20 (HP200LX) user-added
+icons.
+
+
+!short: CloseAppMgr          Close Application Manager
+   NAME
+      CloseAppMgr
+
+   DESCRIPTION
+      Call this function before using LoadAppDat, to ensure
+      that AppMgr is closed and won't write over your changes.
+      This function will do nothing if SysMgr is not running. If
+      it _is_ running, it will switch to AppMgr, and close it.
+
+   SYNOPSIS
+      #include "pal.h"
+      void CloseAppMgr(void);
+
+   RETURN VALUE
+      None
+
+   NOTE
+      This works only if no dialog is currently open in AppMgr
+
+   SAMPLE
+
+
+!Seealso: LoadAppDat SaveAppDat
+
+!short: LoadAppDat           Load  application manager control file
+   NAME
+      LoadAppDat
+
+   DESCRIPTION
+      LoadAppDat will load an the APPMGR.DAT file into memory, and
+      return a pointer to an APPDESC structure, or NULL on failure.
+      You don't need to access the APPDESC structure directly, use
+      the access functions GetAppCnt, GetAppDef, SetAppDef etc, to
+      read/write it.
+
+   SYNOPSIS
+      #include "pal.h"
+      APPDESC *LoadAppDat(char *FileName);
+
+   INPUTS
+      FileName  -  a pointer to the file to be loaded. If you provide
+                   NULL here, the default C:\_DAT\APPMGR.DAT will be
+                   used. Provide the filename if you want to load
+                   a file of type APPMGR.DAT that is located elsewhere
+                   or has another name.
+
+   RETURN VALUE
+      Returns a pointer to an APPDESC structure on success, NULL
+      otherwise.
+
+   NOTE
+      LoadAppDat will allocate memory for the APPDESC structure. It
+      will need a bit more than 8K of free memory. You must free
+      the APPDESC pointer yourself when you don't need it any more
+      (probably after the SaveAppDat).
+      Note that APPMGR.DAT files are not compatible between the HP100LX
+      and the HP200LX.
+
+   SAMPLE
+      APPDESC *pAd;
+
+      CloseAppMgr();
+      pAd = LoadAppDat(NULL);
+      if(!pAd) FatalExit("Could not load APPMGR.DAT", 1);
+
+!Seealso: CloseAppMgr SaveAppDat
+
+!short: SaveAppDat           Write Application Manager control file
+   NAME
+      SaveAppDat
+
+   DESCRIPTION
+      SaveAppDat will write the APPMGR.DAT file back to disk - either
+      to a file you specify, or to the default C:\_DAT\APPMGR.DAT
+      location.
+
+   SYNOPSIS
+      #include "pal.h"
+      int SaveAppDat(APPDESC *pAd, char *FileName);
+
+
+   INPUTS
+      Ad       - pointer to the APPDESC structure returned by LoadAppDat
+      FileName - the name of the file to save to - provide NULL to use
+                 the default C:\_DAT\APPMGR.DAT
+
+   RETURN VALUE
+      Returns TRUE on success, FALSE otherwise.
+
+   NOTE
+      Note that APPMGR.DAT files are not compatible between the HP100LX
+      and the HP200LX.
+
+   SAMPLE
+      int Success;
+
+      /* Create a backup of APPMGR.DAT */
+      Success = SaveAppDat(pAd, "C:\_DAT\APPMGR.BAK");
+      if(!Success) MsgBox(" Note ", "Could not create backup", NULL, " OK ");
+
+!Seealso: CloseAppMgr LoadAppDat
+
+!short: GetAppCnt            Get number of installed applications
+   NAME
+      GetAppCnt
+
+   DESCRIPTION
+      This function retrieves the number of applications currently
+      installed in the application manager control file.
+
+   SYNOPSIS
+      #include "pal.h"
+      int GetAppCnt(APPDESC *pAd);
+
+   INPUTS
+      Ad       - pointer to the APPDESC structure returned by LoadAppDat
+
+   RETURN VALUE
+      Returns the number of applications installed.
+
+   SAMPLE
+      printf("%d applications are installed.\n", GetAppCnt(pAd));
+
+!Seealso: LoadAppDat SaveAppDat GetAppDef SetAppDef
+
+!short: GetAppDef            Get an applications definition
+   NAME
+      GetAppDef
+
+   DESCRIPTION
+      GetAppDef will return an applications definition - you provide
+      the APPDEF pointer returned by LoadAppDat, the index of the
+      application you are interested in, and pointers to several
+      buffers and variables. GetAppDef will fill in the data.
+
+   SYNOPSIS
+      #include "pal.h"
+      int GetAppDef(APPDESC *pAd, int AppNbr, char *pTitle, char *pPath,
+                    char *pComments, int *pFlags, WORD *pKey, int *pIcon);
+
+
+   INPUTS
+      Ad         - pointer to the APPDESC structure returned by LoadAppDa
+      AppNbr     - the index of the application you want to retrieve -
+                   between 0 and GetAppCnt(pAd)-1
+      pTitle     - pointer to a buffer of at least 15 bytes that will
+                   receive the title of the application. Pass NULL if not
+                   interested in this field.
+      pPath      - pointer to a buffer of at least 64 bytes that will
+                   receive the path of the application. Pass NULL if not
+                   interested in this field.
+      pComments  - pointer to a buffer of at least 25 bytes that will
+                   receive the comment entry for the application. Pass
+                   NULL if not interested in this field.
+      pFlags     - pointer to a int that will receive the applications
+                   'flag' settings. Pass NULL if not interested in this
+                   field.
+
+                   Currently, three (bit) flags are known/used:
+
+                   AMGR_ROMAPP:     if set, application is a built-in (ROM)
+                   AMGR_SYSMGR:     if set, application is of EXM type
+                   AMGR_PERSISTENT: if set, application cannot be
+                                    closed (Filer)
+
+      pKey       - pointer to a WORD that will receive the applications
+                   scancode. Pass NULL if not interested in this field.
+
+
+      pIcon      - pointer to an int that will receive the applications
+                   icon number. Negative values indicate built-in SysMgr
+                   icons (held in ROM), while positive values
+                   indicate user-provided icons stored in APPMGR.DAT itself.
+                   Pass NULL if not interested in this field.
+
+                   Note: Use the GetAppIcn function if you want to
+                   retrieve the bitmap corresponding to a given icon. The
+                   description of the GetAppIcn function also has a table
+                   of built-in icon codes.
+
+   RETURN VALUE
+      TRUE on success, FALSE otherwise.
+
+   NOTE
+      Note that you can selectively retrieve an applications attributes
+      by passing NULL as a pointer value for those field that you do not
+      want to retrieve.
+
+   SAMPLE
+      /* this is a complete sample that opens APPMGR.DAT, loops over
+         the definitions of all applications, and outputs data to
+         the screen */
+
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      int main(void)
+      {
+         APPDESC *pAd;
+         char     Title[80];
+         char     Comments[80];
+         char     Path[80];
+         int      Flags;
+         WORD     Key;
+         int      Icon;
+         int      Count, i;
+
+         if(!PalInit(0)) FatalExit("PALINIT failed !", 1);
+         CloseAppMgr();
+         pAd = LoadAppDat(NULL);
+
+         if(!pAd) FatalExit("Could not load APPMGR.DAT", 1);
+         Count = GetAppCnt(pAd);
+
+         for(i = 0; i < Count; i++) {
+            GetAppDef(pAd, i, Title, Path, Comments, &Flags, &Key, &Icon);
+            printf("  #%2d: %s\n", i+1, Title);
+            printf(" Path: %s\n", Path);
+            printf(" Cmnt: %s\n", Comments);
+            printf("Flags: %s%s%s\n",
+                   (Flags & AMGR_ROMAPP) ?     "ROMAPP " : "",
+                   (Flags & AMGR_SYSMGR) ?     "SYSMGR " : "",
+                   (Flags & AMGR_PERSISTENT) ? "PERSISTENT " : "");
+            printf(" Scan: %04X\n", Key);
+            printf("Icon#: %d\n\n", Icon);
+         }
+         free(pAd);
+         PalDeInit(0);
+      }
+
+!Seealso: LoadAppDat SaveAppDat GetAppCnt SetAppDef AddAppDef DelAppDef GetAppIcn SetAppIcn
+
+!short: SetAppDef            Set an applications definition
+   NAME
+      SetAppDef
+
+   DESCRIPTION
+      SetAppDef will update an applications definition - you provide
+      the APPDEF pointer returned by LoadAppDat, the index of the
+      application you want to modify, and pointers to several
+      buffers and variables. SetAppDef will copy the data from the
+      buffers and variables you specify into the copy of APPMGR.DAT
+      that LoadAppDat has loaded into memory.
+
+   SYNOPSIS
+      #include "pal.h"
+      int SetAppDef(APPDESC *pAd, int AppNbr, char *pTitle, char *pPath,
+                    char *pComments, int *pFlags, WORD *pKey, int *pIcon);
+
+
+   INPUTS
+      Ad         - pointer to the APPDESC structure returned by LoadAppDat
+      AppNbr     - the index of the application you want to modify -
+                   between 0 and GetAppCnt(pAd)-1
+      pTitle     - pointer to a string of at most 14 bytes length that
+                   contains the title of the application. Pass NULL if
+                   you do not want to set this field.
+      pPath      - pointer to a string of at most 63 bytes length that
+                   contains the path of the application. Pass NULL if
+                   you do not want to set this field.
+      pComments  - pointer to a string of at most 24 bytes length that
+                   contains the comment entry for the application. Pass
+                   NULL if you do not want to set this field.
+      pFlags     - pointer to an int that has the applications 'flag'
+                   settings.
+
+                   Currently, three (bit) flags are known/used:
+
+                   AMGR_ROMAPP:     if set, application is a built-in (ROM)
+                   AMGR_SYSMGR:     if set, application is of EXM type
+                   AMGR_PERSISTENT: if set, application cannot be
+                                    closed (Filer)
+
+                   If you want to install a PAL (i.e. DOS) application
+                   using SetAppDef, none of these flags would be set.
+                   Pass NULL if you do not want to set this field.
+
+      pKey       - pointer to a WORD that has the applications scancode.
+                   Note that this is revelevant for EXM type
+                   applications only. Pass NULL if you do not want to
+                   set this field.
+
+      pIcon      - pointer to an int that has the applications icon
+                   number. Negative values indicate built-in SysMgr
+                   icons (held in ROM), while positive values indicate
+                   user-provided icons stored in APPMGR.DAT itself.
+                   Pass NULL if not you not want to set this field.
+
+                   Note: The NewAppIcn function can be used to retrieve
+                   a user icon slot that is not used by another
+                   application. Use the SetAppIcn function if you want
+                   to set the bitmap corresponding to a given icon.
+                   The description of the GetAppIcn function has a
+                   table of built-in icon codes. (These are not
+                   modifiable)
+
+
+   RETURN VALUE
+      TRUE on success, FALSE otherwise.
+
+   NOTE
+      Note that you can selectively set an applications attributes
+      by passing NULL as a pointer value for those fields that you do not
+      want to modify.
+
+   SAMPLE
+      SetAppDef(pAd, 0, NULL, NULL, "First application", NULL,
+                NULL, NULL); /* just set the comment of the first
+                                application to 'First application' */
+      (also see the more extensive sample under NewAppIcn)
+
+!Seealso: LoadAppDat SaveAppDat GetAppCnt GetAppDef AddAppDef DelAppDef GetAppIcn SetAppIcn NewAppIcn
+
+!short: AddAppDef            Add an application definition
+   NAME
+      AddAppDef
+
+   DESCRIPTION
+      AddAppDef will add an application definition to the copy
+      of APPMGR.DAT that is in memory - provided there is room.
+      You have to pass the APPDEF pointer returned by LoadAppDat,
+      and the attributes of the newly-created application.
+
+   SYNOPSIS
+      #include "pal.h"
+      int AddAppDef(APPDESC *pAd, char *pTitle, char *pPath,
+                    char *pComments, int Flags, WORD Key, int Icon);
+
+   INPUTS
+      Ad         - pointer to the APPDESC structure returned by LoadAppDat
+      pTitle     - pointer to a string of at most 14 bytes length that
+                   contains the title of the application. You cannot
+                   pass NULL here, this field is mandatory.
+      pPath      - pointer to a string of at most 63 bytes length that
+                   contains the path of the application. If you pass
+                   NULL the default value "" will be used. (an empty string)
+      pComments  - pointer to a string of at most 24 bytes length that
+                   contains the comment entry for the application.
+                   If you pass NULL the default value "" will be used.
+                   (an empty string)
+      Flags      - an int (not a pointer here !) that has the
+                   applications 'flag' settings.
+
+                   Currently, three (bit) flags are known/used:
+
+                   AMGR_ROMAPP:     if set, application is a built-in (ROM)
+                   AMGR_SYSMGR:     if set, application is of EXM type
+                   AMGR_PERSISTENT: if set, application cannot be
+                                    closed (Filer)
+
+                   If you want to install a PAL (i.e. DOS) application
+                   using AddAppDef, none of these flags would be set.
+
+      Key        - a WORD (not a pointer here !) that has the
+                   applications scancode. Note that this is revelevant
+                   for EXM type applications only.
+
+      pIcon      - an int that has the applications icon number.
+                   Negative values indicate built-in SysMgr icons (held
+                   in ROM), while positive values indicate user-provided
+                   icons stored in APPMGR.DAT itself.
+
+                   Note: The NewAppIcn function can be used to retrieve
+                   a free user icon slot that is not used by another
+                   application. Use the SetAppIcn function if you want
+                   to set the bitmap corresponding to a given user icon.
+                   The description of the GetAppIcn function has a table
+                   of built-in icon codes. (These are not modifiable)
+
+   RETURN VALUE
+      TRUE on success, FALSE otherwise.
+
+   NOTE
+      It is important to understand that application definitions and
+      user- defined icon bitmaps are stored _separately_ in APPMGR.DAT.
+      The application definitions only point to an icon pool of 22
+      (HP100LX) or 20 (HP200LX) icon 'slots'. Also see the discussion
+      of this topic under NewAppIcn.
+
+
+   SAMPLE
+      see NewAppIcn for a complete sample
+
+!Seealso: LoadAppDat SaveAppDat GetAppCnt GetAppDef AddAppDef DelAppDef GetAppIcn SetAppIcn NewAppIcn
+
+!short: DelAppDef            Delete an application definition
+   NAME
+      DelAppDef
+
+   DESCRIPTION
+      DelAppDef will delete an application definition, removing it from
+      the copy of APPMGR.DAT in memory, and also updating the appliction
+      count (returned by GetAppCnt) accordingly.
+
+   SYNOPSIS
+      #include "pal.h"
+      int DelAppDef(APPDESC *pAd, int AppNbr);
+
+   INPUTS
+      Ad         - pointer to the APPDESC structure returned by LoadAppDat
+      AppNbr     - the index of the application you want to delete -
+                   between 0 and GetAppCnt(pAd)-1
+
+   RETURN VALUE
+      TRUE if successful, FALSE otherwise.
+
+   NOTE
+      Note that DelAppDef will let you delete applications that have
+      the AMGR_ROMAPP flag set. Be careful when you do this !
+      While you can add additional DOS applications using this
+      module by deleting built-in apps (that have their own
+      hotkey anyway), AppMgr can get confused. It probably infers
+      the next available icon slot from the number of installed
+      applications minus the number of built-in apps.
+
+   SAMPLE
+      DelAppDef(pAp, 0); /* delete first application */
+
+!Seealso: GetAppCnt GetAppDef AddAppDef GetAppIcn SetAppIcn NewAppIcn
+
+!short: ValidIcon            Check IMGHDR pointer for valid icon
+   NAME
+      ValidIcon
+
+   DESCRIPTION
+      ValidIcon will check if a pointer given to it points to a valid
+      AppMgr icon. It will inspect the IMGHDR pointer and do a number of
+      validity checks.
+
+   SYNOPSIS
+      #include "pal.h"
+      int ValidIcon(IMGHDR *pIcn);
+
+   INPUTS
+      pIcn   - pointer to an IMGHDR structure (and associated bitmap)
+               as returned by LoadImg (for example)
+
+   RETURN VALUE
+      TRUE if pIcn points to a valid icon, FALSE otherwise.
+
+   SAMPLE
+      IMGHDR *pIcn;
+
+      pIcn = LoadImg("a:\\test\\myicon.icn");
+      if(!ValidIcon(pIcn)) FatalExit("Bad icon file", 1);
+      /* proceed ... */
+
+!Seealso: GetAppIcn SetAppIcn NewAppIcn
+
+!short: GetAppIcn            Retrieve an icons bitmap
+   NAME
+      GetAppIcn
+
+   DESCRIPTION
+      This function will return the bitmap of a built-in or user-defined
+      icon, in the form of an IMGHDR pointer. (You can use the PutImg
+      function to display the icon to the screen).
+
+   SYNOPSIS
+      #include "pal.h"
+      IMGHDR  *GetAppIcn(APPDESC *pAd, int IcnNbr,
+               IMGHDR *(*Type)(int n, int m));
+
+   INPUTS
+      Ad         - pointer to the APPDESC structure returned by LoadAppDat
+      IcnNbr     - the index of the icon that you want to retrieve
+      Type       - This is actually a callback function that will be used
+                   internally to retrieve built-in icons. You don't need
+                   to care about this though.
+
+                   Use the predefined value:
+
+                   - NULL if you do not need to retrieve built-in icons
+
+                   - ICN_200 if you want 200LX style icons. If used on
+                     a 100LX, the correct applications icons will be
+                     retrieved (a mapping table is used for this), but
+                     the icons will have the 200LX look.
+                     Note: using this option will increase your programs
+                     size by 4200 bytes.
+
+                   - ICN_ALL if you want to retrieve 200LX style icons
+                     on a 200LX, and 100LX style icons on a 100LX.
+                     Note: using this option will increase your programs
+                     size by 8000 bytes.
+
+   RETURN VALUE
+      A pointer to an IMGHDR structure (and associated bitmap) if the
+      function succeeds, or NULL on failure. It is advised that you
+      check the pointer that is returned using ValidIcon, especially
+      if you are trying to examine undefined built-in or user icons.
+
+   NOTE
+      The reason for the ICN_200 and ICN_ALL device is that it was
+      felt unreliable to try and retrieve the icons from ROM.
+      Therefore, PAL includes copies of all the built-in 100LX and 200LX
+      icons. As soon as no mention of ICN_200 or ICN_ALL is made in your
+      program, these copies (4200 and 3800 bytes in size, respectively)
+      will not be included into your program. On the other hand,
+      retrieving these icons will also work on the desktop.
+
+   Here's a table of the built-in icon numbers:
+
+             Icon#    100LX icon        200LX icon
+             -------------------------------------------
+             -1       Setup             Setup
+             -2       Comm              Comm
+             -3       Stopwatch         Stopwatch
+             -4       Database          Database
+             -5       Notetaker         Notetaker
+             -6       Worldtime         Worldtime
+             -7       System macros     System macros
+             -8       Filer             Filer
+             -9       cc:Mail           Quicken
+            -10       Appointments      Appointments
+            -11       Phone             Phone
+            -12       Memo              Memo
+            -13       Lotus 123         Lotus 123
+            -14       Calc              Calc
+            -15       AppMgr            AppMgr
+            -16       DOS               Laplink Remote
+            -17       Empty Icon        cc:Mail
+            -18       Statistics        DOS
+            -19       Cougar            Empty Icon
+            -20       n.a.              Cougar
+            -21       n.a.              Statistics
+
+
+   SAMPLE
+      /* This small program will display all built-in icons of either
+         a 100LX or a 200LX. */
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      int main(void)
+      {
+         IMGHDR  *pImg;
+         APPDESC *pAd;
+         char Title[80];
+         int      Icon;
+         int      i;
+
+         if(!PalInit(1)) FatalExit("PALINIT failed - not running on palmtop ?", 1);
+         CloseAppMgr();
+         pAd = LoadAppDat(NULL);
+
+         if(!pAd) FatalExit("Could not load APPMGR.DAT", 1);
+         for(i = 0; i < GetAppCnt(pAd); i++) {
+            GetAppDef(pAd, i, Title, NULL, NULL, NULL, NULL, &Icon);
+            pImg = GetAppIcn(pAd, Icon, ICN_ALL);
+
+            ClrBlock(0, 0, 200, 100, WHITE_COLOR);
+            TextOut(0, 0, TXT_RULE, SMALL_FONT, Title);
+            if(ValidIcon(pImg)) PutImg(20, 20, FORCE_RULE, pImg);
+            else TextOut(20, 20, TXT_RULE, SMALL_FONT, "Bad!");
+            GetKey();
+         }
+         free(pAd);
+         PalDeInit(1);
+
+         return 0;
+      }
+
+!Seealso: ValidIcon SetAppIcn NewAppIcn
+
+!short: SetAppIcn            Set an icons bitmap
+   NAME
+      SetAppIcn
+
+   DESCRIPTION
+      This function will set the bitmap of a user-defined icon.
+      (Built-in icons cannot be modified).
+
+   SYNOPSIS
+      #include "pal.h"
+      int SetAppIcn(APPDESC *pAd, int IcnNbr, IMGHDR *pIcn);
+
+   INPUTS
+      Ad         - pointer to the APPDESC structure returned by LoadAppDat
+      IcnNbr     - the index of the icon that you want to set
+      pIcn       - the bitmap the icon should have
+
+   RETURN VALUE
+      TRUE if successful, FALSE otherwise.
+
+   SAMPLE
+      Please refer to the sample under NewAppIcn
+
+!Seealso: ValidIcon GetAppIcn NewAppIcn
+
+!short: NewAppIcn            Return a free user icon slot
+   NAME
+      NewAppIcn
+
+   DESCRIPTION
+      NewAppIcn will return an icon number that is not currently
+      used by an application.
+   SYNOPSIS
+      #include "pal.h"
+      int NewAppIcn(APPDESC *pAd);
+
+   INPUTS
+      Ad         - pointer to the APPDESC structure returned by LoadAppDat
+
+   RETURN VALUE
+      The number of an unused icon, or a negative value if none is
+      available. (See below for details on the actual negative value
+      returned)
+
+   NOTE
+      NewAppIcn is typically used in conjunction with SetAppIcn and
+      AddAppDef when installing a new application. You should first
+      find an unused icon slot, then set that icon number to the
+      bitmap you want to use, and finally, update the application
+      description itself, passing it (among others) the icon number
+      that NewAppIcn returned. When no free icon slot is available,
+      (can happen when built-in applications were deleted from the
+      APPMGR.DAT, for example) NewAppIcn returns the index of the
+      built-in generic 'DOS' icon. This will be -16 on an HP100LX, and
+      -18 on an HP200LX. You can either directly use that number,
+      or handle that case differently.
+
+   SAMPLE
+      /* This small program will install a DOS application */
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      int main(void)
+      {
+         IMGHDR  *pImg;
+         APPDESC *pAd;
+         int      Icon;
+         int      i;
+
+         if(!PalInit(1)) FatalExit("PALINIT failed - not running on palmtop ?", 1);
+         CloseAppMgr();
+         pAd = LoadAppDat(NULL);
+         if(!pAd) FatalExit("Could not load APPMGR.DAT", 1);
+
+         pImg = LoadImg("MYAPP.ICN"); /* try to load icon */
+
+         Icon = NewAppIcn(pAd); /* get free icon slot */
+
+         /* if loading icon failed, use built-in DOS icon - its
+            number unfortunately differs from the 100LX to the 200LX */
+         if(!pImg) Icon = (WhichHp == 100) ? -16 : -18;
+
+         /* if we have a target icon, set its bitmap */
+         if(Icon >= 0) SetAppIcn(pAd, Icon, pImg);
+
+         /* add definition */
+         AddAppDef(pAd, "MyApp", "C:\\TMP\\MYAPP.EXE", "", 0, 0, Icon);
+
+         /* write C:\_DAT\APPMGR.DAT */
+         SaveAppDat(pAd, NULL);
+
+         free(pAd);
+         PalDeInit(1);
+
+         return 0;
+      }
+!Seealso: ValidIcon GetAppIcn SetAppIcn
+

@@ -1,0 +1,207 @@
+Guidelines for PAL C programming.
+---------------------------------
+
+The purpose of these guidelines is help obtain readable, consistently
+looking and compatible source code contributions for PAL -
+please help us achieve this goal.
+
+The recommendations in this file are of a general nature and
+mostly not specific to PAL - see the STRUCTUR.TXT for
+information about the PAL directory structure, contribution
+handling, etc.
+
+If you feel there's something missing here, (or utterly wrong
+<g>), please let me know - post a message in section 15 (Palmtop
+programmers) of the HPHAND forum on CompuServe (or directly via
+CISMail) to: Gilles Kohl, CIS:100114,3146.
+(Internet: 100114.3146@compuserve.com or
+http://ourworld.compuserve.com/homepages/gilles)
+
+TEMPLATE.C
+----------
+
+Use TEMPLATE.C (in the \DOCS subdirectory) to create a new .C or
+.H file for PAL - this will give you the common file header as
+well as the recommended ordering for the various source file
+sections.
+
+
+ANSI C style
+------------
+
+Please use ANSI C style syntax and especially, ANSI style function
+headers and prototypes. Mixed case meaningful variable and function
+identifiers are also recommended.
+
+Example:
+please DO NOT use this style:
+
+gcrd(x,y,flag)
+   int *x,*y;
+   int flag;
+{
+   /* function body */
+}
+
+but this style instead:
+
+void GetCoords(int *pXpos, int *pYpos, int Flag)
+{
+   /* function body */
+}
+
+Why: The mixed case and explicit naming makes the program more
+readable. The advantage of the ANSI style header is that the compiler
+can check the type information of your function calls, and warn you if
+you forgot a parameter, have a type wrong, or assign the return type
+of a function to a variable of incompatible type.
+
+
+Compiler specifics
+------------------
+
+We'll try to have PAL stay portable across as many (ANSI)
+compilers as possible - therefore, please don't use compiler
+specific extensions (like the '//' comment for example) or
+functions if ever possible. If you're not sure whether a certain
+function is part of the ANSI standard library, just ask in the
+forum. See also book recommendation [4] at the very end of this
+text.
+
+
+Function order in a file
+------------------------
+
+If you have several functions grouped together in a .C file that is to
+be part of PAL (like one main function and several internal helper
+functions that it uses), please order the callees before the callers.
+
+(Always put main() last, for example)
+
+Why: Two reasons. You won't need prototypes for the called functions
+this way, since the compiler has already seen them (you did use an
+ANSI C function header, did you ?) and knows all about them when it
+arrives at the call. I have also found that when sequentially reading
+someone elses C program that this order makes it easier to understand
+what the whole module does - simpler things (that one has already
+seen) are used to build more complex ones.
+
+Note: if you submit a number of functions to PAL that are independent
+from each other, and available to the PAL user, please create
+a separate .C file for each of them. The reason is that most
+linkers/librarians work on the .OBJ file level - if your
+functions end up in the same OBJ, and a user references one, the
+linker will draw in BOTH, and the EXE will become larger than
+necessary.
+
+
+TABs, Spaces and indenting
+--------------------------
+
++ Avoid actual TAB characters (ASCII code 9) in your sources. Other
+editors may not handle them properly, or may not be configured to the
+same tab width as you are using, making the source look like a mess.
+
++ Indent by 3 spaces, with the K&R indentation style the masters used
+themselves (refer to the samples in [1]
+
+  i.e.     while(condition) {
+              /* body of loop */
+           }
+
+Why ? Greatly a matter of personal preference - there is no 'best'
+indentation style. If you can't help it, use your personal style -
+especially if you are an experienced C programmer.
+
++ Use horizontal whitespace, i.e.:
+
+    for(x = 0; x < MAX_X; x++) {
+
+        instead of
+
+    for(x=0;x<MAX_X;x++)
+
+Why: Obvious: makes the source easier to read for humans.
+
+
+Types
+-----
+
+Please use typedefs when possible. They cost nothing codewise
+and can greatly enhance readability. If you're not sure about a
+complex type, break it down and build it with a few typedefs.
+Same goes for structures - even if you use a structure only
+once, define a type for it - you never know where it'll come in
+handy.
+
+
+Include files
+-------------
+
+Never put anything that generates code into an include file.
+Why: you will get a multiple definition error (or other weird
+behavior) when trying to link together two OBJs compiled from
+two .C sources that used this same include file. System include
+files are by convention put into angular brackets (e.g. #include
+<stdio.h>), while the others are put into quotes (e.g. #include
+"pal.h"). Please also see the section on PAL.H, PALPRIV.H and
+the include directory in the STRUCTUR.TXT file.
+
+
+Global variables
+----------------
+
+Avoid them if possible. Global variables, especially in a library, can
+be the cause of side effects that are hard to find. They can also
+prevent a library function from being reentrant.
+
+
+Comments
+--------
+
+Yes. Comment your code. If you just finished that function, got it to
+work, and are about to contribute it, imagine reviewing your source
+code with another C programmer.  Add as comments the explanations that
+you would give him. That is, don't explain the obvious, e.g.
+
+    i++; /* increment variable i */
+
+instead, explain what it does:
+
+    i++; /* point at next entry in string array */
+
+
+Recommended Books
+-----------------
+
+[1]: Brian Kernighan and Dennis Ritchie:
+     The C Programming Language,
+     Second Edition (ANSI C)
+     Prentice Hall Software Series
+     ISBN 0-13-110362-8
+     (_THE_ reference of course)
+
+[2]: Andrew Koenig:
+     C Traps and Pitfalls
+     Addison-Wesley Publishing Company
+     ISBN 0-201-17928-8
+     (The do's and don'ts of C programming. Highly recommended)
+
+[3]: Robert Sedgewick:
+     Algorithms in C
+     Addison-Wesley Publishing Company
+     ISBN 0-201-51425-7
+     (The C version of the authors 'Algorithms' book, originally
+     available for PASCAL. Good algorithms, fair C coding <g>)
+
+[4]: P.G. Plauger:
+     The Standard C Library
+     Prentice Hall
+     ISBN 0-13-131509-9
+     (A sample implementation of the ANSI C standard library,
+     entirely in C. Very interesting if you want to know what a
+     standard lib function does exactly in certain
+     circumstances. Does contain large extracts from the ANSI
+     standard document itself. This information is otherwise
+     hard/expensive to get.)
+

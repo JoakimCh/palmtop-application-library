@@ -1,0 +1,327 @@
+!short:
+!short:^u Alternate memory management routines
+^u Alternate memory management routines
+
+The alternate memory management routines are used in PAL to provide
+a way to handle out-of memory conditions.
+
+Available functions:
+
+  - PalMalloc       : Malloc replacement with out-of-mem handling
+  - PalRealloc      : Realloc replacement with out-of-mem handling
+  - PalCalloc       : Calloc replacement with out-of-mem handling
+  - PalFree         : Free replacement
+  - PalStrdup       : Strdup replacement with out-of-mem handling
+  - SetPalMemFail   : Define your own out-of memory handler
+
+!short: MEM Introduction
+When a request for memory is made inside PAL and an out of
+memory situation results, an error handling routine is called.
+
+This routine, by default, does a FatalExit. You can instruct PAL
+to call a routine of your own when an out-of-mem condition
+happens though. And you can of course also use these routines in
+your own programs, in a variety of ways.
+
+There are several levels at which you can use these functions in
+your own program.
+
+Level 0: just leave them alone - they will do their work for you
+         inside PAL, but you can continue to use the classic
+         C library routines malloc, calloc, free etc.
+
+Level 1: Use just the out-of-memory handler. For example, your
+         application may have important files open which you
+         want to flush prior to exiting, should an out-of-mem
+         condition arise in PAL. You can even try to free some
+         memory that you know can be discarded and tell the
+         calling function to try the allocation again.
+
+Level 2: Use them explicitly. That is, you make calls to the
+         replacement routines PalMalloc, PalRealloc, PalFree etc,
+         instead of the ones from the standard lib. You should
+         use the new routines consistently - for example, if you
+         allocate memory using PalMalloc, you should free it with
+         PalFree.
+
+Level 3: Use them implicitly. To do this, just #include "palmem.h"
+         in your application. (Put it after the pal.h include).
+         This will activate a set of #defines that change the
+         standard C library memory allocation calls (malloc, calloc,
+         realloc etc.) into the corresponding PAL versions. You
+         will not need to search-and-replace through your existing
+         source code if you want to switch to the PAL routines.
+         You _will_ need to recompile your source though. If you
+         dislike the 'behind-the-screens' way in which macros
+         work, use Level 2 instead of this level. Both Level 2
+         and Level 3 can be combined with the use of the
+         out-of-memory handler.
+
+!short: PalMalloc            Replacement for malloc
+   NAME
+      PalMalloc
+
+   DESCRIPTION
+      Allocates memory like malloc does, but will call the
+      out-of-mem handler when it can't allocate the requested
+      block.
+
+   SYNOPSIS
+      #include "pal.h"
+      void *PalMalloc(size_t size);
+
+   INPUTS
+      size - the amount of memory (in bytes) to allocate.
+
+   RETURN VALUE
+      A pointer to the allocated block of memory. If the
+      allocation fails, PalMalloc will call the PalMemFail
+      function with the size of the requested block. The
+      standard PalMemFail will simply do a FatalExit, but you
+      can replace it with a more sophisticated one.
+
+   NOTE
+      Please see the introductory chapter of this module for
+      an explanation of the different possible levels of use
+      of the PAL memory allocation routines.
+
+!Seealso: PalRealloc PalCalloc PalFree PalStrdup SetPalMemFail
+
+!short: PalRealloc           Replacement for realloc
+   NAME
+      PalRealloc
+
+   DESCRIPTION
+      Reallocates memory like realloc does, but will call the
+      out-of-mem handler when it can't allocate the requested
+      block.
+
+   SYNOPSIS
+      #include "pal.h"
+      void *PalRealloc(void *p, size_t size);
+
+   INPUTS
+      p    - a pointer to a memory block returned by PalAlloc,
+             PalRealloc, PalCalloc or PalStrdup.
+      size - the amount of memory (in bytes) to allocate.
+
+   RETURN VALUE
+      A pointer to the new block of memory. If the allocation
+      fails, PalMalloc will call the PalMemFail function with
+      the size of the requested block. The standard PalMemFail
+      will simply do a FatalExit, but you can replace it with a
+      more sophisticated one.
+
+   NOTE
+      See your C compilers documentation for details on how
+      realloc works - PalRealloc calls it internally.
+
+      Please see the introductory chapter of this module for
+      an explanation of the different possible levels of use
+      of the PAL memory allocation routines.
+
+!Seealso: PalMalloc PalCalloc PalFree PalStrdup SetPalMemFail
+
+!short: PalCalloc            Replacement for calloc
+   NAME
+      PalCalloc
+
+   DESCRIPTION
+      Allocates memory like calloc does, but will call the
+      out-of-mem handler when it can't allocate the requested
+      block.
+
+   SYNOPSIS
+      #include "pal.h"
+      void *PalCalloc(size_t n, size_t size);
+
+   INPUTS
+      n    - the number of elements to allocate
+      size - the size of one element
+
+   RETURN VALUE
+      A pointer to the allocated block of memory. If the
+      allocation fails, PalCalloc will call the PalMemFail
+      function with the size of the requested block. The
+      standard PalMemFail will simply do a FatalExit, but you
+      can replace it with a more sophisticated one.
+
+   NOTE
+      See your C compilers documentation for details on how
+      calloc works - PalCalloc calls it internally.
+
+      Please see the introductory chapter of this module for
+      an explanation of the different possible levels of use
+      of the PAL memory allocation routines.
+
+!Seealso: PalMalloc PalRealloc PalFree PalStrdup SetPalMemFail
+
+!short: PalFree              Replacement for free
+   NAME
+      PalFree
+
+   DESCRIPTION
+      Frees a block of allocated memory.
+
+   SYNOPSIS
+      #include "pal.h"
+      void PalFree(void *p);
+
+   INPUTS
+      p    - a pointer to a memory block returned by PalAlloc,
+             PalRealloc, PalCalloc or PalStrdup.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      See your C compilers documentation for details on how
+      free works - PalFree calls it internally.
+
+      Please see the introductory chapter of this module for
+      an explanation of the different possible levels of use
+      of the PAL memory allocation routines. If you use them
+      at Level 3, you don't need to care about the double
+      pointer - the 'free' replacement macro does this for
+      you.
+
+!Seealso: PalMalloc PalRealloc PalFree PalStrdup SetPalMemFail
+
+!short: PalStrdup            Replacement for strdup
+   NAME
+      PalStrdup
+
+   DESCRIPTION
+      Duplicates a string like strdup does, but will call the
+      out-of-mem handler when it can't allocate the requested
+      block. The standard PalMemFail will simply do a FatalExit,
+      but you can replace it with a more sophisticated one.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *PalStrdup(char *s);
+
+   INPUTS
+      s   -  a pointer to a zero-delimited string.
+
+   RETURN VALUE
+      A copy of the original string.
+
+   NOTE
+      See your C compilers documentation for details on how
+      strdup works - PalStrdup calls it internally.
+
+      Please see the introductory chapter of this module for
+      an explanation of the different possible levels of use
+      of the PAL memory allocation routines.
+
+!Seealso: PalMalloc PalCalloc PalRealloc PalFree SetPalMemFail
+
+!short: SetPalMemFail        Define your own out of memory handler
+   NAME
+      SetPalMemFail
+
+   DESCRIPTION
+      Use this routine to set your own out of memory handler.
+      Pass it the address of your handler function.
+
+      It will return the address of the old handler, in case
+      you need to set it back.
+
+      The handler function itself will get the size of the
+      block of memory that could not be allocated. It can
+      itself try to free up sufficient memory. If it thinks
+      it has been successful in doing so, it should return
+      TRUE to the caller to trigger another allocation
+      attempt. Otherwise, it should either do a FatalExit
+      or return FALSE - in this case, the caller of the
+      allocation function will get a NULL value return.
+
+      Here's what the default PAL out of memory handler looks
+      like:
+
+      int PalMemFail(size_t size)
+      {
+         FatalExit("PalMemFail: Out of memory !", 99);
+         return FALSE; /* not really necessary */
+      }
+
+      As you can see, the default handler does not attempt
+      to free up memory, it just panicks.
+
+   SYNOPSIS
+      #include "pal.h"
+      void *SetPalMemFail(int (*NewFun)(size_t size));
+
+   INPUTS
+      NewFun - a pointer to your handler. (As a pointer
+      to a function that accepts a size_t and returns
+      an int).
+
+   RETURN VALUE
+      A pointer to the old handler. (As a void *)
+
+   NOTE
+      While the standard handler listed above does not return,
+      your custom version can do so - see the samples below
+      for further details.
+
+   SAMPLES
+      void *MyMemFail(size_t size)
+      {
+         return FALSE;
+      }
+
+      /* ... */
+      SetPalMemFail(MyMemFail); /* set new out of mem handler */
+      /* ... */
+
+      This handler is the 'passthru' version. It doesn't do anything -
+      the behaviour is actually the same as if the whole handler
+      mechanism wasn't there at all, and the allocation routines would
+      return themselves, directly.
+
+      That's not very useful. This version is more interesting:
+
+      int MyMemFail2(size_t size)
+      {
+         /* static counter: prevent reentrant calls */
+         static int CallCount = 0;
+         int Success;
+
+         if(CallCount++) FatalExit("MemFail called recursively !", 1);
+
+         /* attempt to free up sufficient memory */
+         Success = FreeSomeMemory(size);
+
+         --CallCount;
+         if(!Success) FatalExit("Out of memory !", 2);
+         return TRUE;
+      }
+
+      /* ... */
+      SetPalMemFail(MyMemFail2); /* set new out of mem handler */
+      /* ... */
+
+      Notice the precaution that is taken against calling the
+      handler recursively. This can easily happen if you call a
+      function that itself tries another allocation. MsgBox
+      would be a good example - since it opens a window and
+      saves the background of it, it will call PalMalloc
+      somewhere, and you will end up in your handler again,
+      recursively. It is recommended that you use this kind of
+      device in your own handler as well.
+
+      Also, be sure to return TRUE IF AND ONLY IF your attempt
+      to free up some memory succeeded at least partially. If
+      there was no progress at all, either do a FatalExit or
+      return FALSE. (If you do the latter, be sure that the
+      routine that tried to do the allocation handles this
+      case.) If you return TRUE without having freed any
+      additional memory, you will end up in an endless loop.
+
+
+
+!Seealso: PalMalloc PalCalloc PalRealloc PalFree SetPalMemFail
+
+

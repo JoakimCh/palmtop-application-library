@@ -1,0 +1,226 @@
+!short:
+!short:^u Window functions
+
+Use the window functions to create or remove a graphical window
+that you can display information in.
+
+Available functions:
+
+   - OpenWin  : Open a window
+   - CloseWin : Close a window, recovering the memory associated with it
+   - WinText  : Output text in a window, relative to its client area.
+
+!SeeAlso: OpenWin CloseWin "Window Styles" "PALWIN Structure" WinText
+
+!short: OpenWin              Open a window
+   NAME
+      OpenWin
+
+   DESCRIPTION
+      OpenWin opens a window at a certain screen position, with
+      a size, border style and title you specify.
+
+   SYNOPSIS
+      #include "pal.h"
+      PALWIN *OpenWin(WORD Style, int x1, int y1, int x2, int y2,
+                      char *Caption);
+
+   INPUTS
+      Style   - see the entry on window styles below.
+      x1      - x position of upper left corner (including frame)
+      y1      - y position of upper left corner (including frame)
+      x2      - x position of lower right corner, including frame
+                but not shadow.
+      y2      - y position of lower right corner, including frame
+                but not shadow.
+      Caption - The title for your window - use NULL if you
+                don't want a title.
+
+   RETURN VALUE
+      OpenWin returns a pointer to a PALWIN structure (described
+      in another entry) or NULL on failure.
+
+   SAMPLE
+      PALWIN *pWin;
+
+      pWin = OpenWin(WS_HP200, 10, 10, 100, 100, " Hello PAL ");
+      GetKey();
+      CloseWin(pWin);
+
+!SeeAlso: CloseWin "Window Styles" "PALWIN Structure"
+
+!short: CloseWin             Close a window
+   NAME
+      CloseWin
+
+   DESCRIPTION
+      Closes a window opened by OpenWin.
+
+   SYNOPSIS
+      #include "pal.h"
+      void CloseWin(PALWIN *pWin);
+
+   INPUTS
+      pWin - the pointer to the PALWIN structure returned by
+      OpenWin
+
+   NOTE
+      CloseWin will only restore the background of the window if
+      it got opened with the WS_SAVEBG style.
+
+   SAMPLE
+      PALWIN *pWin;
+
+      pWin = OpenWin(WS_HP200, 10, 10, 100, 100, " Hello PAL ");
+      GetKey();
+      CloseWin(pWin);
+
+!SeeAlso: OpenWin "Window Styles" "PALWIN Structure"
+
+!short: WinText              Output text in a window
+   NAME
+      WinText
+
+   DESCRIPTION
+      Output a text string at position (x,y) in client area of a window
+      given by a pointer to a PALWIN descriptor. The currently selected
+      font is used.
+
+   SYNOPSIS
+      #include "pal.h"
+      void WinText(PALWIN *pWin, int OffsetX, int OffsetY, char *Txt);
+
+   INPUTS
+      pWin      - the pointer to the PALWIN structure returned by
+                  OpenWin
+
+      OffsetX   - X coordinate where text should appear - relative to the
+                  upper left corner of the window, not the screen.
+
+      OffsetY   - Y coordinate where text should appear - relative to the
+                  upper left corner of the window, not the screen.
+
+      Txt       - the text to be output.
+
+   SAMPLE
+      PALWIN *pWin;
+
+      pWin = OpenWin(WS_HP200, 10, 10, 100, 100, " Hello PAL ");
+      WinText(pWin, 5, 5, "WinText test");
+      GetKey();
+      CloseWin(pWin);
+
+!SeeAlso: OpenWin CloseWin "Window Styles" "PALWIN Structure"
+
+!short: PALWIN Structure     Records information on a window
+   The PALWIN Structure
+
+   The window functions keep track of information on a window in
+   the PALWIN structure. Here's its definition from PAL.H:
+
+    /* the window descriptor structure */
+    typedef struct {
+       void *Buffer;        /* background storage */
+       WORD Style;          /* Style that window has */
+       WORD Font;           /* System font to use for caption & menues     */
+       int  x1, y1, x2, y2; /* physical dimensions of window, INCL. border */
+       int  PosX, PosY;     /* upper left coordinates of client area       */
+       int  Width, Depth;   /* width and depth of client area              */
+    } PALWIN;
+
+    Buffer: This is a pointer to the background of the window,
+            in IMG format. It is valid only if the window was
+            opened with the WS_SAVEBG style flag, and will be
+            used by CloseWin to restore the background. CloseWin
+            then frees the memory used by that buffer.
+
+    Style:  The style word as passed to OpenWin.
+
+    Font:   The font to be used for the caption. Currently
+            either SMALL_FONT or MEDIUM_FONT, depending on
+            inclusion of the WS_SMLFONT style flag.
+
+    x1, y1,
+    x2, y2: Coordinates of the upper left and lower right window
+            corners, respectively. Stored here as passed to
+            OpenWin. Note that the area defined by these
+            coordinates includes an eventual caption bar and
+            border, but not the shadow.
+
+    PosX,
+    PosY:   Absolute screen coordinates of the first 'client
+            area' pixel in the window, that is, the first
+            upper left corner pixel inside the border and below
+            the caption bar.
+
+    Width,
+    Depth:  Useable size of the window, that is, the 'inside'
+            window space. The coordinates of the last bottom
+            right pixel still inside the window but not yet part
+            of an eventual border would thus be:
+            (PosX+Width-1, PosY+Depth-1).
+
+!SeeAlso: OpenWin CloseWin "Window Styles"
+
+!short: Window Styles        Control aspect of a window
+   Window Styles
+
+   You can either use one of the predefined styles (recommended)
+   for a window that you open, or create your own style. Let's
+   have a look at the available predefined styles first:
+
+      WS_MENU  : Style used for menues - 1 pixel border and shadow.
+      WS_HP100 : same as WS_MENU, but smaller font used
+      WS_HP200 : same as WS_MENU, but double border
+      WS_HELP  : small font, large border.
+
+   You can also create your own style by 'oring' together the
+   following components:
+
+      + Border thickness: either none (for no border), or one of
+        the following:
+
+        WS_BORDER  : single pixel border
+        WS_DBORDER : double border (2 pixels)
+        WS_FRAME   : help frame border (13 pixels)
+
+        Alternatively, simply provide the thickness you want,
+        up to 15 pixels.
+
+      + Shadow: 'Or' your style with WS_SHADOW to get a shadow.
+
+      + Small font: 'Or' your style with WS_SMLFONT to have
+        SMALL_FONT be used for the caption instead of
+        MEDIUM_FONT.
+
+      + Background handling: 'Or' your style with WS_SAVEBG to
+        have OpenWin save the background before opening your
+        window. You are very likely to want this behaviour - all
+        predefined styles have it. Omit it it you want to save
+        the memory required, and have other means of restoring
+        the background after closing the window.
+
+   SAMPLE
+      Here are the definitions of the predefined styles from
+      PAL.H:
+
+      #define WS_MENU  (WS_BORDER|WS_SHADOW|WS_SAVEBG)
+      #define WS_HP100 (WS_BORDER|WS_SHADOW|WS_SMLFONT|WS_SAVEBG)
+      #define WS_HP200 (WS_DBORDER|WS_SHADOW|WS_SAVEBG)
+      #define WS_HELP  (WS_FRAME|WS_SMLFONT|WS_SAVEBG)
+
+      For a window with a 7 pixel border, no shadow and a small
+      font, you could use:
+
+      #define MY_STYLE (7 | WS_SMLFONT | WS_SAVEBG)
+
+   NOTE
+      The first four bits of the style are the border size -
+      this makes it easy to just 'or' in the size as shown in
+      the sample above.
+      Note that you cannot exceed 15 pixels border size. Don't
+      forget to include WS_SAVEBG unless you are sure that you
+      don't need it.
+
+!Seealso: OpenWin CloseWin "PALWIN Structure"
+

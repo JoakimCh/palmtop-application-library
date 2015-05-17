@@ -1,0 +1,286 @@
+<HTML>
+<HEAD>
+<TITLE>Dr. Reddy's Guide to HP Palmtops -- Programming (Part I)</TITLE>
+</HEAD>
+<BODY BACKGROUND="http://www.drreddy.com/drreddy/cgi-bin/baby5bkg.cgi"
+ LINK="#80000FF" VLINK="#008C8C">
+<META  name="description" 
+    content="A few hints (and links) on writing software for HP DOS Palmtops.">
+<META  name="keywords" content="MS-DOS, PC-DOS, organizer, PDA, C, NKIT,
+             PAL, 100 LX System Manager, 200 LX System Manager, EXM files,
+             palmtop">
+
+<H2 ALIGN=center><A HREF="http://www.drreddy.com/index.html">
+Dr. Reddy's</A> Guide to HP Palmtops</H2>
+<H1>Programming the Palmtop (Part I)</H1>
+<CENTER>
+  <A HREF="http://www.drreddy.com/commqs.html">
+   <img src="http://www.drreddy.com/chealth.gif"
+     ALT="Children's Health" width="100" height="50"></A>
+  <A HREF="http://www.drreddy.com/pedresrc.html">
+   <img src="http://www.drreddy.com/pedres.gif"
+      ALT="Pediatric Resources" width="100" height="50"></A>
+  <A HREF="http://www.drreddy.com/funsites.html">
+   <img src="http://www.drreddy.com/funsites.gif"
+      ALT="Fun Sites for Kids" width="100" height="50"></A>
+  <A HREF="http://www.drreddy.com/palmtop.html">
+   <img src="http://www.drreddy.com/palmtop.gif"
+      ALT="HP Palmtops" width="100" height="50"></A>
+  <A HREF="http://www.drreddy.com/vinayshm.html">
+   <img src="http://www.drreddy.com/vinayshm.gif"
+      ALT="Dr. Reddy's Home Page" width="100" height="50"></A>
+  <A HREF="http://www.drreddy.com/feedback.html">
+   <img src="http://www.drreddy.com/feedback.gif"
+      ALT="Feedback" width="100" height="50"></A>
+  <A HREF="http://www.drreddy.com/gop.html">
+   <img src="http://www.drreddy.com/gop.gif"
+      ALT="Our Real Office" width="100" height="50"></A>
+</CENTER><HR>
+<CENTER>
+<A HREF="http://www.hp.com/handheld/palmtops/palmtops.html">
+<IMG ALIGN=center SRC="http://www.drreddy.com/200_sm.gif"
+ ALT="An HP 200 LX">
+HP's Palmtop Home Page</A>
+</CENTER>
+<P ALIGN=left>
+Most Web pages about writing software for the HP DOS Palmtops
+deal mainly with the use of the Palmtop Applications Library.  PAL is a
+great way to write Palmtop software, but for those of us who actually
+<I>want</I> (or need) System Manager-compliant applications, it's not
+quite the same.
+There are, however, a few available examples and resources on System
+Manager-compliant Palmtop programming.
+<H3>Available Palmtop Programming Resources</H3>
+<P ALIGN=left>
+The key resource for anyone seriously interested in System Manager
+programming is the HP 100LX/200LX Developer's Guide.  This is available
+from <A HREF="http://www.thaddeus.com/">Thaddeus Computing</A>, publisher
+of the HP Palmtop Paper: you can obtain it in the original hardcopy form,
+with accompanying floppy disk, or on CD as part of the Palmtop Paper
+Infobase along with the accompanying software.  The Guide is a (pretty)
+complete source of information on the Palmtop's hardware and software,
+including the various System Manager built-in functions and the interface
+functions developed by Lotus for the Palmtop, and you should never write
+Palmtop software without it.  The accompanying software includes various
+tools developed by HP and Lotus to assemble, compile, and test EXM
+(System Manager-compliant) programs on a PC, and to convert EXE files
+to EXM files for execution on the Palmtop itself, as well as one complete
+sample application (HEXCALC, the hexadecimal calculator that is included
+on D: drive in the English version of the 200LX).  More about these below.
+<P ALIGN=left>
+Other resources available on the Web include:
+<DL>
+ <DT>NKIT<DD>a collection of EXM programs in C source code written by
+     Japanese programmers, with a header file similar to the header files
+     supplied by HP but made to be more complete than the HP files (the
+     single file <TT>LXAPI.H</TT> serves the same function as four or five HP
+     header files) and to allow compilation under the
+     <A HREF="http://www.borland.com/">Turbo C</A> or LSI-C86 compilers.
+     Versions of the EXE-to-EXM converter suitable for use with Turbo C
+     or LSI-C86 are also provided, as are compatible versions of the
+     System Manager and interface libraries.  The Turbo C library provides
+     support for floating-point arithmetic, which is <I>not</I> provided
+     in the HP toolkit.</DD>
+ <DT>BASICEXM<DD>an example EXM program from the HP Palmtop Paper, which
+     was written to be compiled using NKIT.</DD>
+ <DT><I>HandHeld Systems</I><DD>This is not, strictly speaking, on the Web.
+     <I>Handheld Systems</I> (earlier known as <I>PIE Developers</I> and then
+     as <I>PDA Developers</I>) was a journal for software developers working
+     with various PDAs and handheld computers.  It began as a journal for
+     Apple Newton developers (!), but expanded its coverage within a year
+     to include all available handheld computers.  The bad news: it ceased
+     publication in early 1999.  The good news:<A HREF="http://www.cdpubs.com/">
+     Creative Digital Publishing</A>, who published <I>Handheld Systems</I>,
+     made the entire 6 years' (32 issues) of the journal available on
+     CD-ROM for $14.95 (plus $5.00 shipping).  The CD-ROM includes all
+     example source code originally supplied with the journal.  The articles
+     are comprehensive and well-written, and, at least for the Palmtop,
+     delve into several issues not (well) covered in the
+     Developer's Guide or Development Kit, including the problem of fixing
+     up memory pointers during a program run (made necessary by the architecture
+     of System Manager). The worse news: Creative Digital Publishing says
+     the CD-ROM archive is no longer available from them.  (I suppose you
+     could try <A HREF="http://www.ebay.com">eBay</A>, or find someone who
+     has the CD-ROM and persuade them to make a copy for you after getting
+     permission from CDP for copying.)</DD>
+ <DT>Other People's Software<DD>Many programmers have written System-Manager
+     compliant software for the Palmtop.  Several of them (most notably a
+     number of Japanese programmers) have posted their source code on the
+     Web.  It's a bit hard to track these down, but some time spent with the
+     HP-LX mailing list and <A HREF="http://www.palmtop.net/super.html">SUPER</A>
+     will be rewarding.  (Many of the Japanese sources are posted on
+     Japanese-language Web pages.  Fortunately, the source code itself is
+     written in English C.)
+</DL>
+<H3>Compiling Palmtop Programs</H3>
+<P ALIGN=left>
+Since the Palmtop is essentially a pocket-size IBM PC/XT, any DOS application
+program will run on a Palmtop.  This includes any compiler that will fit in
+640K or less of main memory.  It is possible to develop Palmtop apps <I>on</I>
+a Palmtop... but it's probably a bit inconvenient.
+<P ALIGN=left>
+In the Developer's Guide, HP suggests using Microsoft C, version 6.0, for
+Palmtop C development (and MASM 6.0 for assembler program development).
+Finding a copy of Microsoft C 6.0 may be a little difficult, though.
+<P ALIGN=left>
+However, some versions of Microsoft C beyond 6.0 will work, and there are
+easy and cheap ways to acquire them.  Example: a while back Microsoft
+published a book titled <I>Learn Visual C++ Now</I>.  It can still be found
+as a remainder in some bookstores.  The included CD-ROM contains a copy of
+Visual C++ 1.0, which in turn contains a (full, working) copy of C 8.0.
+I have also seen Visual C++ 1.0 included in other publications, including
+(I'm really dating myself here) a Game Programming Starter Kit published
+by Sams a few years ago.  You <I>can</I> write Palmtop apps in C++ (although
+I've never tried).  The important thing, though, is that you can use the
+C 8.0 compiler to "make" Palmtop programs.  In fact, that is precisely how
+I do it; I point the HP skeleton app makefile to the C 8.0 compiler, and
+let <I>nmake</I> do the rest.  <I>Note that later versions of Microsoft C
+will not compile code for anything less advanced than a Pentium and thus
+won't work for Palmtop programming.</I>  An example of an unsuitable compiler
+is version 11.0, which underlies Visual C++ 5.0.
+<P ALIGN=left>
+For those of you who prefer the Turbo C environment for writing and debugging
+C programs (I usually do myself -- I use the Microsoft route mainly because
+alternatives weren't available when I started writing Palmtop apps), NKIT
+(mentioned above) allows you to compile, link, and make EXM versions of
+C programs.  The details, and the modified header, library, and startup
+files are in the kit with the sample programs.  (NKIT also has provision
+for using LSI C-86, a C compiler available in a freeware trial version in
+Japan.)  I have also heard reports of people using MIX Software's Power C
+compiler for Palmtop development: I have used, and like, the compiler, but
+I have not had any experience with it in Palmtop development.
+<H3>Running (and Debugging) Palmtop Programs on a PC</H3>
+<P ALIGN=left>
+Any standard DOS application can be run on a Palmtop without modification.
+It must run in 640K or less of RAM, of course (less if that's where your
+Palmtop's working RAM is set), but most DOS apps -- including many of the
+compilers mentioned above -- were written to do just that.
+<P ALIGN=left>
+The converse isn't quite true.  Since System-Manager compliant programs
+need to access System Manager services (including System Manager versions
+of normal DOS calls), you have to arrange for the service routines to be
+present.  Also, the Palmtop display is a non-standard CGA display, and
+requires special access routines which are also lacking in normal DOS.
+<P ALIGN=left>
+HP provides, both in the Developer's Kit and in the Connectivity Pack,
+two tools to overcome these deficiencies in your desktop PC.  The first
+is <TT>TKERNEL.EXE</TT>, which is a TSR program that serves INT 7E and 7F as the
+System Manager does in the Palmtop.  The second is <TT>CG.COM</TT> (a second
+version, <TT>CGAGRAPH.COM</TT>, is included in the Developer's Kit),
+which provides the graphic interface.
+<P ALIGN=left>
+There are two ways to invoke these tools and run a Palmtop app in DOS.
+One is to use the Connectivity Pack Application Manager, which also uses
+<TT>TKERNEL</TT> and <TT>CG</TT>: just add your program to the App Manager 
+application menu, and run it from there.  The other is to use the tools
+directly:<BR><BR>
+ <TT>TKERNEL<BR>
+ CG</TT> (or <TT>CGAGRAPH</TT>)<BR>
+ &lt;<I>your program</I>&gt; (or <TT>CV</TT> &lt;<I>your program</I>&gt; if
+   you're using CodeView)<BR>
+ <TT>CG</TT> (to unload the graphic drivers)<BR><BR>
+The Connectivity Pack also includes a program called <TT>UN200</TT> which
+unloads <TT>TKERNEL</TT>.  If you look at <TT>APP200.BAT</TT> (the batch
+file that invokes the App Manager) you will see how the tools interact.
+You may want to rewrite this batch file to allow you to run a Palmtop
+program directly from <TT>C:></TT>.
+<H3>Running Your New Palmtop App on the Palmtop</H3>
+<P ALIGN=left>
+Unfortunately, you can't just move an EXE file to the Palmtop and run it
+under System Manager.  On the Palmtop, under System Manager, System Manager
+itself does the program loading, and it looks for indicators that the
+program is indeed System-Manager compliant.  The executables have the
+extension EXM, and are rather different from normal EXE executables.
+In particular:
+<UL>
+ <LI>The "magic number" at the beginning of an EXM is 0x444C (ASCII "DL")
+     rather than the 0x4D5A (ASCII "MZ") of EXE files.
+ <LI>Most of the data segment is missing from the EXM file: only initialized
+     variables are allocated space.  (This makes the EXM file much more
+     compact than its EXE parent -- an important consideration given the
+     memory constraints of the Palmtop.)
+</UL>
+<P ALIGN=left>
+HP provides a tool called <TT>E2M.EXE</TT> which converts an EXE file to EXM
+format, using information in the compiler-generated MAP file.  (The need for
+the MAP file, which contains information on where the code segment ends and
+the data segment begins, is one reason that early attempts at Turbo C app
+development were difficult: the MAP file available from Turbo C is not in
+the same format as the Microsoft MAP file, and E2M couldn't read the segment
+information.  NKIT contains versions of E2M that work with the Turbo and LSI
+compilers and their MAP files.)  Once the EXM file is created, it can be
+transferred to a Palmtop and run like any other Palmtop app (you can't
+directly run an EXM on a desktop PC, even with TKERNEL and CG, although I
+have heard rumours of recent, successful experiments with doing so).
+<P ALIGN=left>
+In <A HREF="http://www.drreddy.com/palmtop/prog2.html">Part II</A>
+I'll talk about how a System-Manager compliant application is structured.
+<HR><BR>
+<!-- HP Palmtop Ring fragment -- taken from HP Palmtop Ring homepage 12/13/1999 -->
+ <CENTER>Visit the
+ <A HREF="http://www.webring.com/cgi-bin/webring?home&ring=hpr" TARGET="_top">HP
+ Palmtop Ring Homepage</A><P>
+ This <A HREF="http://www.webring.com/cgi-bin/webring?home&ring=hpr" TARGET="_top">HP
+ Palmtop Ring Site</A> is owned by
+ <A HREF="http://www.drreddy.com/vnremail.html">Vinay N. Reddy, M.D.</A>
+ Visit <A HREF="http://www.webring.org/" TARGET="_top">The Webring</A>.<P>
+ [ <A HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&next"
+ TARGET="_top">Next</A> | <A
+ HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&skip"
+ TARGET="_top">Skip Next</A> | <A
+ HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&next5"
+ TARGET="_top">Next 5</A> | <A
+ HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&prev"
+ TARGET="_top">Previous</A> | <A
+ HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&sprev"
+ TARGET="_top">Previous 2</A> ]
+ <P></CENTER>
+<!-- End of HP Palmtop Ring fragment -->
+<HR>
+<!-- SWISH gateway added 03/14/98 -->
+<DL><DT><DD>
+<H3>Search the Office for:</H3>
+
+<FORM METHOD="POST" ACTION="http://www.drreddy.com/drreddy/cgi-bin/swish-web.cgi">
+<input type="text" name="keywords" size="50">
+<select name="maxhits">
+<option>10
+<option selected>25
+<option>50
+<option>100
+<option>250
+<option>500
+<option>all
+</select>
+Results
+<BR>
+<input type="submit" value=" Search ">
+<input type="reset" value=" Clear "> <br>
+
+<p>
+</form>
+</DD></DL>
+<CENTER>See the <A HREF="http://www.drreddy.com/swish-web.html">
+Detailed Search </A> page for complete instructions on searching the Office.
+</CENTER>
+<!-- End of SWISH gateway code -->
+<HR>
+<CENTER>
+<A HREF="http://www.drreddy.com/palmtop/index.html">
+Back to Dr. Reddy's Guide to HP Palmtops</A><BR>
+<A HREF="http://www.drreddy.com/">
+Back to Dr. Reddy's Pediatric Office on the Web</A>
+<BR>We welcome your
+<A HREF="http://www.drreddy.com/feedback.html">
+comments and questions.</A></CENTER><BR>
+<CENTER><I>Copyright</I> &copy; 2002, 2003, 2004
+<A HREF="http://www.drreddy.com/vnremail.html">
+Vinay N. Reddy, M.D.</A>  All rights reserved.<BR>
+Written 01/12/02; last revised 01/15/04
+<IMG SRC="http://counter.digits.com/?counter=drreddy&template=old"
+ height=0 width=0>
+<IMG SRC="http://www.msen.com/cgi-bin/msen/counter?DrReddy&modocr&2&250&0&250"
+ALT="counter" HEIGHT=0 WIDTH=0>
+</CENTER>
+</BODY>
+</HTML>

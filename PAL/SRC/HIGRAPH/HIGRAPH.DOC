@@ -1,0 +1,487 @@
+!short:
+!short:^u High-level graphics
+^u High-level graphics routines
+
+The High-level graphics routines is a small set of functions for
+creating lines, rectangles, and handling of PCX and ICN images.
+These functions are calling low-level graphics functions, and
+are used by higher-level routines in PAL such as windows and
+menus.
+
+Available functions:
+
+  - Line        : Draw a line on the screen.
+  - Rectangle   : Draw a rectangle on the screen, outlined or filled.
+  - RevBlock    : Reverse colors of an image block.
+  - ClrBlock    : Fill an image block with WHITE or BLACK
+  - LoadImg     : Load an image file (.ICN format) in memory.
+  - LoadPcx     : Load an image file (.PCX format) in memory.
+  - SaveImg     : Save an image (.ICN format) to a file.
+  - ShowKeys    : Show function key definitions.
+  - ShowTopLine : Display title and optional time strings on the top line.
+  - ShowTopTime : Display title and current time on the top display line.
+  - FormatDate  : Format a date string, in standard SysMgr format.
+  - FormatTime  : Format a time string, in standard SysMgr format.
+
+
+!short: Line                 Draw a line on the graphics screen.
+   NAME
+      Line
+
+   DESCRIPTION
+      The Line() function draws a line on the specified coordinates of
+      the graphics screen. The style of the line can be changed with
+      the SetLineType() function. The color of the line (Black or white)
+      can be set with the SetColor() function.
+
+   SYNOPSIS
+      #include "pal.h"
+      void Line(int x1, int y1, int x2, int y2);
+
+   INPUTS
+      x1:y1 - Starting X:Y coordinates of the line.
+      x2:y2 - Ending X:Y coordinates of the line.
+              X is between (0-639) and Y is between (0-199).
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      Caution: The SetLineType() function also affects the style of the
+      Rectangle() function. The PalInit() function resets the LineType
+      to solid, and color to black.
+
+   SAMPLE
+      Line(0,0,639,199); /* draw a diagonal line across the screen */
+
+!Seealso: PalInit SetLineType SetColor Rectangle
+
+!short: Rectangle            Draw a rectangle on the graphics screen.
+   NAME
+      Rectangle
+
+   DESCRIPTION
+      This function draws a rectangle, outlined or filled, on the graphics
+      screen. It is mostly used to create windows and menus by higher-level
+      routines of PAL.
+
+      The fill pattern must be defined with the SetMask() function.
+      The outline of the rectangle can be defined by calling the SetLineType()
+      function. If the filling is solid, you can set the color of the filling
+      with the SetColor() function.
+
+   SYNOPSIS
+      #include "pal.h"
+      void Rectangle(int x1, int y1, int x2, int y2, int FillStyle);
+
+   INPUTS
+      x1:y1  - Top left corner of the rectangle.
+      x2:y2  - Bottom right corner of the rectangle.
+               X is between (0-639) and Y is between (0-199).
+
+      FillStyle - The FillStyle argument may be one of the following:
+
+              OUTLINE_FILL : for no fill (only outline) with the border
+                             color set by the SetColor() function and
+                             the line type set by the SetLineType() function.
+
+              SOLID_FILL   : for a solid fill, with the color set by
+                             the SetColor() function.
+
+              PATTERN_FILL : for a pattern fill defined by the SetMask()
+                             function.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      The PalInit() function resets the color to BLACK, and the LineType
+      to solid.
+
+   SAMPLE
+      SetColor(BLACK_COLOR);          /* set pen color to black */
+      /* draw a solid black-filled rectangle */
+      Rectangle(15, 30, 50, 80, SOLID_FILL);
+
+!Seealso: SetLineType SetColor SetMask PalInit
+
+!short: RevBlock             Reverse colors of an image block.
+   NAME
+      RevBlock
+
+   DESCRIPTION
+      The RevBlock() function reverses the state of all the pixels
+      (BLACK->WHITE and WHITE->BLACK) in the specified rectangular area of
+      the screen. This is used by higher-level PAL routines for hi-lighting
+      menu items and window titles. The screen must be in 640x200 graphics
+      mode.
+
+   SYNOPSIS
+      #include "pal.h"
+      void RevBlock(int x1, int y1, int x2, int y2);
+
+   INPUTS
+      x1:y1  - Top left corner of the rectangle.
+      x2:y2  - Bottom right corner of the rectangle.
+               X is between (0-639) and Y is between (0-199).
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      This function reverses (flips) the color of each pixel directly on
+      the screen. Calling RevBlock() twice restores the image to the
+      original colors.
+
+   SAMPLE
+      RevBlock(10,20,250,130); /* flip the colors of this area */
+
+!Seealso: GraphMode ClrBlock
+
+!short: ClrBlock             Fill an image block with a color
+   NAME
+      ClrBlock
+
+   DESCRIPTION
+      The ClrBlock() function fills a rectangle with either WHITE
+      or BLACK.
+
+   SYNOPSIS
+      #include "pal.h"
+      void ClrBlock(int x1, int y1, int x2, int y2, int color);
+
+   INPUTS
+      x1:y1  - Top left corner of the rectangle.
+      x2:y2  - Bottom right corner of the rectangle.
+               X is between (0-639) and Y is between (0-199).
+      color  - the color you want to set the rectangle to.
+
+   RETURN VALUE
+      None.
+
+   SAMPLE
+      ClrBlock(10,20,250,130, WHITE_COLOR); /* clear to white */
+
+!Seealso: GraphMode RevBlock
+!short: LoadImg              Load an Image file (ICN) in memory.
+   NAME
+      LoadImg
+
+   DESCRIPTION
+      Loads an Image file (in icon format), malloc memory for it and
+      return a pointer to it. Returns NULL on failure.
+
+   SYNOPSIS
+      #include "pal.h"
+      IMGHDR *LoadImg(char *Name);
+
+   INPUTS
+      Name - filename of the ICN file.
+
+   RETURN VALUE
+      Returns NULL on failure.
+
+   NOTE
+      Here is the ICN header format:
+
+      typedef struct {
+        int Planes; /* on HP100/200, always 1 */
+        int Bits;   /* on HP100/200, always 1 */
+        int Width;  /* Width of the image */
+        int Depth;  /* Depth of the image */
+        } IMGHDR;
+
+   SAMPLE
+      IMGHDR pImg;  /* pointer to image buffer */
+
+      if(!PalInit(1)) FatalExit("Pal init fail - is CGAGRAPH resident ?", 1);
+
+      /* Load sample image */
+      pImg = LoadImg("vr.icn");
+
+      if(!pImg) FatalExit("Load ICN file failed", 1);
+
+      /* display image */
+      PutImg(0, 0, FORCE_RULE, pImg);
+      free(pImg);      /* free image buffer */
+
+!Seealso: PalInit FatalExit PutImg
+
+!short: LoadPcx              Load a PCX Image file into memory.
+   NAME
+      LoadPcx
+
+   DESCRIPTION
+      Loads an Image file (in PCX format), malloc memory for it and
+      return a pointer to it. Returns NULL on failure.
+
+   SYNOPSIS
+      #include "pal.h"
+      IMGHDR *LoadPcx(char *Name, int Inv);
+
+   INPUTS
+      Name - filename of the ICN file.
+      Inv  - Invert flag, non-zero = invert.
+
+   RETURN VALUE
+      Returns NULL on failure.
+
+   NOTE
+      The image once loaded in memory has the ICN format.
+      Here is the ICN header format:
+
+      typedef struct {
+        int Planes; /* on HP100/200, always 1 */
+        int Bits;   /* on HP100/200, always 1 */
+        int Width;  /* Width of the image */
+        int Depth;  /* Depth of the image */
+        } IMGHDR;
+
+   SAMPLE
+      IMGHDR *pImg;  /* pointer to image buffer */
+
+      if(!PalInit(1)) FatalExit("Pal init fail - is CGAGRAPH resident ?", 1);
+
+      /* Load, convert to ICN + invert sample image for the LCD */
+      pImg = LoadPcx("pal.pcx",1);
+
+      if(!pImg) FatalExit("Load PCX file failed", 1);
+
+      /* display image */
+      PutImg(0, 0, FORCE_RULE, pImg);
+      free(pImg);      /* free image buffer */
+
+!Seealso: PalInit FatalExit PutImg
+
+!short: SaveImg              Save an image (.ICN format) to a file.
+   NAME
+      SaveImg
+
+   DESCRIPTION
+      Save an Image from the memory to a file (.ICN format) and returns
+      TRUE if successful. You can use the GetImg() function to grab an
+      image from the screen.
+
+   SYNOPSIS
+      #include "pal.h"
+      int SaveImg(IMGHDR *pImg, char *Name)
+
+   INPUTS
+      pImg - pointer to the image in memory (.ICN format)
+      Name - filename of the ICN file to be created.
+
+   RETURN VALUE
+      Returns NULL on failure.
+
+   NOTE
+      Here is the ICN header format:
+
+      typedef struct {
+        int Planes; /* on HP100/200, always 1 */
+        int Bits;   /* on HP100/200, always 1 */
+        int Width;  /* Width of the image */
+        int Depth;  /* Depth of the image */
+        } IMGHDR;
+
+   SAMPLE
+      IMGHDR pImg;  /* pointer to the image buffer */
+
+      if(!PalInit(1)) FatalExit("Pal init fail - is CGAGRAPH resident ?", 1);
+
+      /* Load, convert to ICN + invert sample image for the LCD */
+      pImg = LoadPcx("pal.pcx",1);
+
+      if(!pImg) FatalExit("Load PCX file failed", 1);
+
+      /* grab a part of the image */
+      GetImg(0, 0, 100, 100, pImg);
+
+      /* save the part that was grabbed */
+      if(!SaveImg(pImg, "sample.icn")) FatalExit("Save ICN file failed",1);
+      free(pImg);    /* free image buffer */
+
+!Seealso: PalInit FatalExit GetImg
+
+!short: ShowFKeys            Show function key definitions.
+   NAME
+      ShowFKeys
+
+   DESCRIPTION
+      Display ten function key labels at the bottom of the screen.
+
+   SYNOPSIS
+      #include "pal.h"
+      void ShowFKeys(char **pKeys)
+
+   INPUTS
+      char **pKeys - pointer to an array of ten key labels
+
+   SAMPLE
+      /* define the function key labels */
+      char *KeyLabels[10] = {
+         "Help", "Add", "Edit", "Delete",  "Rescan",
+          NULL,   NULL,  NULL,   NULL,     "Quit"
+      };
+
+      ShowFKeys(KeyLabels);
+
+!Seealso: PalInit
+
+!short: ShowTopLine          Display title string and optional time on top line.
+   NAME
+      ShowTopLine
+
+   DESCRIPTION
+      Display a title and, optionally, a specific date/time string
+      on the top line of the display.
+
+   SYNOPSIS
+      #include "pal.h"
+      void ShowTopLine(char *pTitle, char *pTime)
+
+   INPUTS
+      char *pTitle - Title string for leftmost part of the top line.
+                     Max length 57 bytes.
+
+      char *pTime  - If not NULL, the formatted date/time string to
+                     display on the rightmost side of the top line.
+
+   SAMPLE
+      ShowTopLine("TestPgm:TEST.DAT", NULL);
+
+!Seealso: ShowTopTime FormatDate FormatTime
+
+!short: ShowTopTime          Display title and current time on the top line.
+   NAME
+      ShowTopTime
+
+   DESCRIPTION
+      Display a title string and the current date/time on the top
+      line of the display.
+
+   SYNOPSIS
+      #include "pal.h"
+      void ShowTopTime(char *pTitle, int ForceUpdate)
+
+   INPUTS
+      char *pTitle     - Title string for leftmost part of the top line.
+                         Max length 57 bytes.
+
+      int  ForceUpdate - Normally the title and date/time are not updated
+                         if the time has not changed since the last update.
+                         To force an update, specify ForceUpdate as TRUE.
+
+   NOTE
+      The date and time formats are specified via the SysMgr Setup
+      function: Menu Options | Date/Time.  The formats are read from
+      the C:\_DAT\SETUP.ENV file.  If the file cannot be read, the standard
+      U.S. date and time formats, "MM/DD/YY HH:MM (am/pm)", will be used.
+
+   SAMPLE
+      ShowTopTime("TestPgm:TEST.DAT", FALSE);
+
+!Seealso: ShowTopLine FormatDate FormatTime
+
+!short: FormatDate           Format date string, in standard SysMgr format.
+   NAME
+      FormatDate
+
+   DESCRIPTION
+      Format a date for display, in the standard SysMgr date format.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *FormatDate(char *DateStr, struct tm *pTm)
+
+   INPUTS
+      struct tm *pTm - Pointer to the date/time array to be formatted.
+                       Only month, day and year are used.
+
+   OUTPUTS
+      char *DateStr  - Formatted ASCIIZ date string.
+                       Max length 10 bytes, including terminating null.
+                       The possible date formats are:
+
+                        0:  "DD-MMM-YY"
+                        1:  "DD-MMM"
+                        2:  "MMM-YY"
+                        3:  "MM/DD/YY"
+                        4:  "DD/MM/YY"
+                        5:  "DD.MM.YY"
+                        6:  "YY-MM-DD"
+                        7:  "MM/DD"
+                        8:  "DD/MM"
+                        9:  "DD.MM"
+                       10:  "MM-DD"
+
+   RETURN VALUE
+      Returns a pointer to the formatted date string.
+
+   NOTE
+      The date format is specified via the SysMgr Setup function:
+      Menu Options | Date/Time.  The format is read from the
+      C:\_DAT\SETUP.ENV file.  If the file cannot be read, the
+      standard U.S. date format, "MM/DD/YY HH:MM (am/pm)", will be used.
+
+   SAMPLE
+      char    Str[10];
+      time_t  CurrTime;
+      struct  tm  *pTm;
+
+      time(&CurrTime);
+      pTm = localtime(&CurrTime);
+      FormatDate(Str, pTm);
+
+!Seealso: FormatTime ShowTopTime
+
+!short: FormatTime           Format time string, in standard SysMgr format.
+   NAME
+      FormatTime
+
+   DESCRIPTION
+      Format a time for display, in the standard SysMgr time format.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *FormatTime(char *TimeStr, struct tm *pTm)
+
+   INPUTS
+      struct tm *pTm - Pointer to the time array to be formatted.
+                       Only hour, minutes and seconds are used.
+
+   OUTPUTS
+      char *TimeStr  - Formatted ASCIIZ time string.
+                       Max length 12 bytes, including terminating null.
+                       The possible time formats are:
+
+                        0:  "HH:MM:SS (am/pm)"
+                        1:  "HH:MM (am/pm)"
+                        2:  "HH:MM:SS"
+                        3:  "HH.MM.SS"
+                        4:  "HH,MM,SS"
+                        5:  "HHhMMmSSs"
+                        6:  "HH:MM"
+                        7:  "HH.MM"
+                        8:  "HH,MM"
+                        9:  "HHhMMm"
+
+   RETURN VALUE
+      Returns a pointer to the formatted time string.
+
+   NOTE
+      The time format is specified via the SysMgr Setup function:
+      Menu Options | Date/Time.  The format is read from the
+      C:\_DAT\SETUP.ENV file.  If the file cannot be read, the
+      standard U.S. time format, "HH:MM (am/pm)", will be used.
+
+   SAMPLE
+      char    Str[12];
+      time_t  CurrTime;
+      struct  tm  *pTm;
+
+      time(&CurrTime);
+      pTm = localtime(&CurrTime);
+      FormatTime(Str, pTm);
+
+!Seealso: FormatDate ShowTopTime
+

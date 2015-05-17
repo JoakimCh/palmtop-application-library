@@ -1,0 +1,629 @@
+<HTML>
+<HEAD>
+<TITLE>Dr. Reddy's Guide to HP Palmtops -- Programming (Part II)</TITLE>
+</HEAD>
+<BODY BACKGROUND="http://www.drreddy.com/drreddy/cgi-bin/baby5bkg.cgi"
+ LINK="#80000FF" VLINK="#008C8C">
+<META  name="description" 
+    content="A few hints (and links) on writing software for HP DOS Palmtops.">
+<META  name="keywords" content="MS-DOS, PC-DOS, organizer, PDA, C, NKIT,
+             PAL, 100 LX System Manager, 200 LX System Manager, EXM files,
+             palmtop, programming">
+
+<H2 ALIGN=center><A HREF="http://www.drreddy.com/index.html">
+Dr. Reddy's</A> Guide to HP Palmtops</H2>
+<H1>Programming the Palmtop (Part II)</H1>
+<CENTER>
+  <A HREF="http://www.drreddy.com/commqs.html">
+   <img src="http://www.drreddy.com/chealth.gif"
+     ALT="Children's Health" width="100" height="50"></A> 
+  <A HREF="http://www.drreddy.com/pedresrc.html">
+   <img src="http://www.drreddy.com/pedres.gif"
+      ALT="Pediatric Resources" width="100" height="50"></A> 
+  <A HREF="http://www.drreddy.com/funsites.html">
+   <img src="http://www.drreddy.com/funsites.gif"
+      ALT="Fun Sites for Kids" width="100" height="50"></A> 
+  <A HREF="http://www.drreddy.com/palmtop.html">
+   <img src="http://www.drreddy.com/palmtop.gif"
+      ALT="HP Palmtops" width="100" height="50"></A> 
+  <A HREF="http://www.drreddy.com/vinayshm.html">
+   <img src="http://www.drreddy.com/vinayshm.gif"
+      ALT="Dr. Reddy's Home Page" width="100" height="50"></A> 
+  <A HREF="http://www.drreddy.com/feedback.html">
+   <img src="http://www.drreddy.com/feedback.gif"
+      ALT="Feedback" width="100" height="50"></A> 
+  <A HREF="http://www.drreddy.com/gop.html">
+   <img src="http://www.drreddy.com/gop.gif"
+      ALT="Our Real Office" width="100" height="50"></A> 
+</CENTER><HR>
+<CENTER>
+<A HREF="http://www.hp.com/handheld/palmtops/palmtops.html">
+<IMG ALIGN=center SRC="http://www.drreddy.com/200_sm.gif"
+ ALT="An HP 200 LX">
+HP's Palmtop Home Page</A>
+</CENTER>
+<P ALIGN=left>
+Like programs for other GUI operating systems (Mac, Windows, Palm OS, ...),
+HP Palmtop System-Manager compliant application programs are
+<I>event-driven</I>.  This means that the System Manager will report
+each important event to your program.  Your program will spend most of
+its time in a loop waiting for an event; when the event occurs, your
+program will respond appropriately to it and then go back and wait for
+the next event.  Most of the event are keystrokes, but other events that
+System Manager will send to your program include 
+<DL>
+  <DT><I>deactivation</I>
+   <DD>(when another Palmtop application is started up)
+  <DT><I>reactivation</I>
+   <DD>(when your app regains control)
+  <DT><I>termination</I>
+   <DD>(when System Manager is low on memory: the user is given a choice of
+        which open applications should be closed, and your app may be one of
+        those given the axe)
+  <DT><I>refresh</I>
+   <DD>(sent if System Manager wants the screen redrawn)
+  <DT><I>"NONE"</I>
+   <DD>(this message is sent at regular intervals, mainly to help keep the
+        date-time display in the title bar honest)
+</DL>
+<P ALIGN=left>
+Much of the structure of a Palmtop app is also dictated by the Lotus
+Handheld Application Programming Interface, or <I>LHAPI</I>.  Like other
+GUI operating systems, LHAPI provides many of the basic constructs for
+Palmtop app user interfaces.  The screen in a Palmtop app contains a
+main window and child windows which appear and disappear as needed by
+the program.  Each window can be configured to perform different functions,
+and LHAPI has many preconfigured windows to do everything from check boxes
+and radio buttons to file selection dialogs and multiline text editing.
+The data structures for LHAPI windows are described in the Developer's
+Guide, and the disk provided with the Kit contains the C and assembler
+header files needed to access the routines.
+<P ALIGN=left>
+Below is a System-Manager compliant application program.  In the Kernighan
+and Ritchie tradition, all the program does is displays "Hello, world" (and
+"Goodbye, world") on the screen.  The comments are my attempt to explain
+what is going on in each part of the code.
+<HR>
+<PRE>
+<TT>
+/****************************************************************************/
+/*                                                                          */
+/*  Hello, world  program for the HP 100/200 LX                             */
+/*     Copyright (c) 1996, 2002  Vinay N. Reddy, M.D.                       */
+/*     All rights reserved.                                                 */
+/*     This program may be used freely for any non-commercial purposes.  It */
+/*     may not be reproduced, distributed, or otherwise used commercially   */
+/*     without permission from the author.  The author makes NO guarantee   */
+/*     that this program is bug-free, or that it may be used safely for any */
+/*     purpose; it is presented only as an example of HP Palmtop System     */
+/*     Manager application programming.                                     */
+/*                                                                          */
+/*  This program displays the messages "Hello, world" and "Goodbye, world"  */
+/*    under function key and menu control.                                  */
+/*                                                                          */
+/*  Routines used:                                                          */
+/*      main()  More-or-less generic main program for HP 100/200 apps       */
+/*      EventDispatcher                                                     */
+/*              Command key/event key processor loop                        */
+/*      ProcessEvent                                                        */
+/*              Actual command dispatcher                                   */
+/*      MyCardHandler                                                       */
+/*              Main window handler modified to process hot keys            */
+/*      DoHello, DoBye                                                      */
+/*              Message display routines                                    */
+/*      DoBeep  Routine to produce a beep on command                        */
+/*      DoBlank Routine to blank out the current message                    */
+/*      DoQuit  Routine to set quit flag on command                         */
+/*      DoNothing                                                           */
+/*              Null action routine (just a null statement)                 */
+/*                                                                          */
+/****************************************************************************/
+
+
+/******** Include header files **********************************************/
+/*                                                                          */
+/* These header files are those included with the HP Palmtop Developer's    */
+/* Kit. Equivalent file names for NKIT are given in the NKIT documentation. */
+/*                                                                          */
+/****************************************************************************/
+
+#include "cap2.h"        /* Included in all CAP (old name for LHAPI)
+                             programs; you may also use "lhapi.h" */
+
+#include "interfac.h"    /* System manager includes (read the #included */
+#include "event.h"       /* files for details */
+#include "cougraph.h"
+#include "lstring.h"
+#include "chtype.h"
+#include "dosfile.h"
+#include "dtn_edit.h"
+#include "sysdefs.h"
+/*                          CHKTSR contains a C function that checks for
+                            the presence of TKERNEL, the desktop version
+                            of the System Manager service routines.  While
+                            debugging on the desktop, you need to have
+                            TKERNEL installed, or your program will crash
+                            your desktop quickly and efficiently.  Of course,
+                            you don't want to check for TKERNEL on your
+                            Palmtop, since System Manager is present in full
+                            glory.  The Development Kit makefile allows you
+                            to specify whether you are compiling a desktop
+                            version (with or without CodeView support) or
+                            a "real" (EXM'able) version.
+#ifdef TKERNEL
+#include "chktsr.c"
+#endif
+  */
+
+/* Defines for text and title bar placement */
+
+#define  TITLE_HEIGHT  10
+#define  TEXT_ORIGIN_X 43
+#define  TEXT_ORIGIN_Y 56
+
+/* Defines for program status (for redrawing purposes) */
+
+#define  STATUSBLANK    0
+#define  STATUSHELLO    1
+#define  STATUSGOODBYE  2
+
+/****************************************************************************/
+/* Because of the Palmtop's architecture (see the Developer's Guide, or the */
+/* articles in Handheld Systems Magazine, for details), an app's data       */
+/* segment can be moved at any time by System Manager,  This usually        */
+/* when another app is activated or deactivated, or when your or another    */
+/* app asks for more memory or releases part of previously-allocated memory.*/
+/* To allow for this movement, string constants and large data items are    */
+/* referred to by near pointers to far pointers to the actual data.  The    */
+/* far pointers need to be "fixed up" every time the app is reactivated; one*/
+/* way to do this is to keep all of the pointers in a table and fix them at */
+/* each reactivation.  Thus, all string constants are declared with         */
+/* pointers.  We'll see later how the pointers are handled (and fixed).     */
+/****************************************************************************/
+
+/* Title strings */
+
+char far *msgTestApp    = "Hello, Cougar";
+        /* Name of application (used by System Manager) */
+
+char far *msgAppTopLine = "Hello, world, this is the Cougar";
+        /* Title of application (displayed in main window title bar */
+
+/* Function key labels */
+
+char far *fkeyHello   = "Hello";
+char far *fkeyBeep    = "Beep";
+char far *fkeyBlank   = "Blank";
+char far *fkeyBye     = "Bye";
+
+/* Menu labels */
+
+char far *menuHello   = "&Hello\tH";
+char far *menuGoodbye = "&Goodbye\tG";
+char far *menuExit    = "E&xit";
+char far *menuHi      = "&Hi";
+char far *menuQuit    = "&Quit";
+
+/* Message strings */
+
+char far *msgHello  = "Hello, world  ";
+char far *msgGoodbye= "Goodbye, world";
+char far *msgEmpty  = "              ";
+char far *msgNull   = "";
+
+/* String pointer table  (required to allow pointer fixups on reactivation */
+
+char far **StringTable[] = {
+
+&msgTestApp,
+&msgAppTopLine,
+&msgHello,
+&msgGoodbye,
+&msgEmpty,
+&msgNull,
+&fkeyHello,
+&fkeyBeep,
+&fkeyBlank,
+&fkeyBye,
+&menuHello,
+&menuGoodbye,
+&menuExit,
+&menuHi,
+&menuQuit,
+};
+
+/* Command processors  (prototype function declarations) */
+
+int far MyCardHandler(PWINDOW Wnd, WORD Message, WORD Data, WORD Extra);
+
+void far DoQuit(void);
+void far DoHello(void);
+void far DoBlank(void);
+void far DoNothing(void);
+void far DoBeep(void);
+void far DoBye(void);
+
+/* Global state data structures */
+
+EVENT    app_event;
+CAPBLOCK CapData;      /* CAP was the predecessor to LHAPI; with the HP
+                          Development Kit header files, the terms are
+                          interchangeable */
+BOOL     Done;         /* Program termination flag */
+int      progStatus;   /* Program status */
+
+/* Function key definitions                                              */
+/*                                                                       */
+/* Structure:                                                            */
+/*   { &lt;title-string>, &lt;command-processor>, &lt;Fkey number>, 0 }, */
+/*   The last Fkey definition should have the const LAST_FKEY OR'ed with */
+/*   the Fkey number.                                                    */
+/*                                                                       */
+
+FKEY MyFKeys[] = {
+ {  &fkeyHello,         DoHello,        2,              0 },
+ {  &fkeyBeep,          DoBeep,         3,              0 },
+ {  &fkeyBlank,         DoBlank,        9,              0 },
+ {  &fkeyBye,           DoBye,          10+LAST_FKEY,   0 }
+};
+
+/****************************************************************************/
+/*                                 Menu structures                          */
+/*                                                                          */
+/*  See Developer's Guide, pp 8-312 - 8-313, for complete definitions.      */
+/*  Briefly: there are five parts to the definition of each menu item:      */
+/*   1.) a pointer to the menu item text string (which should be in the     */
+/*       pointer tables and fixed up at each reactivation or memory change) */
+/*   2.) the name of the handler routine (unlike function passing in other  */
+/*       forms of C, parentheses are _not_ required after the function name)*/
+/*     OR                                                                   */
+/*       a pointer to the structure that defines the "pull-down" submenu    */
+/*   3.) the scan code of the "Hot Key" that the user can press to execute  */
+/*       the function without having to use the menu (set to 0 (zero) if no */
+/*       hot key is defined for the item)                                   */
+/*   4.) style bits (defined in the Developer's Guide and in LHAPI.H) which */
+/*       can be OR'ed together to combine styles.  An important example,    */
+/*       shown below, is MENU_PULLDOWN, which must be set to signal that a  */
+/*       pull-down menu is invoked by the item                              */
+/*   5.) the index number used by the Help Engine to ID the help text for   */
+/*       this menu item.  Since HP has never made the matching Help Compiler*/
+/*       available, this is of no use and should be set to NO_HELP, or just */
+/*       omitted. (If you need on-line help in your app, you will likely    */
+/*       have to do it with a (probably _large_ collection of text boxes.)  */
+/*                                                                          */
+/****************************************************************************/
+
+MENU HiMenu[] = {
+ { &menuHello,   DoHello, 0 ,0, NO_HELP},
+ { &menuGoodbye, DoBye,   0 ,0, NO_HELP},
+ { &menuExit,    DoQuit,  0, 0, NO_HELP},
+ { 0,            0,       0, 0, 0}
+};
+
+MENU TopMenu[] = {
+ { &menuHi,      (PFUNC) HiMenu,        0, MENU_PULLDOWN },
+ { &menuQuit,    DoQuit,                0  },
+ { 0,            0,       0,  0, 0}
+};
+
+
+/* Main window definition (See Developer's Guide, page 8-307 ff  */
+
+WINDOW MyCard = {
+ MyCardHandler, 0, 0, 640, 190,
+  NULL, 0,
+  0, 0,
+  NULL, MyFKeys, TopMenu, NO_HELP};
+
+WINDOW DateTimeArray[] = {0}; /* Filled in by TitleBar handler*/
+
+WINDOW TopBar = {
+        TitleBar, 0, 0, 0, 0,
+        (PLHRES)&msgAppTopLine, 0, 0, STYLE_NOFOCUS,
+        NULL, NO_FKEYS, (PLHRES)&DateTimeArray, NO_HELP
+};
+
+/************/
+/*          */
+/*   Code   */
+/*          */
+/************/
+
+void far DoQuit(void)
+/*   Input:       None
+     Output:      Sets Done flag TRUE
+     Calls:       Nothing
+     Description: Sets flag to terminate Event Dispatcher (main) loop */
+ {
+     Done = TRUE;
+ }
+
+void far DoBeep(void)
+/*   Input:       None
+     Output:      Sounds system beep
+     Calls:       System Manager m_beep
+     Description: Sounds system beep; no other action */
+ {
+     m_beep();
+ }
+
+void far DoHello(void)
+/*   Input:       None
+     Output:      Displays msgHello
+     Calls:       DrawText
+     Description: Displays "Hello" message using the LHAPI DrawText
+                  function, which draws text on the screen starting at a
+                  specified position and with a specified font. */
+ {
+   (DrawText) (TEXT_ORIGIN_X, TEXT_ORIGIN_Y, msgHello, DRAW_NORM, FONT_LARGE);
+   progStatus = STATUSHELLO;
+ }
+
+void far DoBlank(void)
+/*   Input:       None
+     Output:      Displays blank line, erasing current text at location
+     Calls:       DrawText
+     Description: Blanks current message, also using DrawText */
+ {
+   (DrawText) (TEXT_ORIGIN_X, TEXT_ORIGIN_Y, msgEmpty, DRAW_NORM, FONT_LARGE);
+   progStatus = STATUSBLANK;
+ }
+
+void far DoNothing(void)
+/*   Input:       None
+     Output:      None
+     Calls:       Nothing
+     Description: Null command routine */
+ {
+     ;
+ }
+
+void far DoBye(void)
+/*   Input:       None
+     Output:      Displays msgGoodbye
+     Calls:       DrawText
+     Description: Displays "Goodbye" message, also using DrawText function */
+ {
+   (DrawText) (TEXT_ORIGIN_X, TEXT_ORIGIN_Y, msgGoodbye, DRAW_NORM, FONT_LARGE);
+   progStatus = STATUSGOODBYE;
+ }
+
+void FixupFarPtrs(void)
+/*   Input:       None
+     Output:      Corrects far pointers to entries in string table
+     Calls:       countof (macro defined in LHAPI)
+     Description: Fixes up far pointers to string table entries after
+        app reactivation, and whenever else fixups are required.
+        The fixing-up is done by replacing the high-order part of each
+        pointer with the current/new data segment (which is obtained by
+        reading the DS register -- an operation that must be written in
+        assembler.) */
+{
+  int i;
+  int dataseg;
+
+  _asm {
+    mov ax,ds
+    mov dataseg,ax
+  }
+
+  for (i=0; i&lt;countof(StringTable); i++)
+      *(((int *)(StringTable[i]))+1) = dataseg;
+}
+
+void CreateMainView(void)
+/*   Input:       None
+     Output:      None
+     Calls:       SendMsg (to MyCard)
+     Description: Creates (initializes) main window display, by sending
+                  CREATE messages to both the main window ("MyCard") and
+                  the title bar window */
+ {
+     SendMsg(&MyCard, CREATE, CREATE_FOCUS, 0);
+     SendMsg(&TopBar, CREATE, CREATE_NORMAL, 0);
+ }
+
+
+int far MyCardHandler(PWINDOW Wnd, WORD Message, WORD Data, WORD Extra)
+/*   Input:       Wnd:     Window data structure/identifier
+                  Message: Message type
+                  Data:    Message data
+                  Extra:   Extra message data (not used here)
+     Output:      If message type is KEYSTROKE, appropriate action for key
+                  If message type is DRAW, redraw main window
+     Calls:       DoHello, DoBye, ClearRect, Rectangle, DrawText, SubclassMsg
+     Description: Handles special actions for main window (hotkey processing
+                        and window updating  */
+{
+  switch (Message) {
+
+    case KEYSTROKE:
+     switch (Data) {
+      case 'h':
+      case 'H':
+          DoHello();
+          return TRUE;
+      case 'g':
+      case 'G':
+          DoBye();
+          return TRUE;
+      } /* end of switch (Data) and of case KEYSTROKE */
+     break;
+
+    case DRAW:
+       if (Data&DRAW_FRAME) {
+          ClearRect(Wnd->x,Wnd->y,Wnd->w,Wnd->h);
+          }
+       break;
+    } /* end of switch MESSAGE */
+    SubclassMsg(Object, Wnd, Message, Data, Extra);
+}
+
+
+int ProcessEvent(EVENT *app_event)
+/*  Input:        *app_event:   pointer to app event structure
+    Output:       None
+    Calls:        FixupFarPointers, ReactivateCAP, DeactivateCAP,
+                        SendMsg, SendFocusMsg
+    Description: Process SysMgr event messages */
+{
+    switch (app_event->kind) {      /* Branch on SysMgr event */
+      case E_REFRESH: /* Redraw screen */
+      case E_ACTIV:   /* Reactivate app */
+         FixupFarPtrs();
+         ReactivateCAP(&CapData);
+         switch (progStatus) {
+          case STATUSHELLO:
+               DoHello();
+               break;
+          case STATUSGOODBYE:
+               DoBye();
+               break;
+          }
+         break;
+
+      case E_DEACT:  /* Deactivate app */
+         DeactivateCAP();
+         break;
+
+      case E_TERM:   /* Terminate app */
+         FixupFarPtrs();
+         Done = TRUE;
+         break;
+
+      case E_NONE:   /* Sent by System Manager every 1/2 second if nothing
+                        else is going on */
+         SendMsg(GetFocus(), NULLEVENT, app_event->shifts, app_event->scan);
+         break;
+
+      case E_KEY:    /* Key pressed that app must handle */
+         /* (KeyCode converts gray 101-key */
+         /*   arrows/movement scan codes into "normal" (PC) scan codes) */
+         SendMsg(GetFocus(), KEYSTROKE,
+                 Fix101Key(app_event->data,app_event->scan),
+                 app_event->scan);   /* Make sure we send the scan code too */
+         break;
+      }
+}
+
+
+void EventDispatcher(void)
+/*   Input:        None
+     Output:       None
+     Calls:        m_action, ProcessEvent
+     Description:
+      EventDispatcher grabs events from the System Manager and translates
+      them into CAP messages.  Every program will have an Event Dispatcher,
+      and the structure should follow this one. */
+{
+  Done = FALSE;                    /* Set terminate flag to FALSE */
+
+  while (!Done) {                  /* While loop not terminated */
+    app_event.do_event = DO_EVENT;
+
+    m_action(&app_event);          /* Grab system manager event */
+    ProcessEvent(&app_event);
+    }
+}
+
+void main(void)
+/* Input:       None
+   Output:      None
+   Calls:       CheckTSRs (if TKERNEL defined), m_init_app,
+                InitializeCAP, SetMenuFont, SetFont, m_reg_app_name,
+                CreateMainView, EnableClock, EventDispatcher, m_fini
+   Description: Main program.  Initialize SysMgr interface and CAP/LHAPI,
+                sets type fonts, initializes main window display and
+                enables title bar date/time display, and processes
+                events until there ain't no more. */
+ {
+/*
+#ifdef TKERNEL
+     CheckTSRs();
+#endif
+  */
+     m_init_app(SYSTEM_MANAGER_VERSION); /* Register with SysMgr */
+     InitializeCAP(&CapData);            /*  and with LHAPI      */
+     SetMenuFont(FONT_NORMAL);
+     SetFont(FONT_NORMAL);
+     m_reg_app_name(msgTestApp);         /* sets app name for use in SysMgr */
+
+     CreateMainView();
+     EnableClock(TRUE);
+
+     progStatus = 0;   /* Should display blank screen at startup */
+
+     EventDispatcher();
+
+     m_fini();
+ }
+</TT></PRE>
+<HR><BR>
+<!-- HP Palmtop Ring fragment -- taken from Ring homepage 12/13/1999 -->
+ <CENTER>Visit the 
+ <A HREF="http://www.webring.com/cgi-bin/webring?home&ring=hpr" TARGET="_top">HP
+ Palmtop Ring Homepage</A><P>
+ This <A HREF="http://www.webring.com/cgi-bin/webring?home&ring=hpr" TARGET="_top">HP
+ Palmtop Ring Site</A> is owned by 
+ <A HREF="http://www.drreddy.com/vnremail.html">Vinay N. Reddy, M.D.</A>
+ Visit <A HREF="http://www.webring.org/" TARGET="_top">The Webring</A>.<P>
+ [ <A HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&next"
+ TARGET="_top">Next</A> | <A
+ HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&skip"
+ TARGET="_top">Skip Next</A> | <A
+ HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&next5"
+ TARGET="_top">Next 5</A> | <A
+ HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&prev"
+ TARGET="_top">Previous</A> | <A
+ HREF="http://www.webring.com/cgi-bin/webring?ring=hpr&id=20&sprev"
+ TARGET="_top">Previous 2</A> ]
+ <P></CENTER>
+<!-- End of Ring fragment --> 
+<HR>
+<!-- SWISH gateway added 03/14/98 -->
+<DL><DT><DD>
+<H3>Search the Office for:</H3>
+<FORM METHOD="POST" ACTION="http://www.drreddy.com/drreddy/cgi-bin/swish-web.cgi">
+<input type="text" name="keywords" size="50">
+<select name="maxhits">
+<option>10
+<option selected>25 
+<option>50
+<option>100
+<option>250
+<option>500
+<option>all
+</select> 
+Results
+<BR>
+<input type="submit" value=" Search ">
+<input type="reset" value=" Clear "> <br>
+<p>
+</form>
+</DD></DL>
+<CENTER>See the <A HREF="http://www.drreddy.com/swish-web.html">
+Detailed Search </A> page for complete instructions on searching the Office.
+</CENTER>
+<!-- End of SWISH gateway code -->
+<HR>
+<CENTER>
+<A HREF="http://www.drreddy.com/palmtop/program.html">Back to Programming,
+ Part I</A><BR>
+<A HREF="http://www.drreddy.com/palmtop/index.html">
+Back to Dr. Reddy's Guide to HP Palmtops</A><BR>
+<A HREF="http://www.drreddy.com/">
+Back to Dr. Reddy's Pediatric Office on the Web</A>
+<BR>We welcome your
+<A HREF="http://www.drreddy.com/feedback.html">
+comments and questions.</A></CENTER><BR>
+<CENTER><I>Copyright</I> &copy; 2002
+<A HREF="http://www.drreddy.com/vnremail.html">
+Vinay N. Reddy, M.D.</A>  All rights reserved.<BR>
+Written 01/12/02; last revised 01/16/02
+<IMG SRC="http://counter.digits.com/?counter=drreddy&template=old"
+ height=0 width=0>
+<IMG SRC="http://www.msen.com/cgi-bin/msen/counter?DrReddy&modocr&2&250&0&250"
+ALT="counter" HEIGHT=0 WIDTH=0>
+</CENTER>
+</BODY>
+</HTML>

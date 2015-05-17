@@ -1,0 +1,2223 @@
+!short:
+!short:^u Dialog box support
+^u Dialog box support
+
+Use the dialog box functions to get data and decisions from the
+user - with the help of input fields, check boxes, radio buttons,
+pushbuttons, listboxes, and so on.
+
+Available functions:
+
+  - InitDialog   : Prepare a dialog to be used
+  - SetDlgItem   : Set the value of a dialog item
+  - ShowDialog   : Create the dialog window and display it
+  - HandleDialog : Take care of user interaction
+  - GetDlgItem   : Retrieve data from dialog items
+  - GetFocus     : Find out which item is currently active
+  - CloseDialog  : Close dialog window, free memory
+
+!Seealso: "DIALOG Introduction" DIALOG DLGITEM InitDialog SetDlgItem ShowDialog HandleDialog GetDlgItem GetFocus CloseDialog
+
+!short: DIALOG Introduction
+
+   A dialog box is a special kind of window that handles user
+   interaction in PAL. Inside of it, interface elements called
+   'controls' or 'dialog items' contain and handle the actual
+   information. (The window that pops up when you hit F4 (Find) in the
+   PHONE application is an example of a dialog box.)
+
+   Examples of dialog items are an edit field, a check box, a radio
+   button, a pushbutton, etc.
+
+   PAL provides a number of built-in dialog items, and also lets you
+   add your own.
+
+   To create a dialog box, you need to do two things:
+
+   + First, you describe both the dialog window and all of the items
+            that it contains - this is done using structures in a way
+            very similar to the way menus are described: one structure
+            for the dialog, and an array of other structures for the
+            items contained in there. You can use PDE, PAL's Dialog
+            Editor to create all of your program's dialogs. PDE
+            creates the required structures in C-format, ready to be
+            compiled and linked to your program. See the UTIL
+            subdirectory for the PDE utility and its
+            documentation.
+
+   + Then,  you write code to initialize, display, handle and close
+            your dialog box. PAL provides a collection of functions
+            that do this for you. Here's an overview - they're listed
+            in the order that you are most likely to call them:
+
+   InitDialog   prepares a dialog to be used - it 'activates it'. A
+                call to InitDialog is necessary before you can call
+                any of the other functions listed below.
+
+   SetDlgItem   is used to set the value of a dialog item - for
+                example, to check or uncheck a check box, or to
+                provide a default value for an edit field. A call
+                to this function is optional.
+
+   ShowDialog   will create the dialog window, and display all its
+                items.
+
+   HandleDialog will take care of user interaction. It will wait for
+                keystrokes, and dispatch them to the different
+                'agents' inside the dialog. HandleDialog returns when
+                the dialog (or an item) indicates that the attention
+                of your code is required - this is the case if an OK
+                button is pushed, for example. (If you need special
+                processing, you can also have HandleDialog return to
+                you for every keystroke that gets processed in the
+                dialog - see the detailed description of HandleDialog.
+                You will have to create a loop around HandleDialog
+                in this case)
+
+   GetDlgItem   is the function that you use to selectively retrieve
+                data from dialog items - like a text string that was
+                input in an edit field, for example.
+
+   CloseDialog  frees all dynamically allocated data associated with
+                the dialog and its items, and closes the dialog
+                window.
+
+!Seealso: DIALOG DLGITEM InitDialog SetDlgItem ShowDialog HandleDialog GetDlgItem GetFocus CloseDialog
+
+!short: DIALOG structure     Describes a dialog box
+   NAME
+      DIALOG
+
+   DESCRIPTION
+      A dialog box is described by a structure of type DIALOG. Most of
+      the dialog functions need a pointer to such a structure as an
+      argument. You can either create that structure yourself, or
+      do so visually by using then PAL Dialog Editor (PDE). PDE
+      is in the UTIL\PDE directory of the PAL distribution.
+
+   SYNOPSIS
+      typedef struct {
+         int  Width;         /* width of dialog                           */
+         int  Depth;         /* depth of dialog                           */
+         long Flags;         /* various dialog style and status bits      */
+         int  InitFocus;     /* item that first gets the focus            */
+         int  ItmCnt;        /* number of items in following array        */
+         DLGITEM *Items;     /* pointer to the item array                 */
+         DIALOGPROC DlgProc; /* pointer to function that handles dialog   */
+         PALWIN *pWin;       /* pointer to associated window              */
+         void *Data;         /* pointer to private data managed by dialog */
+         int  CurFocus;      /* index of item that actually has the focus */
+      } DIALOG;
+
+   FIELDS
+      int Width, Depth   -  describe the dimensions of the dialog box
+                            window that ShowDialog will create the
+                            first time it is called after an
+                            InitDialog.
+
+      long Flags         -  Currently, only the DF_IDLERET flag is
+                            defined. If this flag is set, HandleDialog
+                            will always return when pKey is not NULL,
+                            even if no key was pressed. (*pKey will equal
+                            NO_KEY in this case).
+
+
+      int  InitFocus     -  holds the index of the item that will
+                            first get the 'input focus' (i.e. will be
+                            active) when the dialog is displayed to
+                            the user. Every time InitDialog is called
+                            for a given dialog, the active item
+                            is determined by this value
+
+      int  ItmCnt        -  indicates how many items are in the dialog
+                            - more precisely, how many of them the
+                            'Items' array contains.
+
+      DLGITEM *Items     -  a pointer to an array of structure
+                            elements of type DLGITEM. Each one
+                            describes a single dialog item. (Described
+                            in more detail below)
+
+      DIALOGPROC DlgProc -  points to a function that takes care of
+                            the dialog. Usually, you just enter
+                            'DhStandard' here - the standard dialog
+                            box handler function provided by PAL.
+
+      PALWIN *pWin       -  points to the PAL window that the dialog
+                            box uses. You don't need to provide this
+                            value - set it to NULL instead to
+                            indicate that ShowDialog should
+                            create this window for you.
+
+      void *Data         -  used internally by the dialog box handler
+                            to store private, dynamic data. Simply
+                            provide NULL for this pointer in a dialog
+                            description.
+
+      int CurFocus       -  The dialog handler records here which item
+                            currently has the focus. This value is
+                            ignored in a dialog box description -
+                            provide 0 here.
+
+   NOTE
+      It is not recommended to modify the values of the DIALOG
+      structure of an 'active' dialog. A dialog is active between
+      InitDialog and CloseDialog calls.
+
+   SAMPLE
+      DIALOG Dlg = {
+         300, 100,   /* size  */
+         0L,         /* flags */
+         1,          /* item that should have the focus (second one) */
+         3,          /* item count */
+         DlgItems,   /* item array */
+         DhStandard, /* dialog handler: use the standard one */
+         NULL,       /* window pointer - internal usage, set to NULL */
+         NULL,       /* private data   - internal usage, set to NULL */
+         0           /* current focus  - internal usage, set to 0    */
+      };
+
+!Seealso: DLGITEM InitDialog SetDlgItem ShowDialog HandleDialog GetDlgItem GetFocus CloseDialog
+
+!short: DLGITEM structure    Describes a single dialog item
+   NAME
+      DLGITEM
+
+   DESCRIPTION
+      A dialog item is described by a structure of type DLGITEM.
+      Actually, DLGITEM type structures belonging to a dialog will
+      always be grouped in an array. The corresponding DIALOG
+      structure contains a pointer to this array, and an element
+      count. For a convenient visual way to create dialog and
+      item structures, check out the PAL Dialog Editor, PDE.
+      (Available in the UTIL\PDE directory of the PAL distribution)
+
+   SYNOPSIS
+      typedef struct {
+         int  PosX;        /* relative horz position of item in dialog */
+         int  PosY;        /* relative vert position of item in dialog */
+         int  Width;       /* width of item. Interpretation varies     */
+         int  Depth;       /* depth of item. Interpretation varies     */
+         long Flags;       /* various item style and status bits       */
+         char *Text;       /* associated label or text string          */
+         void *Init;       /* pointer to initialization data if any    */
+         ITEMPROC ItmProc; /* pointer to function that handles item    */
+         int  Size;        /* size of private data - for subclassing   */
+         void *Data;       /* pointer to private data managed by item  */
+      } DLGITEM;
+
+   FIELDS
+      int PosX, PosY     -  positions the item relative to the upper
+                            left corner of the dialog. Coordinate 0,0
+                            being the very first available coordinate
+                            inside the dialog window - that is, border
+                            and caption bar not included.
+
+      int Width, Depth   -  the size of the item. Note that the
+                            meaning of these values is entirely
+                            dependent on the item type. Mostly, they
+                            will be in pixels, but some items (like
+                            edit fields) support a character count.
+                            Refer to the documentation of the specific
+                            item for details. Also note that these
+                            values are used (if at all) at
+                            initialization time only - you cannot
+                            determine the current dimensions of an
+                            item by reading them back.
+
+      long Flags         -  various style and status bits are stored
+                            here:
+
+         IF_RET and
+         IF_ESC:            see pushbutton item documentation.
+         IF_FRT:            see button and checkbox item documentation.
+
+      char *Text         -  an associated text or label.
+                            Interpretation largely depends on type of
+                            item - see specific documentation. For an
+                            edit field, this is the label _preceding_
+                            the field, for example. For a button, it
+                            is the button text. Use a '&' character
+                            before a letter to make it the hotkey
+                            for this item. Use character '\031' in
+                            strings if you need a literal '&'.
+                            (ASCII code 19, Hex 0x13)
+
+      void *Init         -  this is a generic pointer that can point
+                            to an item-specific initialization
+                            structure. You can specify additional,
+                            item-specific data there - refer to the
+                            documentation on the item in question for
+                            details. Note that some items may not
+                            support additional data of this type at
+                            all, others will assume sensible defaults
+                            if this pointer is NULL, and still others
+                            may _require_ additional data here.
+
+      ITEMPROC ItmProc   -  This field is very important - it
+                            determines the type of item that you will
+                            get. (That is, whether it will display and
+                            act like an edit field, a check box, an
+                            button, etc.)
+
+                            It's actually a pointer to an 'item
+                            handler', but as long as you only use
+                            stock items that come with PAL, you don't
+                            need to know the details of what such a
+                            handler does or is. Just give the name of
+                            an existing item type, like IhEdit, to get
+                            an edit field, for example.
+
+      int  Size          -  store the size of the actual item structure
+                            here. (This is, for an edit item, you
+                            would simply write 'sizeof(IHEDIT)' here.
+
+                            This information is needed for
+                            subclassing, that is, when an item uses
+                            another's handler as a 'working horse',
+                            and adds some functionality of its own.
+                            This ensures that the correct amount of
+                            memory is allocated by the 'working horse'
+                            even though it ignores what it will be
+                            used for.
+
+      void *Data         -  used internally by the item handler to
+                            store private, dynamic data. Simply
+                            provide NULL for this pointer in an item
+                            description.
+
+   NOTE
+
+   SAMPLE
+
+ DLGITEM DlgItems[] = {
+   /* Pos      Dims    Flags  Label    Init  Handler Size            Priv */
+      ------   ------  -----  -------  ----  ------- ----            ----
+
+   {  10, 10,  -40, 0,  0L,   "Name:", NULL, IhEdit, sizeof(IHEDIT), NULL },
+   {  10, 30,   -4, 0,  0L,   "Age:",  NULL, IhEdit, sizeof(IHEDIT), NULL },
+   {  10, 50,   -2, 0,  0L,   "Sex:",  NULL, IhEdit, sizeof(IHEDIT), NULL }
+ };
+
+      Note that this sample illustrates an array of three edit items.
+      They don't have initialization data, therefore, the init
+      pointers are all NULL. Also note that the negative width values
+      indicate field size in characters (in the case of the edit item,
+      anyway), and that the depth info is not used (and therefore,
+      zero) by the edit item. By convention, the private item structure
+      has the same name as the handler function but in upper
+      case, therefore, you can simply use sizeof(IHEDIT) or
+      sizeof(HANDLER) in general, to store its size.
+
+!Seealso: DIALOG InitDialog SetDlgItem ShowDialog HandleDialog GetDlgItem GetFocus CloseDialog
+
+!short: InitDialog           Prepare a dialog to be used
+   NAME
+      InitDialog
+
+   DESCRIPTION
+      Initializes a dialog box and the items it contains. This
+      call is necessary before you can call any of the other
+      dialog-related functions.
+
+   SYNOPSIS
+      #include "pal.h"
+      int InitDialog(DIALOG *pDlg);
+
+   INPUTS
+      pDlg - a pointer to the structure describing the dialog
+
+   RETURN VALUE
+      InitDialog returns TRUE if all went well, FALSE in case of
+      failure to initialize the dialog (or one of its
+      components).
+
+   NOTE
+      Internals: InitDialog passes a DM_INIT message to the
+      dialog handler pointed to in the dialog structure. The
+      handler should initialize itself, including allocating any
+      dynamic memory that it needs, and then in turn send an
+      IM_INIT message to all of its items. If an item indicates
+      (by returning FALSE) that it could not complete
+      initialization, then the dialog handler should clean up,
+      and return FALSE itself.
+
+   SAMPLE
+!Seealso: DIALOG DLGITEM InitDialog SetDlgItem ShowDialog HandleDialog GetDlgItem CloseDialog
+
+!short: SetDlgItem           Set value(s) of a dialog item
+   NAME
+      SetDlgItem
+
+   DESCRIPTION
+      SetDlgItem is used to set a value of a dialog item. You could use
+      it, for example, to set the contents of an edit field. What
+      exactly is set depends on two things: what item you call
+      SetDlgItem for, and what value the parameter 'n' has - some items
+      allow you to set several values, or provide alternate ways to set
+      the same value. This is determined by parameter 'n'. The data to
+      be set are pointed to by the generic pointer 'pData'. Its type
+      depends again on the item that you want to set, and the variant
+      (i.e. 'n') selected. To set the contents of an edit field as
+      mentioned above, you would pass a 'char *' pointer of course. See
+      the item-specific documentation for details on supported
+      SetDlgItem calls for a given item.
+
+   SYNOPSIS
+      #include "pal.h"
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData);
+
+   INPUTS
+      pDlg    - a pointer to the dialog containing the item
+      ItmNbr  - the number (array index, id) of the item in question
+      n       - an integer - the variant that you want to use.
+                The actual value to be used depends on the type
+                of the item in question - see item-specific
+                documentation.
+      pData   - a pointer to the data that you want to transmit to the
+                item. Depends entirely on type of item and variant used,
+                see item-specific documentation.
+
+   RETURN VALUE
+      SetDlgItem returns TRUE if all went well, FALSE in case of
+      failure to set the value - either because the item doesn't
+      support setting values at all (some don't), or because the
+      requested variant is not supported.
+
+   NOTE
+      Internals: SetDlgItem sends an IM_SETDATA message directly to
+      the dialog item handler. The handler should examine the
+      parameter n and return FALSE if it doesn't support that SETDATA
+      variant. Otherwise, it should perform the function, and update
+      its representation by sending an IM_SHOW message to itself.
+      (See the IhEdit implementation for an example)
+
+
+   SAMPLE
+      #define EDNAME 2
+      SetDlgItem(&MyDlg, EDNAME, 0, "John Doe");
+
+!Seealso: DIALOG DLGITEM InitDialog ShowDialog HandleDialog GetDlgItem CloseDialog
+
+!short: ShowDialog           Display a dialog window
+   NAME
+      ShowDialog
+
+   DESCRIPTION
+      ShowDialog displays a dialog window - if the window doesn't exist
+      yet. If it does, it only updates all items in the dialog. The
+      dialog window will be opened at an x,y coordinate that you specify
+      and with a title that you provide. If you specify NULL as the
+      title (or caption) string, there will be no title bar.
+
+   SYNOPSIS
+      #include "pal.h"
+      int ShowDialog(DIALOG *pDlg, int x, int y, char *Caption);
+
+   INPUTS
+      pDlg     - the ubiquitous pointer to your dialog description
+      x, y     - the coordinates of the upper left corner of the
+                 dialog window.
+      Caption  - the title that you want for your window. Supply NULL
+                 if you don't want a title bar.
+
+   RETURN VALUE
+      ShowDialog returns TRUE if all went well, FALSE in case of
+      failure.
+
+   NOTE
+      You cannot change the position of the dialog window or the title
+      by calling ShowDialog a second time before a CloseDialog. If the
+      dialog window does already exist, ShowDialog will only update
+      items in the dialog - it will not move the dialog or change the
+      string displayed in the title bar.
+
+
+      Internals: ShowDialog opens the window (if it isn't opened yet),
+      then sends a DM_SHOW message to the dialog handler associated
+      with the dialog. This one should in turn send an IM_SHOW message
+      to all its items.
+
+   SAMPLE
+      ShowDialog(&MyDlg, 10, 10, " Please enter data ");
+
+!Seealso: DIALOG DLGITEM InitDialog SetDlgItem HandleDialog GetDlgItem CloseDialog
+
+!short: SetFocus             Set the focus to an item
+   NAME
+      SetFocus
+
+   DESCRIPTION
+      SetFocus will give the input focus to a given item, that is, make
+      it the active item. For an edit item for example, this would mean
+      that it gets the cursor and that you the user can type into it.
+      This call is optional - a typical use would be to position the
+      cursor into an edit field that failed some validation check.
+
+   SYNOPSIS
+      #include "pal.h"
+      int SetFocus(DIALOG *pDlg, int ItmNbr);
+
+   INPUTS
+      pDlg     - the ubiquitous pointer to your dialog description
+      ItmNbr   - the index (or id, if you prefer) of the item that
+                 should get the focus
+
+   RETURN VALUE
+      SetFocus returns TRUE if the item accepted the focus (and the
+      current one released it), and FALSE if it cannot accept the focus.
+
+   NOTE
+      Some items will reject the focus because they have no provision
+      for user interaction - static text items are an example.
+
+      Internals: SetFocus will send a DM_SETFOCUS message to the current
+      dialog handler. In the DhStandard implementation, this will try to
+      remove the focus from the currently active item (if any), and give
+      it to the item you specified. It will send IM_LOSEFOCUS and
+      IM_SETFOCUS messages, respectively. If setting the focus to the
+      new item fails, it will restore it to the old owner - if there was
+      one.
+
+   SAMPLE
+      #define EDNAME 2
+      SetFocus(&MyDlg, EDNAME);
+
+!Seealso: DIALOG DLGITEM InitDialog SetDlgItem ShowDialog HandleDialog CloseDialog GetFocus
+
+!short: GetFocus             Retrieve the current focus (index)
+   NAME
+      GetFocus
+
+   DESCRIPTION
+      GetFocus will return the index of the item that currently has
+      the input focus - i.e. the active item. If there is no such
+      item, GetFocus returns a negative value.
+
+   SYNOPSIS
+      #include "pal.h"
+      int GetFocus(DIALOG *pDlg);
+
+   INPUTS
+      pDlg     - the ubiquitous pointer to your dialog description
+
+   RETURN VALUE
+      GetFocus returns the index of the currently selected item.
+
+   SAMPLE
+      int Key;
+      int Ret;
+
+      do {
+         int n;
+
+         Ret = HandleDialog(&MyDlg, &Key);
+         if(Key & 0xff) Key &= 0xff;
+
+         switch(GetFocus(&MyDlg)) {
+            case THISITEM: HandleThis(Key); break;
+            case THATITEM: HandleThat(Key); break;
+            default:                        break;
+         }
+      } while(Ret != DN_CANCEL && Ret != DN_OK);
+   }
+
+   This example handles the keystrokes returned from HandleDialog
+   differently, depending on the currently active item.
+
+!Seealso: DIALOG DLGITEM InitDialog SetDlgItem ShowDialog HandleDialog CloseDialog SetFocus
+
+!short: HandleDialog         Start user interaction in dialog
+   NAME
+      HandleDialog
+
+   DESCRIPTION
+      HandleDialog will start user interaction in a dialog. It will get
+      keystrokes and dispatch them to the dialog (and its items).
+
+   SYNOPSIS
+      #include "pal.h"
+      int HandleDialog(DIALOG *pDlg, int *pKey);
+
+   INPUTS
+      pDlg  - the ubiquitous pointer to your dialog description
+
+      pKey - a pointer to an integer. You usually pass NULL here. This
+      causes HandleDialog to handle all interaction with the items for
+      you, until an item requests that control be returned to your
+      routine. (Usually, buttons do when pressed, for example). This
+      way, you need only bother with keystrokes pressed inside a dialog
+      when your routines attention is likely to be required.
+
+      However, you can also pass a pointer to an int, and HandleDialog
+      will return to your application for every keystroke it processes
+      first storing the scan code of the key in the int you pass via the
+      pointer. You can use this, and the return value of HandleDialog,
+      to process additional keystrokes that the dialog isn't aware of.
+
+   RETURN VALUE
+      HandleDialog will return one of the following:
+      - a positive value (including zero): the index of the dialog item
+        that requested the dialog return to you. This is most likely
+        a pushbutton item that was pressed.
+      - DN_OK     : the user hit the F10 key
+      - DN_CANCEL : the user hit the F9 key
+      - DN_ACK    : only when pKey != NULL will you ever get this return
+                    value. It means that the current key was handled by the
+                    dialog.
+      - DN_NACK   : only when pKey != NULL will you ever get this return
+                    value. It means that neither the current dialog item
+                    handler nor the dialog handler itself were able to
+                    handle the current key. This might be a good indication
+                    that the key is interesting for you to process.
+
+   NOTE
+
+   SAMPLE
+
+!Seealso: DIALOG DLGITEM InitDialog SetDlgItem ShowDialog GetDlgItem CloseDialog
+
+!short: GetDlgItem           Retrieve data from a dialog item
+   NAME
+      GetDlgItem
+
+   DESCRIPTION
+      GetDlgItem allows retrieval of data of various kinds from a dialog
+      item. You provide the pointer to the dialog containing the item,
+      the item number, and an integer that tells the item what kind of
+      data you need. (Some items support several forms of data or have
+      more than one value that they can return). You also pass a pointer
+      to a value (an integer, character buffer, structure - depends
+      entirely on the item type you want data from) that the item
+      handler will write to.
+
+   SYNOPSIS
+      #include "pal.h"
+      int GetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *Dest);
+
+   INPUTS
+      pDlg    - the ubiquitous pointer to your dialog description
+
+      ItmNbr  - the number (array index, id) of the item that
+                you want to retrieve data from
+      n       - an integer - the variant that you want to use.
+                The actual value to be used depends on the type
+                of the item in question - see item-specific
+                documentation.
+      Dest    - a void pointer that points to the destination of
+                the data - where it should be stored.
+
+   RETURN VALUE
+      GetDlgItem will return TRUE if your request was processed.
+      If it returns FALSE that means that it wasn't able to
+      provide the requested data.
+
+   NOTE
+
+   SAMPLE
+      #define EDNAME 2
+
+      char buffer[80];
+      GetDlgItem(&MyDlg, EDNAME, 0, buffer);
+
+!Seealso: DIALOG DLGITEM InitDialog SetDlgItem ShowDialog HandleDialog CloseDialog
+
+!short: CloseDialog          Close a dialog, free its memory
+   NAME
+      CloseDialog
+
+   DESCRIPTION
+      CloseDialog closes a dialog, removes its window from the
+      screen, and frees all dynamically allocated memory
+      associated with the dialog and its items.
+
+   SYNOPSIS
+      #include "pal.h"
+      int CloseDialog(DIALOG *pDlg);
+
+   INPUTS
+      pDlg - the ubiquitous pointer to your dialog description.
+
+   RETURN VALUE
+      CloseDialog returns TRUE when it succeeded closing the
+      dialog and freeing the associated resources, FALSE
+      otherwise.
+
+   NOTE
+
+   SAMPLE
+      CloseDialog(&MyDlg);
+
+!Seealso: DIALOG DLGITEM InitDialog SetDlgItem ShowDialog HandleDialog GetDlgItem
+
+!short:
+!short:^u Dialog box items
+!short: IhEdit               Text input
+   NAME
+      IhEdit
+
+   DESCRIPTION
+      The 'Edit' item allows input of text strings from the user. It
+      supports editing keys, insert/overstrike and horizontal scrolling.
+      The input area is framed, and you can place a descriptive label
+      before it.
+
+   POSITION/DIMENSION
+      PosX and PosY define the upper left corner of the edit item. If
+      the Width information that you provide is positive, it is
+      interpreted as the total width the item should have, including
+      label and edit area. It will compute the with of the edit area by
+      subtracting the length of the label field from this total width.
+      If you give a negative Width information, it is interpreted as the
+      number of characters that should be visible in the edit area. The
+      size of the edit item will be adapted accordingly. Information in
+      the 'Depth' field is ignored - the depth of the item depends only
+      on the font that you chose to use in it.
+
+   TEXT
+      The Text field is used to display the label preceding the
+      actual edit area.
+
+   FLAGS
+      None are currently defined specifically for this item type.
+
+   INIT
+      The edit item has this optional INIT structure:
+
+      typedef struct {
+         char *Contents; /* initial buffer contents */
+         int  RealLen;   /* real length of buffer   */
+         int  Font;      /* Id of font to be used   */
+      } IHEDINIT;
+
+      Contents    - this text will be displayed as a default in
+                    the edit area.
+      RealLen     - the edit item can handle inputs larger than
+                    the visible edit area. It does this by
+                    scrolling. Set RealLen to indicate the true
+                    maximum buffer length if you need this
+                    behavior.
+      Font        - Id of the font to be used for label and edit
+                    area. Use SMALL_FONT, MEDIUM_FONT,
+                    LARGE_FONT, or a value returned by LoadFont.
+                    Note that you cannot use input are scrolling
+                    with proportional fonts.
+
+   FOCUS/KEYS
+      The edit item displays a cursor when it has the input focus. It
+      reacts to the DEL, BACKSPACE, HOME, END and cursor keys in the way
+      you would expect. The INSERT key toggles insert/overstrike mode.
+
+   GETDLGITEM
+      int GetDlgItem(DIALOG *pDlg, int ItemNbr, int n, void *Dest)
+
+      See the description of GetDlgItem for details on the
+      parameters to this function. The edit item supports the
+      following GetDlgItem variants:
+
+      n = EDGI_TXT: in this case, Dest should point to a char
+                    buffer - the string currently in the edit
+                    field will be copied there.
+
+      n = EDGI_INT: Dest should be a pointer to an integer. It
+                    will get the integer value currently in the
+                    edit field.
+
+      n = EDGI_PTR: Dest should be a pointer to a char pointer.
+                    It will be set to point to the edit item's
+                    own buffer. Use with caution. This pointer
+                    is valid only as long as the edit item
+                    lives. Invalid after a CloseDialog.
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The edit item supports only
+      one SetDlgItem variant currently:
+
+      n = EDSI_TXT: pData points to a string that will be copied
+                    into the edit area.
+
+   NOTE
+      If you provide a pointer to an IHEDINIT structure in your
+      edit item, you _must_ give valid values for all three
+      fields. You cannot for example provide a value for
+      'Contents', and leave RealLen and Font zero - this will
+      yield erratic behavior.
+
+   SAMPLE
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      #define EDNAME   0
+      #define EDAGE    1
+
+      IHEDINIT NameInit = { "", 100, MEDIUM_FONT };
+
+      DLGITEM EditItems[] = {
+         { 10, 10, -15, 0, 0, "Name:", &NameInit, IhEdit,
+           sizeof(DLGITEM), NULL },
+         { 10, 30,  -5, 0, 0, " Age:", NULL, IhEdit,
+           sizeof(DLGITEM), NULL }
+      };
+
+      DIALOG SampleDlg = {
+         300, 100, 0, 0, 2, EditItems, DhStandard, NULL, NULL, 0
+      };
+
+      void main(void)
+      {
+         int Age;
+         char Name[200];
+
+         if(!PalInit(1)) exit(-1); /* Initialize PAL */
+         InitDialog(&SampleDlg);   /* init dialog */
+         ShowDialog(&SampleDlg, 10, 10, " Input values, F10 when done");
+         HandleDialog(&SampleDlg, NULL);
+         GetDlgItem(&SampleDlg, EDNAME, EDGI_TXT, Name);
+         GetDlgItem(&SampleDlg, EDAGE,  EDGI_INT, &Age);
+         CloseDialog(&SampleDlg);
+         PalDeInit(1);
+
+         printf("Name: %s, Age: %d\n", Name, Age);
+      }
+
+
+!short: IhCombo              Text input with an attached menu
+   NAME
+      IhCombo
+
+   DESCRIPTION
+      The 'Combo' item is an edit field like the IhEdit item,
+      but with the only difference of having an associated drop
+      down list box (or menu if you prefer) where the user can
+      select from. The user can either enter data in the Combo
+      edit window in the same manner as an IhEdit item, or select
+      an element for the edit window from the attached pull down menu.
+
+
+   POSITION/DIMENSION
+      PosX and PosY define the upper left corner of the Combo item.
+      If the Width information that you provide is positive, it is
+      interpreted as the total width the item should have,
+      including label and edit area. It will compute the with of
+      the edit area by subtracting the length of the label field
+      from this total width.
+      If you give a negative Width information, it is
+      interpreted as the number of characters that should be
+      visible in the edit area. The size of the edit item will
+      be adapted accordingly.
+      Information in the 'Depth' field is ignored - the depth of
+      the item depends only on the font that you chose to use in
+      it.
+
+   TEXT
+      The Text field is used to display the label preceding the
+      actual edit area.
+
+   FLAGS
+      None are currently defined specifically for this item type.
+
+   INIT
+      The Combo item has this MANDATORY INIT structure:
+
+      typedef struct {
+        IHEDINIT Ei;   /* IhEdit structure (see IhEdit)   */
+        char *List;    /* pointer to the combo items list */
+      }IHCBINIT;
+
+
+      Ei          - This is an Edit Initialisation structure. See
+                    IhEdit item description for more information
+                    about this initialisation part of this structure.
+
+
+      List        - This is a pointer pointing at the first byte
+                    of the Combo items list. The items in this
+                    list will be displayed in a pull-down menu
+                    attached to the bottom of the edit field when
+                    the down-arrow will be pressed by the user. The
+                    user can then select one of the elements defined
+                    in this list in the same manner he can select a
+                    menu item. Every element in the Combo list must be
+                    separated by the '|' symbol. Here's a small example
+                    of a Combo list:
+
+                    "One | Two | Three | Four"
+
+                    Note that the '|' symbol is being used only between
+                    Combo elements.
+
+
+
+   FOCUS/KEYS
+      The edit item displays a cursor when it has the input
+      focus. It reacts to the DEL, BACKSPACE, HOME, END and
+      cursor keys in the way you would expect. The INSERT key
+      toggles insert/overstrike mode.
+
+   GETDLGITEM
+      int GetDlgItem(DIALOG *pDlg, int ItemNbr, int n, void *Dest)
+
+      See the description of GetDlgItem for details on the
+      parameters to this function. The combo item supports the
+      following GetDlgItem variants:
+
+      n = EDGI_TXT: in this case, Dest should point to a char
+                    buffer - the string currently in the edit
+                    field will be copied there.
+
+      n = EDGI_INT: Dest should be a pointer to an integer. It
+                    will get the integer value currently in the
+                    edit field.
+
+      n = CBGI_IDX: in this case, IhCombo will return the index
+                    number from the selected combo element. The
+                    index is an integer from 0 to the number of
+                    elements listed in the pull-down menu of the
+                    combo-box, -1. If you have 5 items in the
+                    combo, CBGI_IDX will return 0 for the first
+                    element, 1 for the second, and so on.
+
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The combo item supports only
+      one SetDlgItem variant currently:
+
+      n = EDSI_TXT: pData points to a string that will be copied
+                    into the edit area of the Combo box.
+
+   NOTE
+      If you provide a pointer to an IHCOMBO structure in your
+      combo item, you _must_ give valid values for all four
+      fields. You cannot for example provide a value for
+      'Contents', and leave RealLen and Font zero - this will
+      yield erratic behavior.
+
+   SAMPLE
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      #define CBSELECT 0
+
+      IHCBINIT CBPICK1 = {
+      {"Default text",  50, MEDIUM_FONT },
+      "Alpha | Beta | Gamma | Delta | Epsilon"
+      };
+
+      DLGITEM pickItems[] = {
+      /* X  Y   W   D   FLAGS     LABEL       INIT       TYPE           SIZE        PRIV */
+      { 57, 44,274, 14,   0L, "Name:",     &CBPICK1,   IhCombo , sizeof(IHCOMBO ), NULL },
+      { 90, 14,220, 10,   0L, "Please select.", NULL,  IhStatic, sizeof(IHSTATIC), NULL }
+      };
+
+      DIALOG pick = {
+      410, 122, 0L, 0, 2, pickItems, DhStandard, NULL, NULL, 0
+      };
+
+      void main(void)
+      {
+         char Buffer[200];
+
+         if(!PalInit(1)) exit(-1); /* Initialize PAL */
+         InitDialog(&pick);   /* init dialog */
+         ShowDialog(&pick, 10, 10, " Select values, F10 when done");
+         HandleDialog(&pick, NULL);
+         GetDlgItem(&pick, CBSELECT, EDGI_TXT, buffer);
+         CloseDialog(&pick);     /* close dialog */
+         PalDeInit(1);
+
+         printf("You have selected: %s\n", Buffer);
+      }
+
+
+
+!short: IhStatic             Static text and simple delimiter lines
+   NAME
+      IhStatic
+
+   DESCRIPTION
+      This item is simply a 'label' inside a dialog window. IhStatic
+      items never get the focus, or any user input. They are usefull
+      for labeling the screen in places other than user-entry fields.
+      Another use of IhStatic items is to draw lines in your dialog by
+      changing the backgroung color to black inside the INIT structure.
+
+   POSITION/DIMENSION
+      PosX and PosY define the upper left corner of the static item.
+      The width field defines the screen area that the text label
+      will occupy. If the given width is greater then the actual
+      label width, the screen will be cleared according to the
+      selected background color (White by default). If the background
+      color is changed to BLACK_COLOR inside the IhStatic INIT
+      structure, the defined area will be painted black. This is
+      usefull for drawing lines inside the dialogs.
+
+   TEXT
+      The Text field is used to display the text label on the screen.
+
+   FLAGS
+      IF_STLFT flag will left-align the text instead of
+      centering it, which is the default.
+
+   INIT
+      The edit item has this optional INIT structure:
+
+      typedef struct {
+        int  BckGnd;   /* Color to use for background */
+        int  Font;     /* Id of font to be used       */
+      } IHSTINIT;
+
+
+      BckGnd      - This defines the I.D. background color of the static
+                    item. Usually it defaults to WHITE_COLOR, but if
+                    you specify BLACK_COLOR instead, the static item
+                    area will be painted black, which is usefull (as
+                    described earlier) to draw lines inside your dialog.
+
+      Font        - Id of the font to be used for the static label
+                    area. Use SMALL_FONT, MEDIUM_FONT,
+                    LARGE_FONT, or a value returned by LoadFont.
+
+   FOCUS/KEYS
+      An IhStatic item has no interaction with the user of the dialog,
+      (that's why it is called Static) so the cursor never focus on this
+      kind of item.
+
+
+   GETDLGITEM
+      Since there's no user interaction, there's no feedback from IhStatic
+      items to the dialog, so GETDLGITEM which is usually used to retreive
+      information from a dialog item, it is not used here.
+
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The static item supports only
+      one SetDlgItem variant currently:
+
+      n = STSI_LBL: Sets the static text label to be displayed on the
+                    screen. Normally the static text is pre-defined in
+                    the dialog structure, but you can use STSI_LBL to
+                    change the static text label on the fly.
+
+   NOTE
+      A static item always clears the screen background to the specified
+      color, prior to the display of the text label.
+
+   SAMPLE
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      IHSTATIC MyLine = {
+      BLACK_COLOR, MEDIUM_FONT
+      };
+
+      DLGITEM stcItems[] = {
+      /*X   Y   W   D   FLAGS     LABEL       INIT       TYPE           SIZE        PRIV */
+      { 40, 60,240, 1,    0L,      "",       &MyLine,    IhStatic, sizeof(IHSTATIC), NULL },
+      { 90, 20,220, 10,   0L, "This is a label.", NULL,  IhStatic, sizeof(IHSTATIC), NULL }
+      };
+
+      DIALOG stc = { 410, 122, 0L, 0, 2, stcItems, DhStandard, NULL, NULL, 0 };
+
+      void main(void)
+      {
+         if(!PalInit(1)) exit(-1); /* Initialize PAL */
+         InitDialog(&stc);   /* init dialog */
+         ShowDialog(&stc, 10, 10, " Press F10 when done looking");
+         HandleDialog(&stc, NULL);
+         CloseDialog(&stc);
+         PalDeInit(1);
+      }
+
+
+!short: IhCheck              Check boxes
+   NAME
+      IhCheck
+
+   DESCRIPTION
+      A check box is a boolean selection field. In other words, it only
+      returns to the user TRUE or FALSE (checked or not checked). It
+      usually has a label next to the check-mark square, describing
+      the nature of the check field. The user can toggle the check
+      mark (X) on and off by simply pressing the space-bar when the
+      check item has the focus.
+
+   POSITION/DIMENSION
+      PosX and PosY define the upper left corner of the check box item.
+      The width specifies the width of the checkbox square, normally
+      having the same value as Depth (so it looks square). Information
+      in the 'Depth' field is ignored - the depth of the item depends
+      only on the font that you chose to use in it.
+
+   TEXT
+      The Text field is used to display the descriptive label of the
+      check box item.
+
+   FLAGS
+
+
+   INIT
+      The check box item has this optional INIT structure:
+
+      typedef struct {
+        int  Font;     /* Id of font to be used          */
+        int  Checked;  /* initially checked or unchecked */
+      } IHCKINIT;
+
+
+      Font        - Id of the font to be used for the descriptive label
+                    of the check box item. Use SMALL_FONT, MEDIUM_FONT,
+                    LARGE_FONT, or a value returned by LoadFont.
+
+
+      Checked     - If the value here is 0 the check box will be
+                    displayed 'unchecked' when the dialog is displayed.
+                    A non zero value will display the check box
+                    'checked' ('X' marked) when the dialog is displayed.
+
+
+   FOCUS/KEYS
+      When the focus gets to a check box item, the descriptive label of
+      the checkbox is displayed in negative (white characters on black
+      backround). By pressing the space bar you can toggle the state of
+      the check box, mark / unmark.
+
+
+   GETDLGITEM
+      int GetDlgItem(DIALOG *pDlg, int ItemNbr, int n, void *Dest)
+
+      See the description of GetDlgItem for details on the
+      parameters to this function. The check box item supports only
+      one GetDlgItem variant:
+
+      n = CKGI_STATE: This returns the state of the check box
+                      item, either marked (1) or unmarked (0).
+                      Dest should point to an integer that will
+                      receive this value.
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The check box item supports only
+      two SetDlgItem variants currently:
+
+      n = CKSI_LBL: Sets a new descriptive label to the check box item.
+                    The check box label is usually pre-defined in the
+                    dialog structure, but CKSI_LBL can be used to change
+                    the label on the fly.
+
+      n = CKSI_STATE: Sets the state of the check box item,
+                      marked or unmarked. The pointer itself is
+                      used as the value here - use the VALUE()
+                      macro to convert 0 or 1 to the
+                      corresponding type. See the sample below.
+
+   NOTE
+      When a checkbox item is created, it sets the IF_FRT flag in its
+      'Flags' member in the item structure. This will in turn cause
+      DhStandard to send it an additional SPACE keypress when the
+      focus is set to this item by pushing a hotkey (as opposed to
+      tabbing).
+
+
+   SAMPLE
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      #define CHI1 0
+
+      /* init structure, checkbox marked by default */
+      IHCKINIT MyChk = {
+      {MEDIUM_FONT, 1 },
+      };
+
+      DLGITEM chidlgItems[] = {
+      /*X   Y   W   D   FLAGS     LABEL   INIT        TYPE         SIZE        PRIV */
+      { 57, 18, 15, 14,    0L, "Check mark.", &MyChk, IhCheck,  sizeof(IHCHECK),  NULL },
+      };
+
+      DIALOG chidlg = {450, 94, 0L, 0, 1, chidlgItems, DhStandard, NULL, NULL, 0};
+
+      void main(void) {
+         int flag;
+
+         if(!PalInit(1)) exit(-1); /* Initialize PAL */
+         InitDialog(&chidlg);   /* init dialog */
+
+         /* mark the checkbox */
+         SetDlgItem(&chidlg, CHI1, CKSI_STATE, VALUE(1));
+
+         ShowDialog(&chidlg, 10, 10, " Press F10 when done.");
+         HandleDialog(&chidlg, NULL);
+         GetDlgItem(&chidlg, CHI1, CKGI_STATE, &flag);
+         CloseDialog(&chidlg);
+         PalDeInit(1);
+
+         if(flag) printf("The checkbox has been marked!\n");
+         if(!flag) printf("The checkbox has not been marked.\n");
+      }
+
+
+!short: IhBitmap             Bitmap (icons)
+   NAME
+      IhBitmap
+
+   DESCRIPTION
+      This special item can display icons in a dialog window. You can
+      either specify a pointer to the bitmap or its filename.
+
+   POSITION/DIMENSION
+      The bitmap item first clears the area defines by the items
+      position, width and depth, then centers the bitmap in this area -
+      if the bitmap is smaller than the area, that is. Otherwise, the
+      bitmap is always output at the item position.
+
+   TEXT
+      It is not used for this item type.
+
+   FLAGS
+      None are currently defined specifically for this item type.
+
+   INIT
+      The bitmap item has this MANDATORY INIT structure:
+
+
+      typedef struct {
+        IMGHDR *pBmp;
+      } IHBMINIT;
+
+
+      pBmp        - pointer to the location of the bitmap to be displayed.
+                    If no INI pointer is provided (that is, if the INI
+                    pointer is NULL), no bitmap will be displayed. You
+                    can use SetDlgItem to provide one later though.
+
+   FOCUS/KEYS
+      The bitmap item never captures the focus of the dialog screen.
+
+   GETDLGITEM
+      Since bitmap items never get the focus, they never return any data
+      to the dialog, so GETDLGITEM is never used in this case.
+
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The bitmap box item supports only
+      two SetDlgItem variants currently:
+
+      n = BMSI_PTR: Specifies that pData points directly to the bitmap.
+
+      n = BMSI_FIL: Specifies that pData points to the filename of the
+                    bitmap that will be loaded by LoadImg().
+
+   NOTE
+      You can use the MKBIN utility to create an array of your bitmap if
+      you want to include the bitmap in your code. See the sample below.
+
+      IhBitmap remembers if it did load a bitmap itself, or if it
+      got it via pointer. In the first case, prior to changing to
+      another bitmap (or in the case of a KILL of course), it will
+      first free the storage associated with the former bitmap.
+
+      The bitmap format is exactly the same format of the .ICN icon files.
+      Here's the .ICN format:
+
+      /* Header of a GetImg bitmap  */
+        typedef struct {
+          int Planes; /* on HP100/200, always 1 */
+          int Bits;   /* on HP100/200, always 1 */
+          int Width;
+          int Depth;
+        } IMGHDR;
+
+
+   SAMPLE
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      unsigned char pBitmap[] = {0x01,
+      0x00, 0x01, 0x00, 0x2C, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x03, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x7E, 0x00,
+      0x00, 0x03, 0xF9, 0x01, 0x81, 0x80, 0x00, 0x03, 0xF9, 0x02, 0x00, 0x40,
+      0x00, 0x00, 0x09, 0x04, 0x3C, 0x20, 0x00, 0x00, 0x09, 0x04, 0x42, 0x20,
+      0x00, 0x00, 0x09, 0x0F, 0x81, 0xF0, 0x00, 0x00, 0x09, 0x10, 0x99, 0x78,
+      0x00, 0x00, 0x09, 0x10, 0x91, 0x78, 0x00, 0x00, 0x09, 0x0F, 0x81, 0xF0,
+      0x00, 0x00, 0x09, 0x0F, 0xC3, 0xF0, 0x00, 0x00, 0x09, 0x1B, 0xFF, 0xF8,
+      0x00, 0x00, 0x09, 0x19, 0x9F, 0xB8, 0x00, 0x00, 0x09, 0x38, 0x18, 0x1C,
+      0x00, 0x00, 0x09, 0x38, 0x18, 0x1C, 0x00, 0x03, 0xF9, 0x28, 0x24, 0x14,
+      0x00, 0x00, 0x01, 0x2C, 0x2C, 0x34, 0x00, 0x00, 0x01, 0x24, 0x18, 0x24,
+      0x00, 0x03, 0xFE, 0x24, 0x42, 0x64, 0x00, 0x03, 0x00, 0x12, 0x7C, 0xC8,
+      0x00, 0x00, 0xC0, 0x12, 0x01, 0xC8, 0x00, 0x03, 0xFF, 0x0B, 0x1B, 0xD0,
+      0x00, 0x00, 0x01, 0x8E, 0x87, 0xF0, 0x00, 0x00, 0x39, 0x9C, 0x7F, 0xF8,
+      0x00, 0x00, 0x4D, 0xEA, 0x3F, 0xE4, 0x00, 0x01, 0xDD, 0xD5, 0x07, 0xC4,
+      0x00, 0x01, 0xFF, 0xAA, 0xFF, 0x88, 0x00, 0x00, 0x39, 0xD5, 0x74, 0x14,
+      0x00, 0x03, 0xFF, 0xEA, 0xB8, 0x28, 0x00, 0x03, 0xFF, 0x5F, 0xF1, 0x54,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      };
+
+      /* Mandatory, specifies the bitmap pointer */
+      IHBMINIT BMAP = {
+        pBitmap
+      };
+
+
+      DLGITEM MyBmpItems[] = {
+      /*X   Y   W   D   FLAGS  LABEL   INIT       TYPE           SIZE        PRIV */
+      {239, 20, 76, 56,   0L,   "",    &BMAP,   IhBitmap, sizeof(IHBITMAP), NULL }
+      };
+
+      DIALOG MyBmp = {554, 154, 0L, 0, 1, MyBmpItems, DhStandard, NULL, NULL, 0 };
+
+      void main(void) {
+         int flag;
+
+         if(!PalInit(1)) exit(-1); /* Initialize PAL */
+         InitDialog(&MyBmp);   /* init dialog */
+
+         ShowDialog(&MyBmp, 10, 10, " Press F10 when done.");
+         HandleDialog(&MyBmp, NULL);
+         CloseDialog(&MyBmp);
+         PalDeInit(1);
+
+      }
+
+!short: IhGroup              Group
+   NAME
+      IhGroup
+
+   DESCRIPTION
+      A group item is normally used to group together several
+      dialog items, such as radio controls. It is simply a
+      'frame' which surrounds the grouped items. The group
+      frame must also have a label on its top left corner.
+
+   POSITION/DIMENSION
+      PosX and PosY define the upper left corner of the frame.
+      The width specifies the width of the group frame, and
+      depth specifies its depth.
+
+   TEXT
+      The Text field is used to display the descriptive label
+      on the top left corner of the group frame.
+
+   FLAGS
+      None are currently defined specifically for this item type.
+
+   INIT
+      The group item has this optional INIT structure:
+
+      typedef struct {
+        int  BckGnd;   /* Color to use for background */
+        int  Font;     /* Id of font to be used       */
+      } IHGRINIT;
+
+
+
+      Font        - Id of the font to be used for the descriptive label
+                    of the group item. Use SMALL_FONT, MEDIUM_FONT,
+                    LARGE_FONT, or a value returned by LoadFont.
+
+
+      BckGnd      - This defines the I.D. background color of the group
+                    item. Usually it defaults to WHITE_COLOR, but if
+                    you specify BLACK_COLOR instead, the static item
+                    area will be painted black.
+
+   FOCUS/KEYS
+      The 'group' item never gets the focus.
+
+   GETDLGITEM
+      Since 'group' items never get the focus, they never return
+      any information to the user of the dialog, so GETDLGITEM is
+      not used here.
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The group item supports only
+      one SetDlgItem variant currently:
+
+      n = GRSI_LBL: Sets a new descriptive label to the group item.
+
+   NOTE
+      You must supply a label on every group item.
+
+   SAMPLE
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      DLGITEM gridlgItems[] = {
+      /*X   Y   W   D   FLAGS     LABEL   INIT        TYPE         SIZE        PRIV */
+      { 10, 10, 100, 80,    0L, "MyGroup", NULL, IhGroup,  sizeof(IHGROUP),  NULL },
+      };
+
+      DIALOG gridlg = {450, 94, 0L, 0, 1, gridlgItems, DhStandard, NULL, NULL, 0};
+
+      void main(void) {
+         if(!PalInit(1)) exit(-1); /* Initialize PAL */
+         InitDialog(&gridlg);   /* init dialog */
+
+         ShowDialog(&gridlg, 10, 10, " Press F10 when done.");
+         HandleDialog(&gridlg, NULL);
+         CloseDialog(&gridlg);
+         PalDeInit(1);
+      }
+
+
+!short: IhRadio              Radio buttons
+   NAME
+      IhRadio
+
+   DESCRIPTION
+      A group of radio-button items are normally used for exclusive option
+      selections. Usually 2 or more radio buttons surrounded by a group
+      frame item, can be used to select one option among the others of
+      the same group. Radio buttons are very similar in function and
+      look as the checkbox items.
+
+
+   POSITION/DIMENSION
+      PosX and PosY define the upper left corner of the radio button.
+      At that position, a small circle is displayed, followed by the
+      radio's descriptive label at its right. The width and depth
+      define the area that will be cleared prior to the display of
+      the radio button.
+
+
+   TEXT
+      The Text field is used to display the descriptive label of the
+      radio button item.
+
+   FLAGS
+      The 'IF_RBM' flag is used to indicate to DhStandard that the item
+      is indeed a radio button. The first three bits of the 'Flags'
+      field are reserved for radio button group identification. If they
+      are all zero, the item isn't a radio button (whatever the handler
+      pointer says - DhStandard will not handle it as a radio button
+      even if it looks like one to the user). Otherwise, the item is a
+      radio button, and the three bits define the group it belongs to.
+      This means you can have up to 7 radio button groups.
+
+
+   INIT
+      The radio button item has this optional INIT structure:
+
+      typedef struct {
+        int  Font;     /* Id of font to be used          */
+        int  Checked;  /* initially checked or unchecked */
+      } IHRAINIT;
+
+      Font        - Id of the font to be used for the descriptive label
+                    of the radio button item. Use SMALL_FONT,
+                    MEDIUM_FONT, LARGE_FONT, or a value returned by
+                    LoadFont.
+
+
+      Checked     - If the value here is 0 the radio button will be
+                    displayed 'unchecked' when the dialog is displayed.
+                    A non zero value will display the radio button
+                    'checked' (the little circle filled black) when the
+                    dialog is displayed.
+
+
+   FOCUS/KEYS
+      When the focus gets to a radio button, the descriptive label of
+      the button is displayed in negative (white characters on black
+      backround). By pressing the space bar you can toggle the state of
+      the radio button.
+
+
+   GETDLGITEM
+      int GetDlgItem(DIALOG *pDlg, int ItemNbr, int n, void *Dest)
+
+      See the description of GetDlgItem for details on the
+      parameters to this function. The radio button item supports only
+      one GetDlgItem variant:
+
+      n = RAGI_STATE: This returns the state of the radio button item,
+                      either marked (1) or unmarked (0). Dest should
+                      point to an integer that will receive the value.
+                      See the sample below.
+
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The radio button item supports only
+      two SetDlgItem variants currently:
+
+      n = RASI_LBL: Sets a new descriptive label to the radio button item.
+                    The radio label is usually pre-defined in the
+                    dialog structure, but RASI_LBL can be used to change
+                    the label on the fly. pData should point to a text
+                    string in this case.
+
+      n = RASI_STATE: Sets the state of the radio button item, marked or
+                      unmarked. The pData pointer itself is used as the
+                      value here - use the VALUE() macro to convert 0 or
+                      1 to the corresponding type. See the sample below.
+
+   NOTE
+
+   SAMPLE
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      #define RAI1 0
+
+      DLGITEM raidlgItems[] = {
+      /*X   Y   W   D   FLAGS     LABEL   INIT        TYPE         SIZE        PRIV */
+      { 57, 18, 15, 14,    0L, "Radio control.", NULL, IhRadio,  sizeof(IHRADIO),  NULL },
+      };
+
+      DIALOG raidlg = {450, 94, 0L, 0, 1, raidlgItems, DhStandard, NULL, NULL, 0};
+
+      void main(void) {
+         int flag;
+
+         if(!PalInit(1)) exit(-1); /* Initialize PAL */
+         InitDialog(&raidlg);   /* init dialog */
+
+         /* mark the radio control on the fly */
+         SetDlgItem((&raidlg, RAI1, RASI_STATE, VALUE(1));
+
+         ShowDialog(&raidlg, 10, 10, " Press F10 when done.");
+         HandleDialog(&raidlg, NULL);
+         GetDlgItem(&raidlg, RAI1, RAGI_STATE, &flag);
+         CloseDialog(&raidlg);
+         PalDeInit(1);
+
+         if(flag) printf("The radio control has been marked!\n");
+         if(!flag) printf("The radio control has not been marked.\n");
+      }
+
+
+!short: IhButton             Pushbuttons
+   NAME
+      IhButton
+
+   DESCRIPTION
+      Buttons are items that the user can virtually 'push' to activate
+      a certain function. The most commonly used buttons are the OK
+      and CANCEL buttons in a dialog.
+
+   POSITION/DIMENSION
+      PosX and PosY define the upper left corner of the button's position.
+      The width specifies the width of the button, and depth specifies
+      the depth.
+
+   TEXT
+      The Text field is used to display the label inside the button.
+
+   FLAGS
+      The 'IF_ESC' and 'IF_RET' flags can be used in conjunction
+      with button items to force the DhStandard to focus on
+      the selected button and provoke the desired action.
+
+
+   INIT
+      The button item has this optional INIT structure:
+
+      typedef struct {
+        int  Font;     /* Id of font to be used       */
+      } IHBNINIT;
+
+      Font        - Id of the font to be used for the descriptive label
+                    of the button item. Use SMALL_FONT, MEDIUM_FONT,
+                    LARGE_FONT, or a value returned by LoadFont.
+
+
+   FOCUS/KEYS
+      If 'IF_ESC' flag is used, the button will get the focus if the
+      user presses the ESC key. If the 'IF_RET' is used instead, the
+      button will get the focus when the ENTER key will be pressed.
+
+   GETDLGITEM
+      Button items don't have any GETDLGITEM variants.
+
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The button item supports only
+      one SetDlgItem variant currently:
+
+      n = BNSI_LBL: Sets the label of the button.
+
+   NOTE
+      When a pushbutton item is created, it sets the IF_FRT flag
+      in its 'Flags' member in the item structure. This will in
+      turn cause DhStandard to send it an additional SPACE
+      keypress when the focus is set to this item by pushing a
+      hotkey (as opposed to tabbing).
+
+   SAMPLE
+
+      #include <stdlib.h>
+
+      #include "pal.h"
+      #include "hk.h"
+
+
+      DLGITEM ButtonItems[] = {
+      /*X   Y   W   D   FLAGS     LABEL       INIT       TYPE           SIZE        PRIV */
+      { 59, 40, 80, 25,   0L, "CANCEL",    NULL,       IhButton, sizeof(IHBUTTON), NULL }
+      };
+
+      DIALOG Button = {554, 154, 0L, 0, 1, ButtonItems, DhStandard, NULL, NULL, 0};
+
+      void main(void) {
+
+         if(!PalInit(1)) exit(-1); /* Initialize PAL */
+         InitDialog(&Button);   /* init dialog */
+
+         ShowDialog(&Button, 10, 10, " Press F10 when done.");
+         HandleDialog(&Button, NULL);
+         CloseDialog(&Button);
+         PalDeInit(1);
+
+      }
+
+!short: IhListBox            Listbox
+   NAME
+      IhListBox
+
+   DESCRIPTION
+      A listbox item will display a series of text strings
+      in a framed window inside the dialog box. When the item is
+      active, the user can move a selection cursor through the
+      strings.
+
+
+   POSITION/DIMENSION
+      PosX and PosY define the upper left corner of the listbox
+      item - Width and Depth define its lower right corner.
+      Note that the label identifying the listbox is drawn
+      _inside_ of this rectangle. The listbox frame itself
+      is displayed just below the label.
+
+   TEXT
+      The Text field is used to display the label above the
+      actual listbox frame. The label is shown flush left.
+
+   FLAGS
+      None are currently defined specifically for this item type.
+
+   INIT
+      The listbox item has this optional INIT structure:
+
+      typedef struct {
+         int  Font;      /* Id of font to be used   */
+      } IHLBINIT;
+
+      Font        - Id of the font to be used for label and listbox
+                    contents. Use SMALL_FONT, MEDIUM_FONT,
+                    LARGE_FONT, or a value returned by LoadFont.
+
+   FOCUS/KEYS
+      The listbox item displays a black selection cursor when
+      it has the input focus. This cursor turns into an outline
+      when the item has lost the input focus. No cursor is displayed
+      when the item is empty, i.e. does not contain any strings.
+
+      The listbox item recognizes and handles the cursor movement
+      keys. Cursor up/down and page up/down move the selection by
+      one line or page, respectively. The HOME key will move it to
+      the first strings, and the END key to the last one. When
+      the ENTER key is hit in a listbox, HandleDialog will
+      return with the index of the listbox.
+
+   GETDLGITEM
+      int GetDlgItem(DIALOG *pDlg, int ItemNbr, int n, void *Dest)
+
+      See the description of GetDlgItem for details on the
+      parameters to this function. The listbox item supports the
+      following GetDlgItem variants:
+
+      n = LBGI_STRCNT: returns the number of strings currently
+                       in the listbox. Dest should point to an
+                       integer.
+
+                       Also see the LbGetCount utility for an
+                       easier and safer interface.
+
+      n = LBGI_STRPOS: returns the index of the currently
+                       selected string. Dest should point to an
+                       integer.
+
+                       Also see the LbGetPos utility function
+                       for an easier and safer interface.
+
+      n = LBGI_STRTXT: will retrieve a given listbox string. Dest
+                       should point to an IHLBUPD structure:
+
+                       typedef struct {
+                          int   StrIdx;
+                          char *Str;
+                       } IHLBUPD;
+
+                       where StrIdx should be set to the index
+                       of the string that you want to retrieve.
+                       Upon return of the GetDlgItem call, Str
+                       will point to the requested string.
+
+                       Also see the LbGetString utility function
+                       for an easier and safer interface.
+
+
+   SETDLGITEM
+      int SetDlgItem(DIALOG *pDlg, int ItmNbr, int n, void *pData)
+
+      See the description of SetDlgItem for details on the
+      parameters to this function. The listbox item supports these
+      SetDlgItem variants:
+
+      n = LBSI_STRADD: adds a string to the listbox. pData should
+                       point to an IHLBUPD structure:
+
+                       typedef struct {
+                          int   StrIdx;
+                          char *Str;
+                       } IHLBUPD;
+
+                       where Str points to the string that you want to
+                       add to the listbox, and StrIdx is the index of
+                       the string _before_ which you want to
+                       insert your new string.
+
+                       StrIdx can also have the following special
+                       values:
+
+                       LBPOS_FIRST: add as first string (moving
+                                    all others one line down)
+                       LBPOS_LAST:  add as last string
+                       LBPOS_SORT:  add in sort order - assumes
+                                    that list is sorted.
+
+                       Also see the LbAddString function for an
+                       easier and safer interface.
+
+      n = LBSI_STRSET: Changes the contents of a string already
+                       in the listbox. pData should point to an
+                       IHLBUPD structure:
+
+                       typedef struct {
+                          int   StrIdx;
+                          char *Str;
+                       } IHLBUPD;
+
+                       where StrIdx is the index of the string that
+                       you want to modify, and Str points to the
+                       new contents that you want it to have.
+
+                       Also see the LbSetString function for an
+                       easier and safer interface.
+
+      n = LBSI_STRPOS: moves the selection cursor to the listbox
+                       string that you specify. pData should
+                       point to an integer that has the index of
+                       the string which should be selected.
+
+                       Also see the LbSetPos function for an
+                       easier and safer interface.
+
+      n = LBSI_STRDEL: will delete a given listbox string. pData
+                       should point to an integer giving the
+                       index of the string to be removed.
+
+                       Also see the LbDelString function for an
+                       easier and safer interface.
+
+      n = LBSI_STRCLR: will remove all strings from a listbox.
+                       The memory associated with these strings
+                       will be recovered.
+
+                       Also see the LbClear function for an
+                       easier and safer interface.
+
+      n = LBSI_STRCB:  Will set the callback function for the
+                       listbox. pData should be a pointer to
+                       a function that has accepts an integer
+                       and returns a string pointer.
+
+                       Setting the callback function will work
+                       only as long as the listbox is empty.
+                       When the callback is set (that is, not
+                       zero), the listbox will use it to retrieve
+                       strings that it display. It will stop
+                       storing and handling strings itself.
+
+                       Also see the LbSetCallBack function for
+                       an easier and safer interface.
+
+      n = LBSI_STRCNT: This function is used to inform the
+                       listbox of the number of strings
+                       available via the callback function.
+
+                       It can only be used in callback mode.
+                       pData should point to an integer -
+                       the new string count for this listbox.
+
+                       Also see the LbSetCount function for an
+                       easier and safer interface.
+
+   NOTE
+      A newly initialized listbox is initially empty. You can
+      either add strings to it using LbAddString, or set the
+      callback function and the string count, and provide the
+      strings yourself. The latter technique is best used when
+      there are a large number of strings or when their contents
+      is easily computed.
+
+   SAMPLE
+
+      The following sample dialog contains two list boxes. One
+      displays the months of the year, and the other one has
+      the day numbers from 1 to 31. The first one is filled
+      using LbAddString in a loop, and manages its strings
+      itself. The second one gets the strings to be displayed
+      via a callback function.
+
+      #include <stdio.h>
+      #include <stdlib.h>
+
+      #include "pal.h"
+
+      #define LBMONTH 0
+      #define LBDAY   1
+
+      DLGITEM DateDlgItems[] = {
+         {  3, 3,110,138, 0L, "&Month",NULL, IhListBox,
+            sizeof(IHLISTBOX), NULL },
+         {116, 3, 56,138, 0L, "&Day",  NULL, IhListBox,
+            sizeof(IHLISTBOX), NULL }
+      };
+
+      DIALOG DateDlg = {
+         178, 154, 0L, 0, 2, DateDlgItems, DhStandard, NULL, NULL, 0
+      };
+
+      char *MonthNames[] = {
+         "January", "February", "March", "April", "May", "June", "July",
+         "August", "September", "October", "November", "December"
+      };
+
+      char *LbCbDay(int n)
+      {
+         /* since we return a pointer to this buffer, it is very
+            important that it is declared as static */
+         static char buf[20];
+
+         sprintf(buf, " -%2d- ", n+1);
+         return buf;
+      }
+
+      void InitListboxes(void)
+      {
+         int i;
+         /* Fill month listbox with month names from array */
+         for(i = 0; i < 12; i++) {
+            LbAddString(&DateDlg, LBMONTH, LBPOS_LAST, MonthNames[i]);
+         }
+
+         /* set the callback function for the days */
+         LbSetCallBack(&DateDlg, LBDAY, LbCbDay);
+
+         /* and also tell the listbox how many days there are */
+         LbSetCount(&DateDlg, LBDAY, 31);
+      }
+
+      int main()
+      {
+         if(!PalInit(1)) FatalExit("Init failed - CGAGRAPH not loaded ?", 1);
+
+         InitDialog(&DateDlg);
+         InitListboxes();
+         ShowDialog(&DateDlg, 20, 20, " Date Dialog ");
+         HandleDialog(&DateDlg, 0);
+         CloseDialog(&DateDlg);
+         PalDeInit(1);
+      }
+
+!Seealso: LbAddString LbSetString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short:
+!short:^u Listbox utility functions
+!short: LbAddString          Add a string to a listbox
+   NAME
+      LbAddString
+
+   DESCRIPTION
+      LbAddString can be used to add a string to a listbox - you can
+      select whether your string is inserted in the first position,
+      inserted at a specific position, appended as last string,
+      or inserted in sort order.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbAddString(DIALOG *pDlg, int Item, int InsBefore, char *Str);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+      InsBefore - the index of the string before which your string
+                  should be inserted. InsBefore can also have the
+                  following special values:
+
+                  LBPOS_FIRST: add as first string (moving
+                               all others one line down)
+                  LBPOS_LAST:  add as last string
+                  LBPOS_SORT:  add in sort order - assumes
+                               that list is sorted.
+
+      Str       - the string to insert.
+
+   RETURN VALUE
+      LbAddString returns TRUE if the string could be inserted.
+
+   NOTE
+      Note that in normal mode, the listbox will duplicate your
+      string and manage the allocated memory itself - you don't
+      need to care about it. You can safely discard the string
+      or overwrite the buffer in this mode.
+
+      If your listbox works in callback mode, you will have to
+      manage your strings yourself. Calling LbAddString may still
+      be required to have the listbox optically update the display.
+      In this case, it is your responsibility to ensure that both
+      additions (the internal one on the strings you manage, and
+      the optical one on the display) happen in sync.
+
+      The string that you pass is ignored in callback mode, as
+      the actual value will be retrieved via the callback
+      mechanism.
+
+   SAMPLE
+      See the sample at the end of the IhListBox description.
+
+!Seealso: IhListBox LbSetString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short: LbSetString          Set a string in a listbox
+   NAME
+      LbSetString
+
+   DESCRIPTION
+      LbSetString can be used to modify a string already in a
+      listbox.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbSetString(DIALOG *pDlg, int Item, int Index, char *Str);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+      Index     - the index of the string that you want to modify.
+      Str       - the new value.
+
+   RETURN VALUE
+      LbSetString returns TRUE if the string could be modified.
+
+   NOTE
+      If your listbox works in callback mode, you will have to
+      manage your strings yourself. Calling LbSetString may still
+      be required to have the listbox optically update the display.
+      The string that you pass is ignored in this case, as the
+      actual value will be retrieved via the callback mechanism.
+
+   SAMPLE
+      LbSetString(&MyDlg, LBMYBOX, 0, "This is the first string");
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short: LbDelString          Delete a string from a listbox
+   NAME
+      LbDelString
+
+   DESCRIPTION
+      Delete a string from a listbox, given its index.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbDelString(DIALOG *pDlg, int Item, int Index);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+      Index     - the index of the string that you want to modify.
+                  Index can also have the following special value:
+
+                  LBDEL_LAST:  delete last string
+
+   RETURN VALUE
+      LbDelString returns TRUE if the string was successfully
+      deleted.
+
+   NOTE
+      If your listbox works in callback mode, you will have to
+      manage your strings yourself. Calling LbSetdString may still
+      be required to have the listbox optically update the display.
+      The string that you pass is ignored in this case, as the
+      actual value will be retrieved via the callback mechanism.
+
+   SAMPLE
+      LbSetString(&MyDlg, LBMYBOX, 0, "This is the first string");
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short: LbGetString          Get a string from a listbox
+   NAME
+      LbGetString
+
+   DESCRIPTION
+      LbSetString can be used to retrieve a string from a listbox.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *LbGetString(DIALOG *pDlg, int Item, int Index);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+      Index     - the index of the string that you want to retrieve
+
+   RETURN VALUE
+      LbSetString returns the requested string or NULL on error.
+
+   NOTE
+      LbGetString works correctly with listboxes in callback mode.
+
+   SAMPLE
+      char *s = LbGetString(&MyDlg, LBMYBOX, 0); /* get first string */
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short: LbGetCount           Return number of strings in listbox
+   NAME
+      LbGetCount
+
+   DESCRIPTION
+      LbGetCount can be used to retrieve the number of strings that
+      are currently in a listbox.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbGetCount(DIALOG *pDlg, int Item);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+
+   RETURN VALUE
+      LbGetCount returns the number of strings in the listbox,
+      or a negative value on error.
+
+   NOTE
+      When the listbox is empty, LbGetCount will return zero.
+
+   SAMPLE
+      n = LbGetCount(&MyDlg, LBMYBOX);
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short: LbGetPos             Return index of currently selected string
+   NAME
+      LbGetPos
+
+   DESCRIPTION
+      LbGetPos can be used to retrieve the index of the currently
+      selected string. It is negative on error, or if the listbox
+      is currently empty.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbGetPos(DIALOG *pDlg, int Item);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+
+   RETURN VALUE
+      LbGetPos returns the index of the currently selected string
+      or a negative value on error. (Or if the listbox is empty).
+
+   SAMPLE
+      Idx = LbGetPos(&MyDlg, LBMYBOX);
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short: LbSetPos             Set currently selected string
+   NAME
+      Use LbSetPos to set the current selection of a listbox to a given
+      string.
+
+   DESCRIPTION
+      LbSetPos will send the selection cursor to the string index that
+      you provide. It will move the window if necessary.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbSetPos(DIALOG *pDlg, int Item, int Pos);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+      Pos       - the index of the string where you want to move the
+                  selection cursor. Pos can also have the
+                  following special value:
+
+                  LBPOS_FIRST: move selection to the first string.
+                  LBPOS_LAST:  move selection to the last string.
+
+
+   RETURN VALUE
+      LbSetPos returns TRUE if successful.
+
+
+   NOTE
+
+   SAMPLE
+      /* jump to the last entry in the listbox */
+      LbSetPos(&MyDlg, LBMYBOX, LBPOS_LAST);
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+!short: LbClear              Delete all strings from a listbox at once
+   NAME
+      LbClear
+
+   DESCRIPTION
+      LbClear will remove all strings from the listbox, emptying it.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbClear(DIALOG *pDlg, int Item);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+
+   RETURN VALUE
+      LbSetString returns TRUE if the deleting succeeded.
+
+   NOTE
+      In normal mode, the listbox item will also free the memory
+      of the strings that it has stored.
+
+      If your listbox works in callback mode, you will have to
+      manage your strings yourself. Calling LbClear may still
+      be required to have the listbox optically update the display.
+      You would typically do this after clearing your entire
+      private copy of the listbox strings. (Available through the
+      callback function).
+
+   SAMPLE
+      LbClear(&MyDlg, LBMYBOX);
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short: LbSetCallBack        Set listbox callback function
+   NAME
+      LbSetCallBack
+
+   DESCRIPTION
+      LbSetCallBack is used to inform the listbox that it should
+      call a function that you provide for strings to be displayed.
+      You pass the address of that function in the LbSetCallBack
+      call. The listbox will then call your function each time it
+      needs to display a string.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbSetCallBack(DIALOG *pDlg, int Item, char *(*pCb)(int n));
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+      pCb       - a pointer to a function that accepts an int, and
+                  returns a char pointer.
+
+   RETURN VALUE
+      LbSetCallBack returns TRUE if the callback function could be
+      set, FALSE otherwise. (You cannot set the callback function
+      if the listbox is not empty)
+
+   NOTE
+      LbSetCallBack will only work on an empty dialog box, that
+      has no items. Use LbClear to eventually clear your dialog
+      box to this state first. As soon as you set the callback
+      function, your listbox will be in callback mode.
+
+      If your listbox works in callback mode, you will have to
+      manage the strings yourself - you can also dynamically
+      create them for each call, as the sample does.
+
+   SAMPLE
+      See the sample at the end of the IhListBox description.
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+!short: LbSetCount           Set number of strings - callback mode only
+   NAME
+      LbSetCount
+
+   DESCRIPTION
+      Use the LbSetCount function to inform a listbox which you just
+      switched to callback mode (via the LbSetCallBack function) of
+      the number of strings actually available thru the callback.
+      This functions is for listboxes in callback mode only.
+
+   SYNOPSIS
+      #include "pal.h"
+      int LbSetCount(DIALOG *pDlg, int Item, int Count);
+
+   INPUTS
+      pDlg      - the ubiquitous pointer to your dialog description
+      Item      - the index (or id, if you prefer) of the listbox
+      Count     - the number of strings that are available via your
+                  callback function - in other words, the number of
+                  strings that are contained in the 'virtual' listbox.
+
+
+   RETURN VALUE
+      LbSetCount returns TRUE if successful. It will not be able to
+      set the string count if your listbox is not in callback mode.
+
+   NOTE
+      If you reduce the number of strings available via LbSetCount,
+      make sure that the current selection is not among those strings
+      that will 'disappear'.
+
+   SAMPLE
+      See the sample at the end of the IhListBox description.
+
+!Seealso: IhListBox LbAddString LbDelString LbGetCount LbGetPos LbClear LbSetCallBack LbSetCount LbSetPos
+
+

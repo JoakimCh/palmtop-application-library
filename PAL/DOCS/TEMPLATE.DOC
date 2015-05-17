@@ -1,0 +1,48 @@
+!short:
+!short:^u Name of module
+'!HTML:<!-
+^u Name of module
+'!HTML:->
+
+This is a sample template for documentation for a given module. It should
+be named <module>.doc and reside in the subdirectory of the module.
+
+At this place, provide a general introduction that presents the purpose
+of the module, explains the general concepts and data structures
+involved (if any), and gives a summary of the functions
+available. Not much formal constraints here.
+
+Then follow the descriptions of the various functions.
+
+!short: SampleFunction          Short description of function
+   NAME
+      SampleFunction
+
+   DESCRIPTION
+      Short description of function. This is only an example.
+
+   SYNOPSIS
+      #include "pal.h"
+      char *SampleFunction(int SampleParameter);
+
+   INPUTS
+      SampleParameter - an int with no particular purpose
+
+   RETURN VALUE
+      Describe the returned parameter here - don't forget to
+      mention error returns.
+      If a function has no return values, leave this section out
+      altogether. Same goes for 'INPUTS' with a function that
+      has no parameters.
+
+   NOTE
+      If there is anything special to say, say it here. (Known bugs,
+      special cases, etc.). Else, leave this section out altogether.
+      Don't leave it there empty.
+
+   SAMPLE
+      char *String;
+
+      /* call the sample function, save pointer returned */
+      String = SampleFunction(42);
+

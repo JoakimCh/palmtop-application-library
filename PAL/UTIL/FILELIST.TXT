@@ -1,0 +1,56 @@
+Contents of .\UTILS:
+
+EMM200:       EMM200 is an Expanded Memory Management driver
+              written by Hiroyuki Sekiya. It emulates expanded
+              memory by using a paging file on drive C:.
+
+PM:           This directory contains PalMake, a utility that
+              simplifies building PAL, samples and applications.
+              See PM.DOC for details.
+
+HFN:          This directory contains external HFN fonts for use
+              with functions from the HFN or the unified font (FONT)
+              module.
+
+VFN2HFN:      Contains a utility to convert VR 'VFN' fonts into
+              'horizontal' fonts for use by PAL. (Note: The
+              PAL Font Editor, PFE, can also convert VR fonts
+              to HFN format. VFN2HFN is useful if you want to
+              convert a larger number of VR font in batch mode)
+
+PDE:          Use the PAL Dialog Editor to visually create resource
+              files for use with the PAL dialog routines.
+
+PFE:          PFE (PAL Font Editor) is a small font editor which
+              supports character sets from 4x4 to 16x16 bits of
+              size. PFE can load any .HFN, .VFN, or FCL font
+              file, and save it in any one of these 3 formats.
+
+NG:           Contains a batch file to create the Norton guide
+              version of the PAL documentation. (Norton Guide
+              compiler required)
+
+NG2HTML:      Contains all that is necessary to create the HTML
+              form of the PAL documentation - view it with
+              NetScape, Mosaic, or HV (see below)
+
+HV:           This is a viewer for the HTML hypertext format made
+              popular by the world-wide web. Using NG2HTML, you
+              can convert the PAL documentation into HTML format,
+              and view it with this viewer, right on the palmtop.
+
+MKBIN:        MKBIN is a small utility that converts a binary
+              file into a C 'source' that can be compiled and
+              then linked to your main program.
+
+PCX2IMG:      PCX2IMG can convert a black and white PCX file
+              into the native HP100/200LX 'IMG' format.
+
+TSR:          Contains CGAGRAPH.COM: TSR that will emulate the
+              INT 5F calls on the desktop, very useful for
+              debugging.
+
+PATCH:        This directory has a patching utility that fixed
+              a bug in the small model library of TC 2.0.
+              See PATCH.DOC for details.
+

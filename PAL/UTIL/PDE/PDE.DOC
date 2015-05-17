@@ -1,0 +1,628 @@
+!short:^u PDE: PAL Dialog Editor (1)
+^u The PAL Dialog Editor (1)
+
+_______________
+1.Introduction.
+
+
+  PDE is a dialog editor written for simplifying the design
+of PAL dialogs. Instead of having to write the dialog structures
+youself, and having to compile them in order to see how they
+would look, PDE allows you to design your dialogs visually by
+drawing and placing them on your screen. You can place, move or
+size any item that you wish to add to your dialog window. Once
+you are satisfied with your dialog's look, you can use PDE's
+saving option which will automatically create the required
+structures in C-source format, ready to be compiled and linked
+in your program.
+
+ PDE allows you to have all your dialog definitions grouped
+into a single resource file. This eases the compiling process
+of your program. Simply include the name of your resource file
+to your program's SRCLIST, and the PM utility (or any other
+MAKE utility) will compile and link it along with your program.
+Any resource files created by PDE can be loaded back into the
+editor and edited again.
+
+  PDE also creates a test file called TESTDLG.C along with a
+SRCFILE called TESTDLG. These files can be used by the PM
+utility to compile and execute any dialog in your resource
+file, if you wish to see how it will look in real life.
+Once you have saved your dialog, simply type:
+
+ PM ftestdlg
+
+...and PM will compile it to TESTDLG.EXE, ready to execute and
+show the results.
+
+
+_______________________
+2.Using the PDE editor.
+
+
+A) Loading a dialog in PDE.
+---------------------------
+
+ You can load back in the editor any resource file that
+was previously saved by PDE, either from the command line,
+or from within the editor. The command line arguments are:
+
+ pde <filename><dialog>
+
+where <filename> is the filename of a valid PDE resource file,
+(no file extension is necessary), and <dialog> is one of
+the dialog names inside the resource file. If <dialog> is
+omitted, you will be prompted to choose the desired dialog
+from a picklist showing all the available dialogs in the
+specified resource file.
+
+ If the <filename> doesn't exist, it will be created. If
+<dialog> isn't found by PDE in the <filename> resource file,
+a new dialog will be created for the specified resource file.
+
+* It is not recommended to manually modify and load back in PDE
+  a PDE resource file. When PDE is loading a resource file, it
+  expects a special format, the same format it creates when
+  it saves a resource file. See section (F) in this DOC file
+  for information about the the PDE output format.
+
+
+B) Defining a new dialog.
+-------------------------
+
+  First thing you'll have to do for a new dialog, is define
+the dialog's window name, and dimensions. While in PDE you
+can use the menus to do some of the operations, but all the
+functions can also be invoked using the function keys (which
+is much faster).
+
+ To start, press F9 to open a new dialog. You will be prompted
+to enter the following information:
+
+ 1 - The Dialog file: Here you enter the resource filename
+     of your  dialog, the default is 'resource'. It's not
+     necessary to add any extensions. If the dialog file
+     exists, PDE will attempt to load the dialog specified
+     in the  dialog's name window. If the dialog is not found,
+     a new dialog will be appended at the end of the resource
+     file. If the dialog file doesn't exist, a new one will be
+     created also.
+
+
+ 2 - The dialog's name: This is the name that you would like
+     to give to your dialog. This name will be used everywhere
+     in your source when you need to use your dialog. If the
+     name is omitted and the resource file exists, a pick-list
+     will appear where you can select the desired dialog from
+     the resource file. If the resource file doesn't exist and
+     the dialog name is ommited, a new resource will be created
+     with the default dialog name of 'untitled'.
+
+
+ 3 - The dialog handler: Unless you have a dialog handler of
+     your own, you won't need to change the default name that
+     is shown, the DhStandard dialog handler. DhStandard is
+     the dialog handler provided by PAL, and handles all
+     operations of the dialogs.
+
+
+ 4 - Flags: This field is defaulted to 0L, but it is used to
+     setup some special flags for the dialog.
+
+
+  Once you have decided what name to give to your ready-to-be
+born dialog, press F10. If you've made a mistake, you can press
+ENTER, TAB or SHIFT-TAB to move through the entry-fields.
+Pressing F9 will abort the operation, and bring you back to
+the PDE introduction screen.
+
+
+  If you pressed F10 and the name you gave for your dialog
+already exists in the resource file, PDE will attempt to load
+it. Otherwise, a dotted rectangle will appear on your
+screen. This will be your actual new dialog window. You can
+size this window by using the arrows, and if you like to size it
+with a better precision, press the SHIFT button while using
+the arrows.
+
+  At the top right corner of the screen, you will notice the
+following information appear. It will display some usefull
+information on the element you are working on:
+
+ 1 - Type: Tells you the type of element (or item) you are
+     working on, (currently a window).
+
+ 2 - X: The 'X' coordinates of the current item.
+ 3 - Y: The 'Y' coordinates of the current item.
+ 4 - W: Width of the current item.
+ 5 - D: Depth of the current item.
+
+  All of the above values specify number of pixels. The X: and
+Y: values are absolute to the screen position when defining the
+dialog window, and relative to the dialog window for all other
+items.
+
+  As soon as you finish sizing your dialog window, press F10
+to accept the given dimensions, or F9 to cancel the operation
+and return to the editor introduction screen.
+
+  Once you have accepted the dimension of your dialog window,
+PDE will display it on the screen. From that point on, you can
+start adding items inside your dialog window.
+
+
+
+
+C) Adding items inside the dialog window.
+-----------------------------------------
+
+  When your dialog window is displayed on the screen, you will
+notice a change in the function key labels on the bottom of
+the screen. Here's a brief description on what operations they
+have assigned to them:
+
+
+ F1 - A small reminder screen for the arrow-key combinations
+      while editing.
+
+ F2 - Add an item in the dialog.
+ F3 - Edit an already placed item in the dialog. You can edit
+      its position, size, and all other information that you
+      have entered specific to that item. Pressing F3 also
+      brings you another set of function key labels, that we
+      will be discussed later on in section (D).
+
+ F5 - Re-size the dialog window.
+ F6 - Sort the items in the current dialog, by X:Y position.
+      This will change the focus order of all the items in
+      your dialog (top to bottom, left to right).
+
+ F8 - Quits the editor. If you have already placed some items
+      inside the dialog, you will be prompted if you wish to
+      save the dialog before quiting. Similary, if you press
+      ESC instead of F8, you will immediately quit the editor,
+      no questions-asked.
+
+ F9 - If you are ready to design another dialog, or decided
+      to dump the current one and start all over again, F9
+      will do just that. It will bring you back the dialog
+      setup window. If you pressed F9 by mistake, press F9
+      again to cancel this operation.
+
+ F10- Save your precious dialog. If you haven't modified
+      your dialog since the last save, only the TESTDLG
+      (test files) will be created by PDE.
+
+
+  OK, let's say you are ready to add an item, an edit field
+for example. Press F2, and you will be immediatly prompted
+to enter the following information:
+
+ 1 - Item name: This will be the name of your new item. This
+     name can be used everywhere in your program when you
+     need to retreive or enter information related to that item.
+     If no name is given, the default "NAMEn" will be used,
+     where NAME is the current dialog name and n is a number
+     from 0-59. The item names are always saved in upper case
+     by PDE.
+
+ 2 - Item Label: This will be the label that will be displayed
+     along with the item on the screen. In an edit-field
+     item, it will be displayed to the left of the data-entry
+     window.
+
+     IMPORTANT: You can define a hotkey (ALT-key) for most
+     dialog items. Just precede the hotkey character with
+     an ampersand "&" symbol.
+
+     example:   Enter &filename
+
+     This will make the letter 'f' a hotkey. Pressing ALT-F
+     will bring you to that dialog item.
+
+
+ 3 - Type: This is the type of item that you wish to use.
+     Press the DOWN-ARROW to see what item-types are available.
+     If you want to include a type of your own, select the
+     * Other type, and enter the name of your type. That name
+     will be later saved in the dialog structure when you
+     save your dialog.
+
+ 4 - Flags: Normally defaulted to 0L, but you can enter the
+     flags (if any) of the current item.
+
+
+  Press F10 when you finish filling up these fields, (or F9
+if you changed your mind about adding another item). The
+selected item (of any type) will be displayed about in the
+middle of your screen. Use the following keys to place or
+size it on the screen:
+
+ * ON THE PALMTOP:
+
+ - ARROWS:        Move the item on the screen.
+ - SHIFT-ARROWS:  Move the item on the screen precisely.
+ - Fn-ARROWS:     Same as PGUP, PGDN, HOME and END keys
+                  on a desktop, to size the item.
+
+  * ON THE DESKTOP:
+
+  You must use the numeric keypad arrows for precision
+  movement, and PAGEUP/PAGEDN with HOME/END keys for
+  sizing.
+
+  Once you're happy with the position and size of the item on
+the screen, you can either press F10 or ENTER to keep it where
+it is, or F9 to cancel the operation.
+
+  Some item types such as COMBO require additional information
+(called INIT), and a second window will appear to fill in the
+rest of the required information. Types such as EDIT items
+can also have additional information to them such as color
+and font type, but they are not mandatory, and can be changed
+on demand only.
+
+  For item types such as COMBO the additional information
+window appears automatically, and for the other types
+only on demand. The only way you can invoke the INIT
+information window for an item such as EDIT, you have to
+press F3 to get to the edit mode, and then F6 for the
+INIT information. See section (E) below for more details.
+
+
+!short:^u PDE: PAL Dialog Editor (2)
+^u The PAL Dialog Editor (2)
+
+
+D) Editing an item.
+-------------------
+
+  Pressing F3 brings you to the Edit mode of PDE. The first
+item that was entered will be high-lighted (dotted) so you
+can see what item has the edit focus. Pressing TAB or F5
+will switch the focus from one item to another. Once in edit
+mode, there are some new function keys available:
+
+
+ F3 - Pressing F3 again brings back the original edit setup
+      window. You can then change the name and label or even
+      the type of the high-lighted item.
+
+ F4 - Deletes the high-lighted item from the dialog window.
+      The DEL button does the same thing. When you use the
+      delete option, you will be prompted if you really want
+      to delete an item. Press F10 after you have deleted
+      the selected item to exit the Edit mode.
+
+ F5 - Selects the next item.
+
+ F6 - Edit or enter the INIT additional information of the
+      high-lighted item. See next section for more details.
+
+ F7 - Sets the start-up focus of the dialog to the high-lighted
+      item. A window will pop-up displaying the name of the
+      item which will have the focus. It can aslo be used to
+      temporarily see the name of an item on the screen.
+
+ F8 - Set the focus (order) position of the selected item in
+      the dialog. A pick-list will appear listing all the items.
+      You can then select before which item the selected item
+      will be (focus-wise). Note that using the SORT function,
+      will affect all setting made by this option.
+
+ F9 - If you changed the position or size of an item and
+      decided to keep it the way it was, press F9 and the
+      item's position and size will be restored.
+
+ F10- Press F10 when you want to exit the edit mode, and keep
+      the changes.
+
+
+
+E) Editing the INIT information of an item.
+-------------------------------------------
+
+  While in edit mode (F3), pressing F6 (INIT) will bring up
+the additional (not mandatory) information entry screen. This
+screen will automatically appear for items that need this
+information all the time, such as COMBO types.
+
+  Here are the available INIT type structures and their INIT
+values that you can enter:
+
+
+  a) IHEDINIT:
+  -----------
+  1 - Default text: The text you want to appear in the edit
+      window by default, when your dialog screen is opened.
+
+  2 - Buffer lenght: The real lenght of the item's buffer.
+      This specifies the number of characters the user can
+      enter in the edit window, (can go beyond the edit
+      window's visible lenght).
+
+  3 - Font: You can select the font size of your item. Pressing
+      the DOWN-ARROW will give you the 3 available font sizes.
+
+
+  b) IHSTATIC:
+  ------------
+  1 - Color: Background color of the static item, press the
+      DOWN arrow to select WHITE_COLOR or BLACK_COLOR.
+
+  2 - Font: You can select the font size of your item. Pressing
+      the DOWN-ARROW will give you the 3 available font sizes.
+
+
+  c) IHBUTTON:
+  ------------
+  1 - Font: You can select the font size of your item. Pressing
+      the DOWN-ARROW will give you the 3 available font sizes.
+
+
+  d) IHCOMBO:
+  -----------
+  1 - Default text: The text you want to appear in the edit
+      window by default, when your dialog screen is opened.
+
+  2 - Buffer lenght: The real lenght of the item's buffer.
+      This specifies the number of characters the user can
+      enter in the edit window, (can go beyond the edit
+      window's visible lenght).
+
+  3 - Font: You can select the font size of your item. Pressing
+      the DOWN-ARROW will give you the 3 available font sizes.
+
+  4 - Combo list: For COMBO items, this is used to enter the
+      list of items that will appear inside your combo list.
+      Up to 250 characters can be entered, but you must separate
+      your items  with the '|' symbol.
+
+         ex: One | Two | Three
+
+
+  e) IHCHECK:
+  -----------
+  1 - Font: You can select the font size of your item. Pressing
+      the DOWN-ARROW will give you the 3 available font sizes.
+
+  2 - Checked: If you mark this checkbox, your checkbox will
+      be marked (checked) by default when your dialog window
+      will be opened.
+
+
+  f) IHGROUP:
+  -----------
+  1 - Color: Background color of the group item, press the
+      DOWN arrow to select WHITE_COLOR or BLACK_COLOR.
+
+  2 - Font: You can select the font size of your item. Pressing
+      the DOWN-ARROW will give you the 3 available font sizes.
+
+
+  g) IHRADIO:
+  -----------
+  1 - Font: You can select the font size of your item. Pressing
+      the DOWN-ARROW will give you the 3 available font sizes.
+
+  2 - Checked: If you mark this checkbox, your radio button will
+      be marked (checked) by default when your dialog window
+      will be opened.
+
+
+  h) IHBITMAP:
+  ------------
+  1 - Bitmap pointer. Normally defaulted to NULL, but you can
+      enter the pointer name of the bitmap.
+
+
+  h) IHLISTBOX:
+  -------------
+  1 - Font: You can select the font size of your item. Pressing
+      the DOWN-ARROW will give you the 3 available font sizes.
+
+
+  j) OTHER:
+  ---------
+
+  1 - Handler name: You must specify your own Handler name
+      for all "other" item types, uknown to PDE. The name
+      here defaults to "MyHandler", and the structure name
+      to "MYHANDLER". Note that PDE takes the Handler name,
+      converts it to upper case fro the dialog name.
+
+
+  Press F10 when you have entered the required information, or
+F9 to abort. If you accept the information you have entered,
+a special INIT structure will be created for that item in the
+dialog structure file.
+
+!short:^u PDE: PAL Dialog Editor (3)
+^u The PAL Dialog Editor (3)
+
+
+F) Saving your dialog definition.
+---------------------------------
+
+  Pressing simply F10 will pop-up a window with a suggested
+filename (or the one you entered at the beginning) for your
+dialog structure. Do not enter any extensions, the .C extension
+will be appended to the filename. If you press F10 again to
+accept the given filename, four (4) files will be created:
+
+ 1 - <dialog>.c   where <dialog> is your filename. This will
+                  be the actual .C resource file that you can
+                  use with your program. If this file already
+                  existed, your new dialog will be appended
+                  at the end of this file. If you edited an
+                  already existing dialog of this file, it
+                  will replace the old dialog in that file.
+
+ 2 - <dialog>.h   where <dialog> is again your filename. This
+                  will be a small header file that you must
+                  also use with your program along with the
+                  <dialog>.c file. It has the definition names
+                  of the items in your dialog. Be sure to
+                  #include this header file in your program.
+
+ 3 - TESTDLG.C    This is a .C source file that will use the
+                  other two (above) files to create an
+                  executable program of your resource. This is
+                  handy if you want to see the behaviour of
+                  your dialogs in action.
+
+ 4 - TESTDLG      This is a SRCLIST (Source list) file of your
+                  dialogs, for the PM utility. Once you have
+                  saved your dialogs, you can compile them using
+                  the included PM utility. Simply type the
+                  following (at the DOS prompt ofcourse):
+
+                  PM ftestdlg
+
+                  This will instruct PM to compile the files
+                  listed in the TESTDLG SRCLIST file.
+
+ * TESTDLG files: You can create these files for any existing
+                  resource by loading any dialog of your resource
+                  file in PDE, and pressing F10. If you didn't
+                  modify the loaded dialog, the TESTDLG files
+                  will only be saved. You can compile the test
+                  file using the PM utility by typing:
+
+                  pm ftestdlg
+
+                  After compilation, you can run tstdlg.exe
+                  and see your dialog in action. If your
+                  resource file has more then one dialog,
+                  simply select the one you wish to test
+                  from the menu.
+
+
+ * IMPORTANT: If you compile and run TESTDLG, you need to press
+              [ESC] to exit from the selected dialog!
+
+
+  Note that pressing F8 (QUIT) will also display the save dialog
+screen if the dialog definition has been modified since the
+last save. Pressing F10 will save it, F9 will quit without saving.
+
+
+G) GUIDELINES on resource files.
+--------------------------------
+
+  It is not recommended to manually modify a resource file that
+was created by PDE and load it back in the editor. Both .C
+and .H resource files must reside in the same directory when
+PDE tries to load them. Since PDE handles multi-dialog resource
+files, it checks for a special string that separates the dialogs
+in the resource files. Take a look at PDE's own resource files,
+PDERSRC.C and PDERSRC.H if you want to get an idea of the
+structure of a PDE resource file. PDE was actually used to
+create its own resource files!
+
+ PDE reads back a saved dialog in the following manner:
+
+
+ 1 - Opens and reads the resource.h file. By doing so, it scans
+     for the selected dialog name by looking for the following
+     special string. This string serves as a pointer which PDE
+     is using to find where the desired dialog is located in
+     the resource:
+
+     /*[PDE:name]*/
+
+     where 'name' is the name of the dialog PDE is looking for.
+     If name isn't found, a new dialog can then be created
+     using that name. This special string must be exactly as
+     shown here with no added spaces between /* and */. The
+     name of the dialog must follow immediatly after the ':'.
+
+     When the string is found, PDE stores any following #define
+     declarations in memory for later use. This means that the
+     resource.h file MUST have a name for every item in the
+     dialog. PDE will read only the lines that start with the
+     '#define' directive and ignore the rest.
+
+ 2 - Opens the resource.c file and scans again for the
+     /*[PDE:name]*/ string, where 'name' is the name of the
+     dialog PDE is looking for. When found, PDE will then
+     scan for a line that starts with "DIALOG". It then reads
+     the width and depth of the dialog window on the next line.
+     These values are important while the item positions are
+     read, which are relative to the dialog window position.
+
+ 3 - Resets back to the beginning of the resource.c file, and
+     scans again for the /*[PDE:name*/ string. When found again
+     PDE will scan for one of the following INIT structure
+     names:
+
+     "IHEDINIT", "IHSTINIT", "IHBNINIT", "IHCKINIT"
+     "IHRAINIT", "IHGRINIT", "IHCBINIT", "IHBMINIT","IHLBINIT"
+
+     If any one of these is found, it will read the structure
+     name that follows. This name MUST always start with a
+     2 character header, followed by the actual item name.
+     The 2-character header must be one of the following,
+     (one for each item type):
+
+     "ED","ST","BN","CK","RA","GR","CB","BM","LB","US"
+
+     Next, PDE will read the next n-lines depending on the
+     type of the structure. For example, if the dialog
+     name is 'mydlg' with a IhCombo named MYCOMBO, then
+     the INIT structure name should be:  CBMYCOMBO.
+
+     Once PDE detects "DLGITEM", it will read the information
+     of each item one line at a time. DO NOT remove the /* */
+     line after "DLGITEM", PDE expects it to be there! After
+     reading the required number of lines (one for each item),
+     PDE will scan for "DIALOG".
+
+     When the "DIALOG" string is found, PDE will read the next
+     4 lines to get the rest of the information about the dialog.
+
+
+  Other important notes:
+
+  PDE will read the resource files with any number of horizontal
+white spacing, but will not read the files properly if vertical
+spacing is added inside the structures.
+
+DO NOT add vertical spacing between curly brackets {}. PDE
+will automatically remove all unnecessary empty lines from
+the resource file when saving.
+
+  PDE always reads each item's definition in a single line. Do
+not break any lines in half, even if they are too long, because
+PDE won't read the next item properly.
+
+  If you edit the resource files manually, NEVER change the
+names that PDE created for any INIT structure.
+
+  When you enter information such as a label for a static item,
+or a combo list, do not enter characters such as double quotes
+(") or '\' in the string because PDE saves the string as-is in
+the resource file and the compiler can generate an error. You
+can insert such characters manually after saving your dialog.
+
+  PDE only supports PAL standard handlers and item types, so it
+defaults all handlers to DhStandard when loading a resource
+file. Any non-PAL INIT structures will also be defaulted to
+IHEDIT.
+
+
+ Other PDE Limitations:
+
+  Up to 59 items can be added in one dialog. You can change this
+by modifying the number 60 in the line: #define NUM_OF_ELMNT 60
+of the PDE.H file. You may also need to compile it in large
+model if you get out-of-memory messages while running it.
+
+PDE won't warn you if your disk gets full while it is writing the
+resource files, it will rather abort and return exactly where you
+were before saving.
+
+
+
+
+                             ----

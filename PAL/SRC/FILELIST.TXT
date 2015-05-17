@@ -1,0 +1,27 @@
+This is the current list of subdirectories and files in the .\SRC
+directory:
+
+
+              Directories:
+
+INC         : Include file directory
+
+LOGRAPH     : Lowlevel graphics functions
+HIGRAPH     : Highlevel graphics functions
+CFG         : .INI style config file functions
+HFN         : Support for external, proportional fonts
+FONT        : Unified font support for both internal and external fonts
+MISC        : Miscellaneaous functions
+MNU         : Menu functions
+WIN         : Windowing functions.
+SM_SVC      : System manager service interface
+DIALOG      : Dialog box and item functions
+EMS         : Expanded memory access
+AMGR        : Application manager interface
+FILER       : Filer communication (from desktop for installation)
+PCK         : Picklist menu functions
+MEM         : Memory handling functions
+SC          : Software Carousel API
+
+FILELIST.TXT: this file
+SRCLIST     : Contains list of PAL source files - used by PM utility

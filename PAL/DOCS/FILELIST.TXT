@@ -1,0 +1,12 @@
+Contents of .\DOCS:
+
+FILELIST.TXT:  this file
+COPYRITE.TXT:  the legalese - usage conditions for PAL
+PAL.ABS     :  an 'abstract' file - a very short description of PAL.
+WHATSNEW.TXT:  what's new in the current release of PAL
+GUIDLINS.TXT:  the PAL C programming guidelines
+STRUCTUR.TXT:  an attempt at the description of the PAL directory structure
+TEMPLATE.C  :  a template that you can use for your .C and .H files.
+TEMPLATE.DOC:  a template for module-specific documentation.
+OVERVIEW.TXT:  a general overview of PAL.
+

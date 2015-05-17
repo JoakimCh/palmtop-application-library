@@ -1,0 +1,40 @@
+!short:^u PATCH:   correct a bug in TC 2.0
+^u Patch: corrects a bug in TC 2.0
+
+   PATCH.C (in the PAL .\UTIL\PATCH subdirectory) will patch the
+   small model library (CS.LIB) of Turbo C 2.0 to correct a bug
+   in the intr() function. This function is used in PAL in the
+   GetImg call and the intr() bug caused erratic behavior.
+   Here's an in-depth description of the problem and the fix.
+
+   The intr() function from the small model library CS.LIB of TC
+   2.0 has a bug. It does not pass the .r_bp REGPACK element
+   correctly to the called interrupt function. In the case of
+   the INT5f function 0xd000 call, BP ends up with the segment
+   part of the buffer pointer instead of the Y2 coordinate. This
+   value is usually too large, and therefore, the INT 5f routine
+   does nothing - it returns with the buffer in its initial
+   (usually zeroed-out) state. This will in turn confuse PutImg
+   (resp. the INT 5f working horse) and yield the on-screen
+   garbage or hangup, since no valid header is present.
+
+   What's the deeper reason for the intr() goofing ? Setting the
+   BP value is a bit of a problem, since BP is used as frame
+   pointer. Borland resorts to a trick: they 'compile' a small
+   routine on the stack that loads BP and does the requested
+   interrupt. They then load all registers (except BP) with the
+   value they should have, and call the above-mentioned routine.
+   BP is loaded with a 'MOV BP,[BP-offset]' instruction in
+   there. Unfortunately, this offset is off by four in small
+   model.
+
+   The problem is corrected in the BC libs. The source of intr()
+   (that Borland provides with BC++ 3.1) features a commented
+   out line that probably was originally responsible for the
+   miscalculation.
+
+   PATCH.C is small C program that patches the V2.0 CS.LIB file
+   and corrects the bug. It does a few checks to ensure that it
+   doesn't corrupt the LIB file of another version, but the
+   decision to use it is yours.
+

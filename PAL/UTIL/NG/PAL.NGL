@@ -1,0 +1,21 @@
+!name: PAL Reference guide
+!credits:
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º           PAL Project Documentation Norton Guide         º
+ º                                                          º
+ º   Gilles Kohl, Harry Konstas, Ron Crain, Bob Chernow     º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+!menu:PAL Reference
+Modules  modules.eho
+Utilities util.eho
+Overview overview.eho
+Copyright copyrite.eho
+!menu:Include files
+PAL.H pal_h.eho
+PALKEY.H palkey_h.eho
+PALSMSVC.H palsm_h.eho
+PALDLG.H paldlg_h.eho
+PALPRIV.H palprv_h.eho
+PALFILER.H palflr_h.eho
+

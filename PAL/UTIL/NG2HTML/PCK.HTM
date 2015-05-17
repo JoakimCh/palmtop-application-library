@@ -1,0 +1,342 @@
+<HTML>
+<HEAD><TITLE>PAL - Quickreference: Pck</TITLE></HEAD>
+<BODY>
+<H1>PAL - Quickreference: Pck</H1>
+<HR>
+<A NAME="Picklist routines"><HR>
+<H2> Picklist routines
+</H2>
+</A><P>
+The functions in this module build upon the PAL menu routines to provide
+a multiple selection list. This list could be used to select files, or any
+data where zero or many choices are appropriate.
+<P>
+The basic function in this module is PickList(). It allows you to pass
+in an array of strings and presents the user with a menu of these
+strings. If the user highlights an entry and presses enter a mark will
+appear next to that entry. If the enter key is pressed a second time
+on the same entry the mark goes away. When the user presses the escape
+key, a structure (PICKRESULTS) is returned providing information about
+the selected entries. Two variations on the basic picklist are also
+provided. A FilePickList() function provides the same function as the
+PickList() but allows you to pass in a file specification. A
+QuickPickList() function is also provided. It takes a | delimited
+string (String1|String2|String3) instead of an array of strings. Two
+added utility functions allow you to quickly determine the number of
+entries returned and the address of the last returned entry.
+<P>
+Available functions:
+<P>
+<BR><A HREF="#FilePickList">FilePickList</A>
+    : Display a picklist of files.
+<BR><A HREF="#PickList">PickList</A>
+        : Display a picklist of strings.
+<BR><A HREF="#QuickPickList">QuickPickList</A>
+   : An easier way to display a picklist.
+<BR><A HREF="#FreePickResults">FreePickResults</A>
+ : Free storage associated with picklist results.
+<BR><A HREF="#PickCount">PickCount</A>
+       : Determine the number of items in a picklist
+<BR><A HREF="#FindLastPick">FindLastPick</A>
+    : Find end of linked PICKRESULTS NAME
+<P>
+<HR><H2><A NAME="FilePickList">FilePickList</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilePickList</PRE><DT>DESCRIPTION
+<DD><PRE>      The FilePicklist() is a variation of the PickList() function that
+      will display a picklist of the provided file specification.
+</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      PICKRESULTS *FilePickList(char *Dir,
+                                int FixedRows,
+                                int PosX,
+                                int PosY);</PRE><DT>INPUTS
+<DD><PRE>      Dir    - a pointer to a character string. This string should
+               represent a valid DOS file specification.
+
+      FixedRows - the number of rows in the menu.
+
+      PosX - the position in pixels of the left side of the menu.
+
+      PosY - the position in pixels of the bottom of the menu.
+</PRE><DT>RETURNS
+<DD><PRE>      A pointer to a completed PICKRESULTS structure.</PRE><DT>NOTE
+<DD><PRE>      It is the responsibility of the caller to free the storage
+      for the PICKRESULTS structure by calling the FreePickResults()
+      function.</PRE><DT>SAMPLE
+<DD><PRE>    #include "pal.h"
+
+    void main(int argc, char *argv[])
+    {
+    PICKRESULTS *pPR;
+
+    if(!PalInit(1)) FatalExit("Init failed - CGAGRAPH not loaded ?", 1);
+
+    pPR = FilePickList(".\\*.*", 5, 300, 20);
+
+    printf("%d files selected\n",PickCount( pPR ));
+
+    /* clean up
+    */
+    FreePickResults(pPR);
+
+    PalDeInit(1);
+    }</PRE><DT>SEE ALSO
+<DD><A HREF="pck.HTM#FreePickResults">FreePickResults</A>
+<A HREF="pck.HTM#PICKRESULTS">PICKRESULTS</A>
+
+
+</DL><HR><H2><A NAME="PickList">PickList</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      PickList</PRE><DT>DESCRIPTION
+<DD><PRE>      PickList is the main function in this module. It displays a menu
+      of choices to the user. The user interacts with the menu by
+      pressing the enter key for the choices they want to make. Multiple
+      choices are allowed and each press of the enter key toggles a choice.
+      The user presses escape to dismiss the picklist.
+</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      PICKRESULTS *PickList(char **PickItems,
+                            int Count,
+                            int FixedRows,
+                            int PosX,
+                            int PosY);</PRE><DT>INPUTS
+<DD><PRE>      PickItems  - This is an array of pointers to strings. Each
+                   string represents a menuitem.
+
+      FixedRows - the number of rows in the menu.
+
+      PosX - the position in pixels of the left side of the menu.
+
+      PosY - the position in pixels of the bottom of the menu.
+</PRE><DT>RETURNS
+<DD><PRE>      A pointer to a completed PICKRESULTS structure.</PRE><DT>NOTE
+<DD><PRE>      It is the responsibility of the caller to free the storage
+      for the PICKRESULTS structure by calling the FreePickResults()
+      function.
+</PRE><DT>SAMPLE
+<DD><PRE>
+    #include "pal.h"
+
+    void main(int argc, char *argv[])
+    {
+        int Count, i;
+        char **Array;
+        PICKRESULTS *pPR;
+
+        char *S1 = "String1";
+        char *S2 = "String2";
+        char *S3 = "String3";
+        char *S4 = "String4";
+        char *S5 = "String5";
+
+        if(!PalInit(1)) FatalExit("Init failed - CGAGRAPH not loaded ?", 1);
+
+        Array = (char **)malloc(5 * sizeof(char *));
+        Array[0] = S1;
+        Array[1] = S2;
+        Array[2] = S3;
+        Array[3] = S4;
+        Array[4] = S5;
+
+        Count = 5;
+        pPR = PickList(Array, Count, 4, 100, 40);
+
+        printf("%d selected\n",PickCount( pPR ));
+
+        FreePickResults(pPR);
+
+        PalDeInit(1);
+    }
+</PRE><DT>SEE ALSO
+<DD><A HREF="pck.HTM#FreePickResults">FreePickResults</A>
+<A HREF="pck.HTM#PICKRESULTS">PICKRESULTS</A>
+
+
+</DL><HR><H2><A NAME="QuickPickList">QuickPickList</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      QuickPickList</PRE><DT>DESCRIPTION
+<DD><PRE>      The QuickPicklist() is a variation of the PicklIst() function that
+      will display a picklist of the bar(|) delimited strings. See the
+      sample for details.
+
+</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      PICKRESULTS *QuickPickList(char *Strings,
+                                 int FixedRows,
+                                 int PosX,
+                                 int PosY);</PRE><DT>INPUTS
+<DD><PRE>      Strings - A bar(|) delimited string. Each substring will be presented
+                as a separate menu item.
+
+                ex. ITEMA|ITEMB|ITEMC
+
+      FixedRows - the number of rows in the menu.
+
+      PosX - the position in pixels of the left side of the menu.
+
+      PosY - the position in pixels of the bottom of the menu.
+</PRE><DT>RETURNS
+<DD><PRE>      A pointer to a completed PICKRESULTS structure.</PRE><DT>NOTE
+<DD><PRE>      It is the responsibility of the caller to free the storage
+      for the PICKRESULTS structure by calling the FreePickResults()
+      function.
+</PRE><DT>SAMPLE
+<DD><PRE>    #include "pal.h"
+
+    void main(int argc, char *argv[])
+    {
+        PICKRESULTS *pPR;
+
+        if(!PalInit(1)) FatalExit("Init failed - CGAGRAPH not loaded ?", 1);
+
+        pPR = QuickPickList("One|Two|Three|Four|Five|Six", 4, 100, 40);
+
+        printf("%d selected\n",PickCount( pPR ));
+
+        FreePickResults(pPR);
+
+        PalDeInit(1);
+    }</PRE><DT>SEE ALSO
+<DD><A HREF="pck.HTM#FreePickResults">FreePickResults</A>
+<A HREF="pck.HTM#PICKRESULTS">PICKRESULTS</A>
+
+
+</DL><HR><H2><A NAME="FreePickResults">FreePickResults</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FreePickResults</PRE><DT>DESCRIPTION
+<DD><PRE>      This will de-allocate all storage associated with a PICKRESULTS
+      structure.
+</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void FreePickResults(PICKRESULTS *pPR);</PRE><DT>INPUTS
+<DD><PRE>      pPR - a pointer to a PICKRESULTS structure.
+</PRE><DT>SAMPLE
+<DD><PRE>    #include "pal.h"
+
+    void main(int argc, char *argv[])
+    {
+        PICKRESULTS *pPR;
+
+        if(!PalInit(1)) FatalExit("Init failed - CGAGRAPH not loaded ?", 1);
+
+        pPR = QuickPickList("One|Two|Three|Four|Five|Six", 4, 100, 40);
+
+        printf("%d selected\n",PickCount( pPR ));
+
+        FreePickResults(pPR);
+
+        PalDeInit(1);
+    }
+</PRE><DT>SEE ALSO
+<DD><A HREF="pck.HTM#PickList">PickList</A>
+<A HREF="pck.HTM#FilePickList">FilePickList</A>
+<A HREF="pck.HTM#QuickPickList">QuickPickList</A>
+<A HREF="pck.HTM#PICKRESULTS">PICKRESULTS</A>
+
+
+</DL><HR><H2><A NAME="PickCount">PickCount</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      PickCount</PRE><DT>DESCRIPTION
+<DD><PRE>      This function will return the number of items that are in a
+      PICKRESULTS structure.
+</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int PickCount(PICKRESULTS * pPR);</PRE><DT>INPUTS
+<DD><PRE>      pPR - a pointer to a PICKRESULTS structure.
+</PRE><DT>SAMPLE
+<DD><PRE>    #include "pal.h"
+
+    void main(int argc, char *argv[])
+    {
+        PICKRESULTS *pPR;
+
+        if(!PalInit(1)) FatalExit("Init failed - CGAGRAPH not loaded ?", 1);
+
+        pPR = QuickPickList("One|Two|Three|Four|Five|Six", 4, 100, 40);
+
+        printf("%d selected\n",PickCount( pPR ));
+
+        FreePickResults(pPR);
+
+        PalDeInit(1);
+    }
+</PRE><DT>SEE ALSO
+<DD><A HREF="pck.HTM#PickList">PickList</A>
+<A HREF="pck.HTM#FilePickList">FilePickList</A>
+<A HREF="pck.HTM#QuickPickList">QuickPickList</A>
+<A HREF="pck.HTM#PICKRESULTS">PICKRESULTS</A>
+
+
+</DL><HR><H2><A NAME="FindLastPick">FindLastPick</A>
+</H2>
+
+<DL>
+<DT>NAME
+<DD><PRE>      FindLastPick</PRE><DT>DESCRIPTION
+<DD><PRE>      This function will return a PICKRESULTS structure for the last
+      entry in the linked list of PICKRESULTS structures.
+</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      PICKRESULTS * FindLastPick(PICKRESULTS * pPR);</PRE><DT>INPUTS
+<DD><PRE>      pPR - a pointer to a PICKRESULTS structure.
+</PRE><DT>NOTE
+<DD><PRE>      Caveats
+</PRE><DT>SAMPLE
+<DD><PRE>
+    #include "pal.h"
+
+    void main(int argc, char *argv[])
+    {
+        PICKRESULTS *pPR, *pPRLast;
+
+        if(!PalInit(1)) FatalExit("Init failed - CGAGRAPH not loaded ?", 1);
+
+        pPR = QuickPickList("One|Two|Three|Four|Five|Six", 4, 100, 40);
+
+        pPRLast = FindLastPick(pPR);
+
+        printf("%d selected\n",PickCount( pPR ));
+
+        printf("Last selection is %s\n",pPRLast-&gt;Strings);
+
+        FreePickResults(pPR);
+
+        PalDeInit(1);
+    }
+</PRE><DT>SEE ALSO
+<DD><A HREF="pck.HTM#PickList">PickList</A>
+<A HREF="pck.HTM#FilePickList">FilePickList</A>
+<A HREF="pck.HTM#QuickPickList">QuickPickList</A>
+<A HREF="pck.HTM#PICKRESULTS">PICKRESULTS</A>
+
+</DL><HR><H2><A NAME="PICKRESULTS">PICKRESULTS</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      PICKRESULTS</PRE><DT>DESCRIPTION
+<DD><PRE>      a linked list returned by many of the picklist functions. Each
+      entry has a pointer to the next entry, an index into the original
+      menu selections, and a pointer to the selected string.
+</PRE><DT>SYNOPSIS
+<DD><PRE>      typedef struct PickEntryTag {
+          struct PickEntryTag  *Next; /* The next entry in linked list        */
+          int  Index;                 /* The index into original string array */
+          char *String;               /* The actual selected strings          */
+      } PICKRESULTS;</PRE><DT>SEE ALSO
+<DD><A HREF="pck.HTM#PickList">PickList</A>
+<A HREF="pck.HTM#FilePickList">FilePickList</A>
+<A HREF="pck.HTM#QuickPickList">QuickPickList</A>
+
+</DL></BODY>
+</HTML>

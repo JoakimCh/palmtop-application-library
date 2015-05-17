@@ -1,0 +1,447 @@
+!short:
+!short:^u Menu support
+^u Menu support
+
+Use the menu routines to display traditional toplevel or pop-up
+style menus. Be sure to read the introductory chapter that follows,
+and the entries on the MENU and MENUITEM structures. A lot of
+what PAL menus can do is controlled in the data that describes
+them, there are only a few functions.
+
+Available functions:
+
+  - HandleMenu : Display a menu and start user interaction
+  - MenuSelect : Simple interface for pop-up style menus
+
+!Seealso: "MNU Introduction" MENU MENUITEM HandleMenu MenuSelect
+
+!short: MNU Introduction
+Menus are described in PAL using two types of structures: a MENU
+structure that holds general information on the menu that PAL
+should display, and an MENUITEM structure (actually, an array of
+these), that describes a single item of a menu. (The array
+describes all items of a given menu)
+
+An 'item' is simply a line of text in a menu (it can also be an
+icon or bitmap in PAL) that the user can select. When selected,
+items can do different things: most return to the caller with a
+return value that you specify, others spawn off further menues,
+and still others call a function that you specify.
+
+The toplevel 'bar' that most applications display is actually a
+menu - its items are arranged horizontally, and most of them
+spawn off further, vertical, menues.
+
+To display a menu and let the user interact with it, call:
+
+  int HandleMenu(MENU *pMnu, int PosX, int PosY);
+
+It returns with an integer that identifies the menu item (if
+any) that the user selected. In the HandleMenu call, you specify
+the menu you want displayed (by a pointer to the structure
+describing it), and where it should appear on the screen.
+
+You can use menus for two purposes - first, displaying the
+familiar menu bar with its pulldown menues. Second, menus also
+make it possible to present a picklist of selection choices to
+the user.
+
+Let's start with an example of the latter use since it is
+simpler. Assume you have a communication program and want the
+user to select a baudrate. Here's a simple-minded sample program
+that illustrates this use:
+
+   SAMPLE
+
+   #include <stdlib.h>
+
+   #include "pal.h"
+
+   /* note that the menu item return values are defined in such a
+      way as to directly return the corresponding baud rate
+      This works for baudrates below 32767 since the return
+      value is an int ...  */
+   MENUITEM BaudMnuItms[] = {
+      { "  300",  MA_VAL ,  MENUVAL(300) },
+      { " 1200",  MA_VAL,  MENUVAL(1200) },
+      { " 2400",  MA_VAL,  MENUVAL(2400) },
+      { " 9600",  MA_VAL,  MENUVAL(9600) },
+      { "19200",  MA_VAL, MENUVAL(19200) },
+   };
+   MENU BaudMenu = { NULL, 0, 0, 0, 5, 5, BaudMnuItms };
+
+   int SetBaud(int Baud)
+   {
+      int Selection;
+
+      /* get selection from user */
+      Selection = HandleMenu(&BaudMenu, 200, 20);
+
+      /* if the user hit ESC, Selection will be negative,
+         in this case, keep old Baud rate */
+      if(Selection > 0) {
+         /* set new baudrate if selection wasn't aborted */
+         Baud = Selection;
+      }
+      return Baud;
+   }
+
+   See the description of the MENU and MNUITEM structure for
+   details on menu definition and more advanced usage of menues,
+   like pulldowns, separators, bitmaps/icons in menues etc.
+
+   Note that you can also call the new MenuSelect function (see
+   below) to have a simpler interface.
+
+!Seealso: MENU MENUITEM HandleMenu MenuSelect
+
+!short: MENU structure       Describes a menu
+   NAME
+      MENU
+
+   DESCRIPTION
+      A menu structure describes a menu in PAL - you provide a
+      pointer to such a structure when calling HandleMenu. This
+      structure itself has a pointer to an array of 'menu items'
+      - while the MENU structure provides general information
+      about the menu (like whether it should display
+      horizontally or vertically), the MENUITEM array describes
+      the different items that are part of a menu. See below for
+      a description of the MENUITEM structure.
+
+   SYNOPSIS
+      /* menu descriptor structure */
+      typedef struct {
+         PALWIN *pMnuWin;     /* a menu has an associated window */
+         WORD Flags;          /* flags: kind of menu */
+         int CurItem;         /* currently selected item */
+         int TopItem;         /* first visible item in menu */
+         int ItmDisp;         /* number of visible items */
+         int ItmCount;        /* total number of items */
+         MENUITEM *Items;     /* array of items */
+      } MENU;
+
+
+   FIELDS
+      PALWIN *pMnuWin - If this field is NULL in your menu
+                        definition (usually the case) then
+                        HandleMenu will create a window for your
+                        menu when called. It will otherwise use
+                        the window you provide. (It will NOT
+                        close it upon termination in this case)
+
+      WORD Flags      - This field has constants ored together
+                        that control various characteristics of
+                        a menu:
+
+         MS_HORIZ     - add this constant if you want a
+                        horizontal menu. The menu bar of an
+                        application should also have the next
+                        attribute, MS_TOPLVL. ('Or' them together
+                        like so: MS_HORIZ|MS_TOPLVL )
+                        Menus are vertical by default - to get
+                        a vertical menu, you don't need to do
+                        anything special.
+
+         MS_TOPLVL    - add this constant to the toplevel menu
+                        (bar) of a hierarchical menu structure
+                        so that HandleMenu can handle it
+                        correctly.
+
+         MS_PULLDN    - add this constant to a pulldown menu
+                        that is part of, but not the top level
+                        of a hierarchical menu structure.
+
+
+
+      int CurItem     - usually initialized to zero, this is the
+                        currently active menu item. If you are
+                        using a menu to present a picklist to
+                        the user (as in the example above, in
+                        the general discussion of menu support),
+                        you could use this field to set up the
+                        default choice.
+
+      int TopItem     - usually initialized to zero, this value
+                        is used in scrolling menues to identify
+                        the first item visible in the menu
+                        window.
+
+      int ItmDisp     - this is the number of menu items that
+                        should be visible in the menu window. If
+                        you want all your items to be visible,
+                        set this field to the same value as the
+                        next one, ItmCount. Otherwise, only the
+                        number given is shown, and your menu
+                        will scroll. Note that all items must
+                        be of the same height (width) for a
+                        scrolling vertical (horizontal) menu to
+                        work correctly.
+
+      int ItmCount    - this field tells how many items are
+                        present in the item array.
+
+      MENUITEM *Items - This is the pointer to your array of
+                        menu items. See below for an example,
+                        and also see the MENUITEM entry for
+                        details on those.
+   NOTE
+      Take care that the following are true when defining a menu
+      structure:
+      + ItmDisp <= ItmCount
+      + TopItem <= CurItem  < TopItem + ItmDisp
+
+   SAMPLE
+      Here's a complete example of an application menu bar that
+      has two pulldowns. It will look like this on the screen:
+
+      +-------------------------------------------+
+      | File      Sample                          |
+      +-------+-+--------+------------------------+
+      | Exit  | | First  |
+      +-------+ | Second |
+                | Third  |
+                +--------+
+
+
+      And here are the definitions necessary to create the
+      whole thing. Note that there are three menus involved
+      here: one horizontal, and two vertical ones.
+
+      /* define the constants for the menues */
+      enum { CMD_EXIT, CMD_FIRST, CMD_SECOND, CMD_THIRD };
+
+      /* define items and menu of the 'File' pulldown */
+      MENUITEM FileMnuItms[] = {
+         { " Exit ", MA_VAL, MENUVAL(CMD_EXIT) },
+      };
+      MENU FileMenu[] = { NULL, MS_PULLDN, 0, 0, 1, 1, FileMnuItms };
+
+      /* define items and menu of the 'Sample' pulldown */
+      MENUITEM SampleMnuItms[] = {
+         { " First ",  MA_VAL, MENUVAL(CMD_FIRST) },
+         { " Second ", MA_VAL, MENUVAL(CMD_SECOND) },
+         { " Third ",  MA_VAL, MENUVAL(CMD_THIRD) },
+      };
+      MENU SampleMenu[] = { NULL, MS_PULLDN, 0, 0, 3, 3, SampleMnuItms };
+
+      /* define items and menu of the top level menu bar */
+      MENUITEM TopMnuItms[] = {
+         { " File ",   MA_MNU, &FileMenu },
+         { " Sample ", MA_MNU, &SampleMenu },
+      };
+      MENU TopMenu[] = { NULL, MS_TOPLVL|MS_HORIZ, 0, 0, 2, 2, TopMnuItems };
+
+      To activate this menu, you would call
+
+        HandleMenu(&TopMenu, 10, 10); /* for example */
+
+!Seealso: MENUITEM HandleMenu MenuSelect
+
+!short: MENUITEM structure   Describes a menu item
+   NAME
+      MENUITEM
+
+   DESCRIPTION
+      A menu item describes a building block of a menu - usually
+      these are horizontal or vertical lines, but can also be
+      separators (a horizontal or vertical line) or bitmaps.
+      Menu items are always grouped together in an array - the
+      last item structure of this array by convention having all
+      its fields set to zero to indicate the end of the array.
+      A pointer to the item array is contained in the MENU
+      structure.
+
+   SYNOPSIS
+      /* menu item descriptor structure */
+      typedef struct {
+         char *Text;       /* Text to be displayed */
+         WORD Flags;       /* flags: state item is in, action triggered */
+         void *ActionPtr;  /* additional parameter for action */
+      } MENUITEM;
+
+   FIELDS
+      char *Text       - Points to the text of the menu item.
+                         Exception: if the item is of type
+                         'bitmap' (MT_BMP flag, see below), this
+                         is a pointer to the bitmap definition.
+                         If the item is of type 'separator'
+                         (MT_SEP flag), then this field is
+                         ignored.
+
+      WORD Flags      - This field has constants ored together
+                        that control the aspect, the type, and
+                        the action triggered by a menu item:
+
+         Flags controlling type: start with MT_
+
+            MT_TXT: your regular, one line of text, menu item
+            MT_SEP: a horizontal or vertical separating line
+                    (Note: Use the predefined MT_SEPARATOR that
+                    also prevents the cursor from being moved to
+                    a separator)
+            MT_BMP: a bitmap or icon. 'Text' in this case points
+                    to an IMGHDR structure defining the bitmap.
+                    (See the LoadImg and LoadPcx functions also)
+
+         Flags controlling aspect and behaviour: start with MI_
+
+            MI_GRY:  The menu item should appear grayed
+            MI_SKIP: The cursor should avoid this menu item
+                     (jump over it)
+
+         Flags controlling the action triggered by a menu item
+         when selected. They start with MA_
+
+            MA_VAL:  Most common: menu item will return a
+                     value when selected. The value is defined
+                     in the next field, ActionPtr.
+
+            MA_MNU:  The menu item will call another menu when
+                     selected. The next field, ActionPtr, should
+                     be the pointer to this menu.
+
+            MA_FUN:  When selected, the menu item will call a
+                     function pointed to by ActionPtr. See the
+                     ActionPtr description below for details.
+
+      void *ActionPtr - This field's interpretation varies
+                        according to the action associated with
+                        the menu item.
+
+            + if the menu item has an 'action' flag of MA_VAL,
+            ActionPtr is not a pointer at all - instead, it
+            holds the value that should be returned by the item
+            when selected. To keep the C compiler from
+            complaining about such an assignment, use the
+            MENUVAL() macro provided by PAL.H to convert a int
+            into an acceptable 'pseudo-pointer'. Here's an
+            example of such an item initialization:
+
+               { " Exit ",   MA_VAL, MENUVAL(999) }
+
+            + if the menu item has an 'action' flag of MA_MNU,
+            ActionPtr should point to the menu that pops up when
+            this item is selected. Here's an example:
+
+               { " Settings -> ", MA_MNU, &MnuSettings }
+
+            + if the menu item has an 'action' flag of MA_FUN,
+            ActionPtr should be a pointer to the function to be
+            called when the item is selected. This function has
+            the following prototype:
+
+            int Callback(MENU *pMnu);
+
+            The PAL HandleMenu routine will pass a pointer to
+            the current menu to it. The function can find out
+            which menu item triggered it (in case there are
+            several calling the same function) by inspecting
+            pMnu->CurItem. (Resp. pMnu->Items[pMnu->CurItem]).
+
+            Your callback function should return:
+
+            - a positive integer if it wants this value to be
+            returned to the HandleMenu caller (as if the menu
+            item were of type MNU_VAL and returned this value)
+
+            - the special constant MSC_STAY if it wants the
+            HandleMenu to stay in the menu loop, i.e. if the
+            menu should stay open.
+
+            See the MenuCallback() function in
+            .\SAMPLES\MENU\MENU.C for an example of a menu
+            callback function.
+
+            NOTE: This functionality is only supported if
+            you compile PAL in small or large medium model.
+            It is inactive in medium or compact models -
+            the size of a function and of a data pointer
+            differ in these memory models.
+
+
+!Seealso: MENU HandleMenu MenuSelect
+
+!short: HandleMenu           Display and handle a menu
+   NAME
+      HandleMenu
+
+   DESCRIPTION
+      HandleMenu displays a menu and lets the user interact with
+      it. It returns with a positive integer that identifies the
+      menu item (if any) that the user selected. In the
+      HandleMenu call, you specify the menu you want displayed
+      (by a pointer to the structure describing it), and where
+      it should appear on the screen.
+
+
+   SYNOPSIS
+      #include "pal.h"
+      int HandleMenu(MENU *pMnu, int PosX, int PosY);
+
+   INPUTS
+      MENU *pMenu  - a pointer to the menu that you want
+                     handled.
+
+      int PosX     - X position of upper left corner of the menu
+                     on the screen.
+
+      int PosY     - Y position of upper left corner of the menu
+                     on the screen.
+
+   RETURN VALUE
+      HandleMenu returns a positive integer if one of the
+      'value-returning' items got selected. It returns MSC_ESC
+      if the user aborted the selection. MSC_ESC is guaranteed
+      to be negative, so you can check on the sign of the return
+      value.
+
+   NOTE
+
+   SAMPLE
+      HandleMenu(&TopMenu, 10, 10); /* for example */
+
+      (Also see the examples under "Menu support" and the description
+      of the MENU structure.)
+
+!Seealso: MENU MENUITEM MenuSelect
+
+!short: MenuSelect           Show a menu of options to user
+   NAME
+      MenuSelect
+
+   DESCRIPTION
+      MenuSelect provides you with a fast and easy interface to
+      the menu routines. You pass a string with items separated
+      by '|', and it will construct a menu, show it to the user,
+      and return the index of the selected item. You can also
+      specifiy where the menu should show up, which item should
+      be highlighted by default, and how many items to show.
+      (The menu will scroll if this is less than the total number
+      of items)
+
+   SYNOPSIS
+      #include "pal.h"
+      int MenuSelect(char *Items, int PosX, int PosY, int Default, int Show);
+
+   INPUTS
+      Items   - The string with the menu items - separate them with '|'
+      PosX    - X position of where the menu should be displayed
+      PosY    - Y position of where the menu should be displayed
+      Default - the index of the item that should be initially highlighted
+      Show    - the number of items to display, 0 means show all items.
+                (so you don't have to count them)
+
+   RETURN VALUE
+      The (zero-based) index of the item the user selected, or -1 if
+      he hit the ESC key.
+
+   SAMPLE
+      /* Have the user select a day of the week. Position the menu
+         at (100,20), Thursday as default, 5 visible items */
+      n = MenuSelect(
+          "Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
+          100, 20, 3, 5);
+
+!Seealso: MENU MENUITEM HandleMenu
+

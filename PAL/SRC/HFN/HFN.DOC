@@ -1,0 +1,329 @@
+!short:
+!short:^u External font routines
+^u External font routines
+
+These are functions that enable you to use more than the
+built-in fonts. You can load multiple fonts in memory and use
+them all at the same time. There is a set of Unified font
+support functions also available in PAL which allow the user to
+control both internal and external fonts with the same set of
+functions. See the Unified font routines section for more
+details.
+
+Available functions:
+
+  - LoadHfn      : Load a font in memory.
+  - InitHfn      : Initialize a given font.
+  - WriteHfn     : Writes a string using one of the loaded fonts.
+  - TextExtHfn   : Compute text extent of a string in a given font.
+  - FontHeightHfn: Returns height of a given font.
+  - DiscardHfn   : Discard a loaded font.
+
+
+!short: LoadHfn              Load an external font in memory.
+   NAME
+      LoadHfn
+
+   DESCRIPTION
+      This function loads an external font in memory, and returns a pointer
+      to it. This function is similar to the LoadFont() function of the
+      Unified-font support routines.
+
+   SYNOPSIS
+      #include "pal.h"
+      FONTDESC *LoadHfn(char *FileName);
+
+   INPUTS
+      Filename - The filename of the font you wish to load.
+
+   RETURN VALUE
+      Pointer to the font in memory (FONTDESC structure).
+      Null if an error occurred.
+
+   NOTE
+      There are a few .HFN fonts available for PAL, ready to use.
+      There's also a set of Unified-font support functions
+      available in PAL. See the Unified font routines section for
+      more details.
+
+      The FONTDESC structure is defined in PAL.H as follows:
+
+        /* Header of a GetImg bitmap  */
+        typedef struct {
+           int Planes; /* on HP100/200, always 1 */
+           int Bits;   /* on HP100/200, always 1 */
+           int Width;
+           int Depth;
+        } IMGHDR;
+
+        /* Font File Header */
+        typedef struct {
+           int  FontType;         /* Type (ID) of font           */
+           int  MinChar;          /* First ASCII character       */
+           int  MaxChar;          /* Last ASCII character        */
+           int  MaxWidth;         /* Width of widest bitmap      */
+        int  MaxHeight;           /* Height of highest bitmap    */
+        } FNTFHDR;
+
+        /* Font Descriptor */
+        typedef struct {
+           int     Discardable;   /* Flag: can be freed, non-resident  */
+           IMGHDR  *pChar[256];   /* font character pointer table      */
+           FNTFHDR FontHeader;    /* 6-byte header followed by bitmaps */
+        } FONTDESC;               /* font descriptor                   */
+
+
+   SAMPLE
+
+   FONTDESC *pFont;        /* pointer to a new font */
+   int Width;              /* Stores the width of the displayed text */
+
+   GraphMode();      /* Set graphics mode */
+
+   /* Load font in memory */
+   if(!(pFont = LoadFont("span0015.hfn"))) FatalExit("Load Font failed", 1);
+
+   /* Initialize the font and set it as Discardable */
+   InitHfn(pFont, 1);
+
+   /* Display some text with the new font */
+   Width = WriteHfn(pFont, 10, 20, "This is another font.");
+
+!Seealso: LoadFont InitHfn DiscardHfn WriteHfn TextExtHfn FontHeightHfn
+
+!short: InitHfn              Initialize a font.
+   NAME
+      InitHfn
+
+   DESCRIPTION
+      This function initializes a font by computing the IMGHDR
+      pointer table for the characters that make up the font, and by
+      setting up the 'Discardable' flag passed by the user.
+      This routine is used both to initialize resident fonts as well
+      as transient ones.
+
+   SYNOPSIS
+      #include "pal.h"
+      void InitHfn(FONTDESC *pFnt, int Discardable);
+
+   INPUTS
+      pFnt        - Pointer to the font.
+      Discardable - Flag that indicates if the font is to be discardable
+                    or resident. (NULL = resident).
+
+   RETURN VALUE
+      None
+
+   NOTE
+      There is a set of Unified-font support functions available in PAL.
+      See the Unified font routines section for more details.
+
+   SAMPLE
+
+   FONTDESC *pFont;        /* pointer to a new font */
+   int Width;              /* Stores the width of the displayed text */
+
+   GraphMode();      /* Set graphics mode */
+
+   /* Load font in memory */
+   if(!(pFont = LoadFont("span0015.hfn"))) FatalExit("Load Font failed", 1);
+
+   /* Initialize the font and set it as Discardable */
+   InitHfn(pFont, 1);
+
+   /* Display some text with the new font */
+   Width = WriteHfn(pFont, 10, 20, "This is another font.");
+
+!Seealso: LoadHfn DiscardHfn WriteHfn TextExtHfn FontHeightHfn
+
+!short: WriteHfn             Write a string using a loaded font.
+   NAME
+      WriteHfn
+
+   DESCRIPTION
+      This function writes a given string on the graphics screen by
+      using one of the loaded fonts. This function is similar to
+      the TextOut() function from the Unified-font support routines.
+
+   SYNOPSIS
+      #include "pal.h"
+      int WriteHfn(FONTDESC *pFont, int x, int y, char *s);
+
+   INPUTS
+      pFnt  - Pointer to the loaded font.
+      x     - X coordinate of the text position (0-639).
+      y     - Y coordinate of the text position (0-199).
+      s     - String of text to be displayed using the loaded font.
+
+
+   RETURN VALUE
+      Returns the width (in pixels) of the given string.
+
+   NOTE
+      There is a set of Unified-font support functions available in PAL.
+      See the Unified font routines section for more details.
+
+   SAMPLE
+
+   FONTDESC *pFont;        /* pointer to a new font */
+   int Width;              /* Stores the width of the displayed text */
+
+   GraphMode();            /* Set graphics mode */
+
+   /* Load font in memory */
+   if(!(pFont = LoadFont("span0015.hfn"))) FatalExit("Load Font failed", 1);
+
+   /* Initialize the font and set it as Discardable */
+   InitHfn(pFont, 1);
+
+   /* Display some text with the new font */
+   Width = WriteHfn(pFont, 10, 20, "This is another font.");
+
+
+!Seealso: TextOut LoadHfn DiscardHfn InitHfn TextExtHfn FontHeightHfn
+
+!short: TextExtHfn           Compute text extent of a string in a given font.
+   NAME
+      TextExtHfn
+
+   DESCRIPTION
+      This function computes text extent of a string in a given font. The
+      returned value is the number of horizontal pixels that the string
+      occupies on the graphics screen. This function is useful to compute
+      the horizontal image size of the string before displaying it.
+      This function is similar to the TextExt() function of the Unified-font
+      support routines.
+
+   SYNOPSIS
+      #include "pal.h"
+      int TextExtHfn(FONTDESC *pFont, char *s);
+
+   INPUTS
+      pFnt  - Pointer to the loaded font.
+      s     - String of text to be displayed using the loaded font.
+
+   RETURN VALUE
+      Returns the width (in pixels) of the given string.
+
+   NOTE
+      There is a set of Unified-font support functions available in PAL.
+      See the Unified font routines section for more details.
+
+   SAMPLE
+
+   FONTDESC *pFont;        /* pointer to a new font */
+   int Width;              /* Stores the width of the displayed text */
+
+   GraphMode();      /* Set graphics mode */
+
+   /* Load font in memory */
+   if(!(pFont = LoadFont("span0015.hfn"))) FatalExit("Load Font failed", 1);
+
+   /* Initialize the font and set it as Discardable */
+   InitHfn(pFont, 1);
+
+   /* Compute width before displaying the string */
+   Width = TextExtHfn(pFont, "This is another font.");
+
+   /* Display some text with the new font */
+   WriteHfn(pFont, 10, 20, "This is another font.");
+
+!Seealso: TextExt LoadHfn DiscardHfn InitHfn FontHeightHfn WriteHfn
+
+!short: FontHeightHfn        Returns height of a given font.
+
+   NAME
+      FontHeightHfn
+
+   DESCRIPTION
+      This function returns the height (number of pixels) of a loaded
+      font. This is useful for determining the line spacing between
+      each line of the displayed text. This function is similar to the
+      FontHeight() function of the Unified-font support routines.
+
+   SYNOPSIS
+      #include "pal.h"
+      int FontHeightHfn(FONTDESC *pFont);
+
+   INPUTS
+      pFnt  - Pointer to the loaded font.
+
+   RETURN VALUE
+      Returns the height (in pixels) of the given font.
+
+   NOTE
+      There is a set of Unified-font support functions available in PAL.
+      See the Unified font routines section for more details.
+
+   SAMPLE
+
+   FONTDESC *pFont;        /* pointer to a new font */
+   int Height;             /* Stores the height of the loaded font */
+
+   GraphMode();      /* Set graphics mode */
+
+   /* Load font in memory */
+   if(!(pFont = LoadFont("span0015.hfn"))) FatalExit("Load Font failed", 1);
+
+   /* Initialize the font and set it as Discardable */
+   InitHfn(pFont, 1);
+
+   /* Compute height of the font */
+   Height = FontHeightHfn(pFont);
+
+   /* Display the first line of text */
+   WriteHfn(pFont, 10, 20, "This is the first line.");
+
+   /* Now display another line below the first one */
+   WriteHfn(pFont, 10, 20 + Height, "This is another line.");
+
+!Seealso: FontHeight LoadHfn DiscardHfn InitHfn TextExtHfn WriteHfn
+
+!short: DiscardHfn           Discard a previously loaded font.
+
+   NAME
+      DiscardHfn
+
+   DESCRIPTION
+      This function discards a previously loaded font and frees up the
+      memory it occupied. The Discardable flag of the font must be
+      set in order for the font to be discarded. If the flag is set
+      to Resident, the function will ignore the request. This function
+      is similar to the DiscardFont() function of the Unified-font
+      support routines.
+
+   SYNOPSIS
+      #include "pal.h"
+      void DiscardHfn(FONTDESC *pFont);
+
+   INPUTS
+      pFnt  - Pointer to the loaded font that needs to be discarded.
+
+   RETURN VALUE
+      None.
+
+   NOTE
+      See LoadHfn() function for details on the Discardable flag.
+      There is a set of Unified-font support functions available to PAL.
+      See the Unified font routines section for more details.
+
+   SAMPLE
+
+   FONTDESC *pFont;        /* pointer to a new font */
+
+   GraphMode();      /* Set graphics mode */
+
+   /* Load font in memory */
+   if(!(pFont = LoadFont("span0015.hfn"))) FatalExit("Load Font failed", 1);
+
+   /* Initialize the font and set it as Discardable */
+   InitHfn(pFont, 1);
+
+   /* Display a line of text */
+   WriteHfn(pFont, 10, 20, "This is the first line.");
+
+   /* Now discard the font and free up some memory */
+   DiscardHfn(pFont);
+
+!Seealso: DiscardFont LoadHfn InitHfn TextExtHfn WriteHfn FontHeightHfn
+

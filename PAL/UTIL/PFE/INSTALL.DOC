@@ -1,0 +1,28 @@
+To create PFE.EXE, first make sure that you have PM (PalMake)
+installed as described in .\UTIL\PM\PM.DOC, and that you have
+built the PAL library for your compiler. Then, change to the PFE
+directory (.\UTIL\PFE) and enter PM [RETURN]. Finally, move the
+resulting PFE.EXE to a place in your search path so that you can
+call it from everywhere.
+
+MIX compiler users: PFE must be compiled in medium model with the
+MIX Power C compiler. To do this, you'll need to create a medium
+model PAL library for the MIX compiler first. Edit your PM.CFG
+file, and change the 'Model=s' line in the [.c] section to
+'Model=m'.
+
+Change to the PAL .\SRC directory, and do a cleanup pass by
+entering
+
+  PM C [RETURN]
+
+Then, build the large model PCMPAL.MIX by entering
+
+  PM [RETURN]
+
+Finally, change to the .\UTIL\PFE directory, and again enter
+
+  PM [RETURN]
+
+there to build PFE in medium model.
+

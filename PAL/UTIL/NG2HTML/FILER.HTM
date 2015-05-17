@@ -1,0 +1,588 @@
+<HTML>
+<HEAD><TITLE>PAL - Quickreference: Filer</TITLE></HEAD>
+<BODY>
+<H1>PAL - Quickreference: Filer</H1>
+<HR>
+<A NAME="Filer communication routines"><HR>
+<H2> Filer communications routines
+</H2>
+</A><P>
+    This set of functions can be used to exchange files between
+    a desktop and the palmtop, by using the palmtop's Filer
+    application. The user has to launch the Filer on the
+    palmtop, and these functions will put the palmtop in Server
+    mode and enable file transfers to and from the desktop.
+    Once communication has been established, the palmtop
+    will be the SERVER (remote), and the computer at the other
+    end will be the CLIENT (local). There are also functions
+    for creating, reading and deleting remote directories.
+<P>
+Available functions:
+<P>
+<BR><A HREF="#FilerConnect">FilerConnect</A>
+    : Establish connection with filer.
+<BR><A HREF="#FilerDisconnect">FilerDisconnect</A>
+ : Shut down Filer communications.
+<BR><A HREF="#FilerSendFile">FilerSendFile</A>
+   : Send a file to the palmtop.
+<BR><A HREF="#FilerGetFile">FilerGetFile</A>
+    : Get a file from the palmtop.
+<BR><A HREF="#FilerDelFile">FilerDelFile</A>
+    : Delete a file on the palmtop.
+<BR><A HREF="#FilerMakeDir">FilerMakeDir</A>
+    : Create a directory on the palmtop.
+<BR><A HREF="#FilerDelDir">FilerDelDir</A>
+     : Delete a directory from the palmtop.
+<BR><A HREF="#FilerAskDir">FilerAskDir</A>
+     : Request directory info from the palmtop.
+<BR><A HREF="#FilerGetDir">FilerGetDir</A>
+     : Get directory entries from the palmtop.
+<BR><A HREF="#FilerSync">FilerSync</A>
+       : Attempt re-synchronization with filer.
+<P>
+<P>
+  There is also a possibility to use callback functions to
+  open &amp; close a data stream that you wish to send or
+  receive from the palmtop, or while a transfer is in progress.
+  PAL provides a standard set of callback functions for this,
+  but you can easily instruct PAL to use your own set. See the
+  FilerCallBack section of this document for more details.
+<P>
+SEE ALSO: 
+<A HREF="filer.HTM#FilerCallBack">FilerCallBack</A>
+<A HREF="filer.HTM#FilerConnect">FilerConnect</A>
+<P>
+<HR><H2><A NAME="FilerConnect">FilerConnect</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerConnect</PRE><DT>DESCRIPTION
+<DD><PRE>      This function will initiate filer communications by:
+
+      1- Setting the specified baud-rate to the specified port
+         of the client, or attempting to automatically find out
+         the baudrate of the server and set the client accordingly
+         (if zero is given as a baudrate).
+
+      2- attempt to put the remote side on server mode.
+
+      3- Return a pointer to a FILERCOM structure that will be
+         used by the rest of the filer functions.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      FILERCOM *FilerConnect(int PortNumber, unsigned long BaudRate, FLCB *pCb);</PRE><DT>INPUTS
+<DD><PRE>      PortNumber   - The port number (1-4) of the client (local) side.
+      BaudRate     - Valid baudrate value (one of the following):
+                     115000, 57600, 38400, 19200, 9600, 4800, 2400, 1200.
+
+                     !NOTE: If zero (0) is given as a baudrate, FilerConnect()
+                     will attempt to find out the server baudrate by trying
+                     out the above baudrates in the order shown above.
+
+      FLCB *pCb    - pointer to a 'callback' function. PAL has a callback
+                     function of its own, called "FlCb". You can pass the
+                     address of it if you don't want to use a callback
+                     function of your own. Example:
+
+                     /* connect at COM2:19200 using PAL's callback function */
+                     pFiler = FilerConnect(2,19200, &amp;FlCb);
+
+                     If you wish you can pass the address of one of your
+                     own callback functions, so they can display a progress
+                     meter, for example. The callback function is only
+                     called from FilerSendFile() and FilerGetFile() functions.
+                     See the sample below or the Filer Callback functions
+                     section for more details.</PRE><DT>RETURN VALUE
+<DD><PRE>      FILERCOM          : pointer to a FILERCOM structure, NULL if
+                          communication has failed.</PRE><DT>NOTE
+<DD><PRE>      If the server does not respond, FilerConnect() will timeout and
+      return NULL.  During communications, if connection is lost
+      momentarily, the client will attempt to re-synchronize (3-times)
+      with the server, till timeout occurs. If connection is re-established,
+      file transfer continues as if nothing happened, and no data-loss
+      will occur. If connection is lost, it is advisable to close down
+      communications before attempting to effectuate file transfer
+      operations again.</PRE><DT>SAMPLE
+<DD><PRE>
+#include "pal.h"
+
+size_t  MySendBlock(void *Buf, size_t Size, void *Handle);
+size_t  MyRecvBlock(void *Buf, size_t Size, void *Handle);
+
+FLCB MyFlCb;
+
+/* User defined Send-block callback routine, replaces default FlCb */
+size_t  MySendBlock(void *Buf, size_t Size, void *Handle)
+{
+   putchar('.');
+   return fread(Buf, 1, Size, Handle);
+}
+
+/* User defined Get-block callback routine, replaces default FlCb */
+size_t  MyRecvBlock(void *Buf, size_t Size, void *Handle)
+{
+   putchar('.');
+   return fwrite(Buf, 1, Size, Handle);
+}
+
+void main (void)
+{
+   int   stat, port;
+   FILERCOM *pFiler;
+   FLCB MyFlCb;
+
+   port = 1;           /* &lt;- set your serial port 1-4 */
+
+   /* replace default FlCb handler by one of our own */
+   MyFlCb = FlCb;
+   MyFlCb.FlcbSendBlock = MySendBlock;
+   MyFlCb.FlcbRecvBlock = MyRecvBlock;
+
+   /* attempt AUTOBAUD connection */
+   printf("\nDetermining baud-rate and attempting connection, please wait...");
+
+   /* If given baudrate==0, FilerConnect determines the baudrate  */
+   /* To use PAL's callback functions, replace &amp;MyFlCb below with &amp;FlCb */
+   if(!(pFiler = FilerConnect(port,0, &amp;MyFlCb))) {
+      printf("\nUnable to connect!\n");
+      exit(-1);
+   }
+
+   /*  SEND FSAMPLE.EXE into remote C: root directory */
+   printf("\n\nSending file 'fsample.exe' to remote C:\ directory...");
+   stat = FilerSendFile(pFiler, "fsample.exe", "c:\\fsample.exe");
+
+   if(stat== CANNOT_SEND_FNAME) printf("\nCan't send file. Already exists?\n");
+   if(stat== DISK_FULL) printf("\nRemote Disk is full.\n");
+   if(stat== NO_RESPONSE) printf("\nServer Not responding.\n");
+   if(stat== FILE_SEND_OK) printf("\n File was sent ok.\n");
+
+   /*  GET FSAMPLE.C back to Local as 'FEEDBACK.C' */
+   printf("\n\nGetting back 'fsample.exe' to desktop as 'FEEDBACK'..");
+   stat = FilerGetFile(pFiler, "c:\\fsample.exe", "feedback.c");
+
+   if(stat== CANNOT_SEND_FNAME) printf("\nCan't get file.\n");
+   if(stat== NO_RESPONSE) printf("\nServer Not responding.\n");
+   if(stat== GOT_FILE_OK) printf("\n File was received ok.\n");
+
+   /* CLOSE DOWN FILER COMMUNICATIONS */
+   FilerDisconnect(pFiler);
+
+}
+</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerDisconnect">FilerDisconnect</A>
+<A HREF="filer.HTM#FilerGetFile">FilerGetFile</A>
+<A HREF="filer.HTM#FilerSendFile">FilerSendFile</A>
+<A HREF="filer.HTM#FilerCallBack">FilerCallBack</A>
+
+</DL><HR><H2><A NAME="FilerDisconnect">FilerDisconnect</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerDisconnect</PRE><DT>DESCRIPTION
+<DD><PRE>      This function will terminate filer communications, and release
+      the palmtop from the Server mode.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerDisconnect(FILERCOM *pFiler);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure,
+                     given by the FilerConnect() function.</PRE><DT>RETURN VALUE
+<DD><PRE>      NO_RESPONSE       : Server does not respond.</PRE><DT>NOTE
+<DD><PRE>      Must be already connected (palmtop in server mode) before you
+      can use this function.</PRE><DT>SAMPLE
+<DD><PRE>
+      /* close down filer communications */
+      FilerDisconnect(pFiler);</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerConnect">FilerConnect</A>
+<A HREF="filer.HTM#FilerGetFile">FilerGetFile</A>
+<A HREF="filer.HTM#FilerSendFile">FilerSendFile</A>
+<A HREF="filer.HTM#FilerMakeDir">FilerMakeDir</A>
+<A HREF="filer.HTM#FilerDelDir">FilerDelDir</A>
+
+</DL><HR><H2><A NAME="FilerSendFile">FilerSendFile</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerSendFile</PRE><DT>DESCRIPTION
+<DD><PRE>      This function will send the specified file into the specified
+      remote path of the palmtop.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerSendFile(FILERCOM *pFiler, char *LocalFile, char *RemoteFile);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure.
+      LocalFile    - Local path &amp; filename.
+      RemoteFile   - Remote (palmtop) Path &amp; filename.</PRE><DT>RETURN VALUE
+<DD><PRE>      NO_SOURCE_FILE    : Cannot open source file.
+      CANNOT_SEND_FNAME : Cannot send target filename.
+      NO_RESPONSE       : Server does not respond.
+      FILE_SEND_OK      : File was successfully send.</PRE><DT>NOTE
+<DD><PRE>      File cannot be send if it already exists on the target. You
+      can use the FilerDelFile() function to delete it if you wish
+      to replace it. You must enable communications with the
+      FilerConnect() function before using this function.
+      You can use a 'callback' function of your own in conjunction
+      with FilerSendFile(). A callback function is called
+      periodically by FilerSendFile() so it can display information
+      about the transfer progress. PAL has a callback function of
+      its own, called FlCb. See FilerConnect() for details.</PRE><DT>SAMPLE
+<DD><PRE>      See FilerConnect() Sample.</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerGetFile">FilerGetFile</A>
+<A HREF="filer.HTM#FilerDelFile">FilerDelFile</A>
+<A HREF="filer.HTM#FilerMakeDir">FilerMakeDir</A>
+<A HREF="filer.HTM#FilerDelDir">FilerDelDir</A>
+
+</DL><HR><H2><A NAME="FilerGetFile">FilerGetFile</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerGetFile</PRE><DT>DESCRIPTION
+<DD><PRE>      This function will get the specified file from the
+      specified remote of the palmtop.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerGetFile(FILERCOM *pFiler, char *RemoteFile, char *LocalFile);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure.
+      LocalFile    - Local path &amp; filename.
+      RemoteFile   - Remote (palmtop) Path &amp; filename.</PRE><DT>RETURN VALUE
+<DD><PRE>      CANNOT_CREATE    : Cannot create/open target file on client.
+      CANNOT_SEND_FNAME: Cannot send source filename to server.
+      CANNOT_INITIATE  : Cannot initiate file data transfer.
+      GOT_FILE_OK      : File received by client ok.
+      NO_RESPONSE      : Server does not respond.</PRE><DT>NOTE
+<DD><PRE>      You must enable communications with the FilerConnect()
+      function before using this function.
+      You can use a 'callback' function of your own in conjunction
+      with FilerSendFile(). A callback function is called
+      periodically by FilerSendFile() so it can display information
+      about the transfer progress. PAL has a callback function of
+      its own, called FlCb. See FilerConnect() for details.</PRE><DT>SAMPLE
+<DD><PRE>      See FilerConnect() sample.</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerSendFile">FilerSendFile</A>
+<A HREF="filer.HTM#FilerDelFile">FilerDelFile</A>
+<A HREF="filer.HTM#FilerMakeDir">FilerMakeDir</A>
+<A HREF="filer.HTM#FilerDelDir">FilerDelDir</A>
+
+</DL><HR><H2><A NAME="FilerDelFile">FilerDelFile</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerDelFile</PRE><DT>DESCRIPTION
+<DD><PRE>      This function will delete the specified file from the
+      specified remote path of the server (palmtop).</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerDelFile(FILERCOM *pFiler, char *RemoteFile);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure.
+      RemoteFile  -  Path &amp; filename to be deleted on the server (palmtop).</PRE><DT>RETURN VALUE
+<DD><PRE>      CANNOT_DELETE    : Cannot delete target file on server.
+      FILE_DELETED     : File deleted on server (palmtop).
+      NO_RESPONSE      : Server does not respond.</PRE><DT>NOTE
+<DD><PRE>      You must enable communications with the FilerConnect()
+      function before using this function.</PRE><DT>SAMPLE
+<DD><PRE>      /* delete file "a:\flrtest\fsample2.c" on remote side */
+      stat = FilerDelFile(pFiler, "a:\\flrtest\\fsample2.c");
+      if(stat==CANNOT_DELETE) printf("\nCannot delete the file!\n");
+      if(stat==FILE_DELETED) printf("\nfsample2.c file is wiped out.\n");
+</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerSendFile">FilerSendFile</A>
+<A HREF="filer.HTM#FilerGetFile">FilerGetFile</A>
+<A HREF="filer.HTM#FilerDelFile">FilerDelFile</A>
+
+</DL><HR><H2><A NAME="FilerMakeDir">FilerMakeDir</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerMakeDir</PRE><DT>DESCRIPTION
+<DD><PRE>      This function creates directories on the server (palmtop).</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerMakeDir(FILERCOM *pFiler, char *RemoteDir);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure.
+      RemoteDir    - Remote directory to be created on the palmtop.</PRE><DT>RETURN VALUE
+<DD><PRE>      CANNOT_CREATE_DIR: Cannot create target directory.
+      DIR_CREATED      : New directory created on server.
+      NO_RESPONSE      : Server does not respond.</PRE><DT>NOTE
+<DD><PRE>      You must enable communications with the FilerConnect()
+      function before using this function.</PRE><DT>SAMPLE
+<DD><PRE>
+      /* create a "a:\flrtest" directory on the remote side */
+      stat = FilerMakeDir(pFiler, "a:\\flrtest");
+      if(stat==CANNOT_CREATE_DIR) printf("\nCannot create remote directory.\n");
+      if(stat==DIR_CREATED) printf("\nRemote directory created.\n");
+      </PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerDelDir">FilerDelDir</A>
+<A HREF="filer.HTM#FilerAskDir">FilerAskDir</A>
+<A HREF="filer.HTM#FilerGetDir">FilerGetDir</A>
+
+</DL><HR><H2><A NAME="FilerDelDir">FilerDelDir</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerDelDir</PRE><DT>DESCRIPTION
+<DD><PRE>      This function deletes directories on the server (palmtop).</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerDelDir(FILERCOM *pFiler, char *RemoteDir);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure.
+      RemoteDir    - Remote directory to be deleted on the palmtop.</PRE><DT>RETURN VALUE
+<DD><PRE>      CANNOT_DELETE_DIR: Cannot delete remote directory.
+      DIR_DELETED      : Remote directory is deleted.
+      NO_RESPONSE      : Server does not respond.</PRE><DT>NOTE
+<DD><PRE>      You must enable communications with the FilerConnect()
+      function before using this function. Directory must
+      be empty, otherwise it cannot be deleted. You can
+      use the FilerDelFile() function to delete files.</PRE><DT>SAMPLE
+<DD><PRE>
+      /* remove the "a:\flrtest" directory on the remote side */
+      stat = FilerDelDir(pFiler, "a:\\flrtest");
+      if(stat==CANNOT_DELETE_DIR) printf("\nCannot delete remote directory.\n");
+      if(stat==DIR_DELETED) printf("\nRemote directory removed.\n");
+</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerMakeDir">FilerMakeDir</A>
+<A HREF="filer.HTM#FilerAskDir">FilerAskDir</A>
+<A HREF="filer.HTM#FilerGetDir">FilerGetDir</A>
+
+</DL><HR><H2><A NAME="FilerAskDir">FilerAskDir</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerAskDir</PRE><DT>DESCRIPTION
+<DD><PRE>      This function initiates the transfer of directory information
+      from the remote (palmtop).</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerAskDir(FILERCOM *pFiler, char *RemoteDir);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure.
+      RemoteDir    - Remote directory on the palmtop.</PRE><DT>RETURN VALUE
+<DD><PRE>      SERVER_ACK       : Server is ready to proceed directory transfer.
+      NO_RESPONSE      : Server does not respond.</PRE><DT>NOTE
+<DD><PRE>      You must enable communications with the FilerConnect()
+      function before using this function. FilerAskDir() is
+      used in conjunction with the FilerGetDir() function to
+      retreive directory information on the remote side.
+      For more details see the FilerGetDir() function.
+
+      Note that you cannot issue other filer commands than
+      FilerGetDir in the loop that retrieves filenames. You
+      cannot copy files in the same loop, for example - this
+      will confuse the FilerGetDir.
+
+      You CANNOT use any other filer functions while retreiving
+      directory information, otherwise you will loose sync with
+      the remote side. Once you issue a FilerAskDir() command,
+      the server expects subsequent FilerGetDir() commands _only_
+      till the complete directory information has been transfered.
+</PRE><DT>SAMPLE
+<DD><PRE>
+   /* display directory of "a:\flrtest\*.*" */
+   stat = FilerAskDir(pFiler, "a:\\flrtest\\*.*");
+   if(stat== NO_RESPONSE) printf("\nServer Not responding.\n");
+
+   /* get &amp; display individual directory entries (FindNext) */
+   for(;;) {
+      if(FilerGetDir(pFiler) == CANNOT_GET_ENTRY) break;
+      printf("%-12s %12lu  %02d-%02d-%02d  %02d:%02d  ATTRIB=0x%2X\n",
+               pFiler-&gt;Name, pFiler-&gt;FileSize,
+               pFiler-&gt;DateStamp.month, pFiler-&gt;DateStamp.day,
+               pFiler-&gt;DateStamp.year+80,
+               pFiler-&gt;DateStamp.hour, pFiler-&gt;DateStamp.min,
+               pFiler-&gt;Attribute);
+   }</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerMakeDir">FilerMakeDir</A>
+<A HREF="filer.HTM#FilerDelDir">FilerDelDir</A>
+<A HREF="filer.HTM#FilerGetDir">FilerGetDir</A>
+
+</DL><HR><H2><A NAME="FilerGetDir">FilerGetDir</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerGetDir</PRE><DT>DESCRIPTION
+<DD><PRE>      This function must be used as many number of times as needed to
+      get the information of every directory entry from the remote
+      side. It is similar to the standard FindNext() function.
+      First, FilerAskDir() must be called with the directory name
+      to initiate directory transfer, and subsequent calls to
+      FilerGetdir() must be made to retreive individual directory
+      entries.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerGetDir(FILERCOM *pFiler);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure.</PRE><DT>RETURN VALUE
+<DD><PRE>      CANNOT_GET_ENTRY : No more remote directory entries to read.
+      GOT_DIR_ENTRY    : Received a valid directory entry from remote.
+
+      The directory information for each entry is returned in the FILERCOM
+      structure as follows:
+
+      pFiler-&gt;Name           : File/Directory name.
+      pFiler-&gt;FileSize       : long integer specifying the file size.
+      pFiler-&gt;Attribute      : integer specifying the file attributes.
+
+      pFiler-&gt;DateStamp.sec  : integer specifying the seconds of date-stamp.
+      pFiler-&gt;DateStamp.min  : integer specifying the minutes of date-stamp.
+      pFiler-&gt;DateStamp.hour : integer specifying the hour (0-23).
+      pFiler-&gt;DateStamp.day  : integer specifying the date (1-31).
+      pFiler-&gt;DateStamp.month: integer specifying the month (1-12).
+      pFiler-&gt;DateStamp.year : integer specifying the year (add + 1980).</PRE><DT>NOTE
+<DD><PRE>      You must first enable communications with the FilerConnect()
+      function, then initiate directory information transfer
+      by using the FilerAskDir() function, and finally make
+      subsequent calls to FilerGetDir() to get the directory
+      information of each directory entry.
+
+      Note that you cannot issue other filer commands than
+      FilerGetDir in the loop that retrieves filenames. You
+      cannot copy files in the same loop, for example - this
+      will confuse the FilerGetDir.
+
+      You CANNOT use any other filer functions while retreiving
+      directory information, otherwise you will loose sync with
+      the remote side. Once you issue a FilerAskDir() command,
+      the server expects subsequent FilerGetDir() commands _only_
+      till the complete directory information has been transfered.</PRE><DT>SAMPLE
+<DD><PRE>      See FilerAskDir() sample.</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerMakeDir">FilerMakeDir</A>
+<A HREF="filer.HTM#FilerDelDir">FilerDelDir</A>
+<A HREF="filer.HTM#FilerAskDir">FilerAskDir</A>
+
+</DL><HR><H2><A NAME="FilerSync">FilerSync</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      FilerSync</PRE><DT>DESCRIPTION
+<DD><PRE>      This function is not used that often, but it can come in handy
+      when the remote side is out of sync for some particular reason.
+      This function will attempt to resynchronize without having to
+      close down the filer communications.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int  FilerSync(FILERCOM *pFiler);</PRE><DT>INPUTS
+<DD><PRE>      pFiler       - pointer to a FILERCOM communications structure.</PRE><DT>RETURN VALUE
+<DD><PRE>      SERVER_ACK        : Returns always SERVER_ACK.</PRE><DT>NOTE
+<DD><PRE>      Must be already connected (palmtop in server mode) before you
+      can use this function.</PRE><DT>SAMPLE
+<DD><PRE>      /* attempt re-syncronization */
+      FilerSync(pFiler);</PRE><DT>SEE ALSO
+<DD><A HREF="filer.HTM#FilerGetFile">FilerGetFile</A>
+<A HREF="filer.HTM#FilerSendFile">FilerSendFile</A>
+<A HREF="filer.HTM#FilerMakeDir">FilerMakeDir</A>
+<A HREF="filer.HTM#FilerDelDir">FilerDelDir</A>
+
+</DL><HR><H2><A NAME="FilerCallBack">FilerCallBack</A>
+</H2>
+
+      The 3rd argument of the FilerConnect() function is used to
+      pass the address of an FLCB structure. This can point to the standard
+      set of callback functions provided by PAL, or the one of your own:
+           
+        FILERCOM *FilerConnect(int PortNumber, unsigned long BaudRate,
+                               FLCB *pCb);
+
+      There is a set of 6 functions that is used internally by the
+      FilerGetFile() and FilerSendFile() routines. They are briefly
+      described here to give you an idea on how they work, and to help you
+      create your own callback functions for filer communications. These
+      functions replace the standard fopen(), fclose(), fread() &amp; fwrite()
+      functions. You can  write your own callback functions like the ones
+      provided by PAL. Your functions will be called by the FilerGetFile
+      and FilerSendFile during:
+
+        a) the opening of a data stream (could be a file, or even a memory
+           block),
+
+        b) while a transfer to or from the remote is in progress (for
+           displaying a progress meter for example),
+
+        c) and finally when closing a data stream.
+
+
+      There are 6 standard callback functions that are provided by PAL:
+
+        - StdFlcbSendOpen : Open a local transmission stream for reading
+                            access (similar to fopen). Once the stream is
+                            opened, StdFlcbSendBlock is used to read the data
+                            blocks from the stream (usually a file to be
+                            send), so FilerRequest() can transfer them to
+                            the remote side.
+
+                            This function is equivalent to:
+
+                               return fopen(FileName, "rb");
+
+
+        - StdFlcbSendBlock: Get a block of data from a local stream.
+                            FilerRequest() can then be used to transfer it
+                            to the remote side.
+
+                            This is similar to:
+
+                               return fread(Buf, 1, Size, Handle);
+
+
+        - StdFlcbSendClose: Close a local transmission stream, same as
+                            fclose(Handle).
+
+      
+        - StdFlcbRecvOpen : Open a local reception stream, for write access.
+                            Once the stream is opened, StdFlcbRecvBlock is used
+                            to write a block of data that has been received,
+                            to that stream.
+
+                            This function is equivalent to:
+
+                               return fopen(FileName, "wb");
+
+
+        - StdFlcbRecvBlock: Write a received block of data to a stream.
+                            This function is equivalent to:
+
+                               return fwrite(Buf, 1, Size, Handle);
+
+        - StdFlcbSendClose: Close a local transmission stream, same as
+                            fclose().
+
+
+
+      This is how the above functions are defined in the FLCB structure:
+
+        typedef struct {
+           void   *(*FlcbSendOpen)(char *FileName);
+           size_t  (*FlcbSendBlock)(void *Buf, size_t Size, void *Handle);
+           void    (*FlcbSendClose)(void *Handle);
+
+           void   *(*FlcbRecvOpen)(char *FileName);
+           size_t  (*FlcbRecvBlock)(void *Buf, size_t Size, void *Handle);
+           void    (*FlcbRecvClose)(void *Handle);
+        } FLCB;
+
+
+      Here's an example of two callback functions replacing StdFlcbSendBlock()
+      and StdFlcbReadBlock(). They display dots on the screen while a file
+      transfer is in progress:
+
+       /* Our own Send-block routine replacing the standard StdFlcbSendBlock */
+        size_t  MySendBlock(void *Buf, size_t Size, void *Handle)
+        {
+          putchar('.');  /* display a dot on the screen on every block sent  */
+          return fread(Buf, 1, Size, Handle);  /* read block from the stream */
+        }
+
+       /* Owr own Get-block routine, replacing the standard StdFlcbRecvBlock */
+        size_t  MyRecvBlock(void *Buf, size_t Size, void *Handle)
+        {
+          putchar('.');  /* display a dot on every block received */
+          return fwrite(Buf, 1, Size, Handle); /* write a block to the stream   */
+        }
+
+
+        /* our own FLCB structure for our callback get/send functions */
+        FLCB MyFlCb;
+
+        /* replace 2 standard callback functions by 2 of our own */
+        MyFlCb = FlCb;
+        MyFlCb.FlcbSendBlock = MySendBlock;
+        MyFlCb.FlcbRecvBlock = MyRecvBlock;
+
+
+      Finally, you just need to pass the address of your FLCB structure
+      to the FilerConnect() function, and your callback functions will
+      be used instead of the ones provided by PAL:
+
+        pFiler = FilerConnect(1,19200, &amp;MyFlCb);
+
+      For more details on the callback functions, please take a look at
+      the FSAMPLE.C, FILERCB.C, GETFILER.C and SNDFILER.C source files.
+
+
+</BODY>
+</HTML>

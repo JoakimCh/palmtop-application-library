@@ -1,0 +1,53 @@
+PDE Vr.1.2 [DEC-5/95].
+----------------------
+ + Fixed bug when saving a dialog having "OTHER" types of items.
+   PDE now asks for a handler name when an "other" item type is
+   selected.
+
+ + ListBox support was added.
+
+ + Updated Help screen.
+
+ + NOTE: For precision item movement (on the desktop) use the
+         keypad arrows, and for sizing the PAGEUP/PAGEDN &
+         HOME/END key combinations. [Updated in the DOCs & help screen].
+
+
+PDE Vr.1.10 [04/16/95].
+-----------------------
+ + There is a bug fixed in the Pickdlg() function of PDEUI.C.
+   PDE wouldn't load a dialog resource file when using
+   the pick-list.
+
+ + When F3 (EDIT) is pressed, the last edited item has the
+   focus instead of the first one.
+
+ + In addition to the TAB key, you can now use SHIFT-TAB to
+   select the previous item.
+
+ + When you load a dialog resource file that has only one
+   dialog, the pick-list isn't displayed anymore, and the
+   dialog is instantly loaded.
+
+ + The TESTDLG.C file won't display a pick-list if there is
+   only one dialog to test.
+
+ + You can now sort the dialog items. When the items are
+   sorted, the focus order of the dialog items in the dialog
+   will be from top to bottom, left to right.
+
+ + PDE now allows NULL pointers to Bitmap types.
+
+ + You can manually set the focus order of every item in
+   the dialog.
+
+ + PDE now removes any unnecessary empty lines from the
+   resource files.
+
+ + The UP and DOWN arrows have been swapped when sizing the
+   dialog window (more natural this way).
+
+ + Added support for dialog hotkeys.
+
+ + Added hotkeys in all the PDE dialogs.
+

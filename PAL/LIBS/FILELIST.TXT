@@ -1,0 +1,25 @@
+This directory contains the PAL libraries. They are named as follows:
+
+   <CC><M>PAL.LIB
+
+where:
+
+CC is the compiler make : MS == Microsoft C,
+                          QC == Microsoft Quick C
+                          BC == Borland C++
+                          TC == Turbo C
+                          PC == Mix Power C
+                          SC == Symantec C
+
+M is the memory model used: S == SMALL,
+                            L == LARGE.
+
+This directory is initially empty - you will have to first
+install PM and build the PAL lib for your compiler. Please refer
+to the PM docs (.\UTIL\PM\PM.DOC) for information on how to do so.
+
+If you succeed in compiling and building PAL with a compiler not
+listed above, please let me know - we will be interested in your
+library and particularly in your PM section. (Email address to
+be found in .\DOCS\GUIDLINS.TXT)
+

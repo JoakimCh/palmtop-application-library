@@ -1,0 +1,34 @@
+This file describes the directory structure of PAL. The
+following directories currently exist:
+
+.\DOCS
+.\LIBS
+.\SRC
+.\SAMPLES
+.\UTIL
+
+The .\DOCS directory contains text files of various nature,
+messages with interesting information captured on HPHAND, this
+text, the PAL C programming guidelines, etc.
+
+.\LIBS is the target directory for the actual libraries. See the
+FILELIST.TXT that is there for details. You should be able to
+build the library for your compiler using the PM utility
+(described in .\UTIL\PM\PM.DOC.)
+
+.\SRC is the meat - it contains the source directories. See the
+FILELIST.TXT file in .\SRC for a description of the various
+directories present.
+
+The .\SAMPLES directory contains some test/sample programs that
+demonstrate the use of PAL functions. (But are not part of the
+library itself).
+
+.\UTIL contains utilities and support files that may be useful
+during PAL development. It contains PM, the PAL Make utility,
+PCX2IMG, a program that can convert PCX files into IMG files and
+icons, PATCH, a patch program that corrects a bug in Turbo C
+2.0, and HFN2VFN, a converter to create PAL 'HFN' fonts out of
+VR ('VFN') fonts. There may be others - FILELIST.TXT describes
+what's there.
+

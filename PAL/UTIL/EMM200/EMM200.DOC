@@ -1,0 +1,140 @@
+!short:^u EM200 expanded memory manager
+^u EM200 expanded memory manager
+
+EMM200.EXE is an Expanded Memory Management driver written by
+Hiroyuki Sekiya. It emulates expanded memory by using a paging
+file on drive C:, The mapping mechanism of the HORNET chip in
+the palmtop is very similar to hardware EMS, so the performance
+of this driver is acceptable. Version 2.0 of EMM200 is needed to
+use the EMS-PAL functions.
+
+EMM200 was written only for the palmtop, and emulates the EMS
+4.0 standard. If your desktop has expanded memory, you can also
+test any PAL application that is using EMS on the desktop.
+You do not need, nor will you be able to, install EMM200 on
+the desktop. Use any plain vanilla EMS emulator (like EMM386)
+to do so.
+
+
+EMS200 is copyrighted freeware:
+
+ Expanded Memory Manager for HP 100LX/200LX
+ EMM200.EXE version 2.00
+ Copyright(C) 1994,1995 Hiroyuki Sekiya
+
+ EMS support level : EMS 4.0 function calls (AH=40H-58H)
+
+    English contact: Naohiko Shimizu
+              email: nshimizu@et.u-tokai.ac.jp
+
+
+The EMM200 files included with PAL are a minimal subset, to keep
+the archive size down. The full version is available in the
+HPHAND forum on CompuServe (GO HPHAND) and via FTP - I've seen
+it at: ftp://ftp.cc.monash.edu.au/pub/palmtop
+
+
+
+                  EMM200 Installation:
+                  --------------------
+
+ Since EMM200 keeps its EMS paging area on the C: drive of the
+palmtop, you should backup the palmtop's C: drive before
+installing the driver on it.
+
+ There are two files needed during installation:
+
+ MAKEEMS.EXE : This program reserves the specified amount of
+               Expanded Memory pages needed, on the C: drive
+               of the palmtop. It creates a contiguous paging
+               file on the root of the C: drive.
+
+ EMM200.EXE  : The EMS driver.
+
+
+ First you should run MAKEEMS.EXE to create the EMS paging file.
+If you don't have enough contiguous space for the EMS file,
+you should run a disk defragmentation program, such as DEFRAG.
+
+ The command line for MAKEEMS.EXE is as follows:
+
+ MAKEEMS n
+
+where n is the number of desired pages. Each page is 16384 bytes
+of RAM. To create a 128k paging file, you should type:
+
+ MAKEEMS 8
+
+ A prompt will appear with a few weird characters on the screen.
+(The screen output is in japanese). Just type 'Y' <enter> and
+MAKEEMS will create the paging file. You should immediatly
+run chkdsk c: to confirm that everything is ok.
+
+ An EMM200.DAT file should now be in the root of the drive C:.
+Use the ATTRIB command to change its attribute to 'system'.
+This will prevent you from accidentally erasing the file (which
+could be disastrous) and at the same time will keep DEFRAG
+utilities from moving it around:
+
+ attrib +s c:\emm200.dat
+
+ The file will now be hidden & protected. The second procedure
+of this installation is to add the following line to the
+config.sys file:
+
+ device=<path>emm200.exe c:\emm200.dat
+
+where <path> is the path where EMM200.EXE resides. Be sure to
+add this line before any other driver that will be using the
+Expanded Memory. And finally, reboot the palmtop and confirm
+the installed Expanded Memory by using an utility such as MEM.
+
+
+                      *** CAUTION ***
+
+ If you decide to delete the EMM200.DAT file, be sure to *first*
+remove the device=emm200.exe line from the CONFIG.SYS file, and
+reboot the computer. Only then you should delete the paging file.
+Failing to do so, may corrupt the C: drive.
+
+
+
+                      EMM200 REFERENCE:
+
+ 1. Options.
+ -----------
+
+  DEVICE=EMM200.EXE <file> [-Fn] [-Hn] [-Q]
+
+  <file> : the name of EMS paging file. There is no default for
+         : this option, you must specify one.
+  -Fn    : The number of physical pages. n=1,2,..,8 The default
+         : value for n is 4.
+
+  -Hn    : The number of EMS handles that are opened simultaneously.
+           n=2,3,..,255 The default value for n is 16. An increment
+           of n requires 20 bytes of conventional memory.
+
+  -Q     : Quiet mode (no display output).
+
+
+
+ 2.Error messages:
+ -----------------
+
+  EMS-file not found
+  EMS-file must be on C:
+      Check the EMS paging file.
+      Check config.sys parameter
+
+  Illegal file size
+      EMS paging file is not correct. Remake the file.
+
+  EMS-file must start from 16KBytes boundary
+      EMS paging file is not correct. Remake the file.
+
+  EMS-file contains non-contiguous blocks
+      EMS paging file is not correct. Remake the file.
+
+  EMM already exists
+

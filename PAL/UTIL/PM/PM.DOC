@@ -1,0 +1,394 @@
+!short:^u PM:      simplify building PAL, samples and applications
+^u PM: PalMake - Simplifies building PAL, samples and applications
+
+   What is PalMake ?
+   -----------------
+
+   PalMake (or PM, in short) is a tool that is provided with PAL
+   to allow easy building of the PAL library for your compiler,
+   as well as the samples that come with it. You can even use it
+   to compile the applications that you create with PAL. All
+   these uses only require you to issue the single command: PM
+   in the corresponding directory.
+
+
+   What does it do (for me) ?
+   --------------------------
+
+   See below for details on how PM works - here's a description
+   of what it tries to do for you.
+
+   When invoked, PM tries to find out wether you called it from
+   the .\SRC directory of the PAL directory tree. If this is the
+   case, it assumes that you have the PAL sources, and want to
+   (re)build PAL for your compiler, which it tries to do. (It
+   will only recompile those sources that need to be recompiled)
+
+   If you call it from somewhere else, it assumes that you have
+   sources for a program there that uses PAL. (Either a sample,
+   or an application of yours that uses PAL). PM will then try
+   to compile these sources, and link them with the PAL library
+   for your compiler.
+
+
+   Installation of PM
+   ------------------
+
+   To be able to use PM, you'll need to tell it where your PAL
+   directory is located, and what compiler you are using.
+
+   First, have a look at the PM.CFG file, and enter the path to
+   the PAL directories on your system, as well as the
+   abbreviation for the compiler brand you are using, in the
+   appropriate sections. (Follow the instructions at the top of
+   PM.CFG)
+
+   Then, either include the directory where PM.EXE is located in
+   your path, or copy PM.EXE and PM.CFG (don't forget that one -
+   it's important) to a directory that is in your path, for
+   example C:\TOOLS or similar. This way, PM will be found
+   wherever you call it from. PM is able to find its
+   configuration file PM.CFG if that one resides where PM.EXE is
+   located. If you modify PM.CFG, or download an updated one,
+   don't forget to update the version in your path in this case
+   since that is the once that PM will actually use.
+
+   Basically, perform the above changes, CD to the corresponding
+   directory (either .\SRC if you want to build the library
+   itself, or any other directory with sources using PAL, if you
+   want to build a sample or an application of your own), and
+   call PM.
+
+   That's all you need to know to use PM - more details on how it
+   works are below - you need to know this to troubleshoot PM.CFG,
+   and to add a section for a compiler not yet supported.
+
+
+   How does it work ?
+   ------------------
+
+   What PM does exactly depends on three things:
+
+    1) where you call it from
+    2) the existence and contents of the file SRCLIST
+       in the current directory.
+    3) the contents of PM.CFG
+       (should be stored where PM.EXE resides)
+
+   1): Where you call PM from: If called from the PAL .\SRC
+   directory, PM will switch to 'LibMode'. That is, it will
+   target updating the PAL library for your compiler. If called
+   from somewhere else, it will try to build an application in
+   that directory, and link it with the existing PAL lib. This
+   mode is called 'AppMode'. (There is a third mode that will be
+   mentioned later.)
+
+   2): SRCLIST: contains the names of the files to be compiled and
+   archived (in LibMode) or linked (in AppMode). If this file does
+   not exist, PM will try to create it, as the list of all *.C
+   files in the current directory. Note that this only works for
+   applications - PAL will not try to create the SRCLIST file
+   that is in the .\SRC directory - so don't delete that file
+   and keep it current if you add modules to PAL.
+
+   3): PM.CFG is very important. It tells PM where your PAL
+   directory tree is, and what compiler (or in general, what tools)
+   you use. PM.CFG uses the configuration file module from PAL -
+   see the documentation on the CFG module in .\SRC\CFG\CFG.DOC for
+   details on their syntax. If you ever saw a Windows .INI file,
+   you already know this format, though.
+
+
+   What does PM do in detail ?
+   ---------------------------
+
+   For every line in SRCLIST, PM will:
+
+   + extract the extension of the source file listed there - this
+   is always '.c' for the SRCLIST in the PAL .\SRC directory, but
+   may change in the future. (If we include assembly language
+   modules, for example, there will be some '.asm' files in the
+   list.)
+
+   + refer to the corresponding section of PM.CFG to find the tool
+   to be used. This tool should have a section devoted to it - if
+   under [.c], there's a 'Tool = PC', then a section named '[PC]'
+   with appropriate commands for the corresponding compiler (PC
+   stands for Mix Power C in this case) must also exist.
+
+   + after PM has found out which section to refer to for the tool
+   settings, it retrieves the 'TargetExt' variable from this
+   section - this informs it about the extension that an object
+   file gets with the compiler used. Most compilers use '.obj'
+   here, but some also have '.o', and MIX Power C uses '.mix'. With
+   this information, PM computes the name of the target object file
+   (from the name of the source file).
+
+   + Then, PM compares the time stamps of source and target files.
+   If the source is older, it simply skips this file. Otherwise,
+   it retrieves the 'LibCompile' or 'AppCompile' variable
+   (depending on which mode it is in, which in turn depends on your
+   current directory at the time of calling PM, as explained
+   above), does macro replacement on it (see below for a
+   description of PM macros), and tries to execute it. If execution
+   fails for some reason, it stops with an error message.
+
+   + After successfully compiling a library component (that is, if
+   and only if it is in 'LibMode') PM will try to put this
+   component into the library - it calls your compilers librarian
+   and uses the 'Archive' variable for this. It also does macro
+   replacement, and tries to execute the resulting command. If this
+   fails, it again stops with an error message.
+
+   Otherwise, execution continues with the next file name from the
+   SRCLIST file.
+
+   In 'LibMode', after processing all files from SRCLIST (compiling
+   and putting them into the lib), the job is finished. In
+   'AppMode', there is no such archiving step, but PM will try
+   to link the source(s) that are part of your application to
+   the PAL library for your compiler. It will use the 'Link'
+   variable of the section relevant to your compiler for this.
+   The linking step is done in AppMode only, and is performed
+   after successful compilation of all components listed in the
+   local SRCLIST file.
+
+
+   Macros in PM.CFG
+   ----------------
+
+   There are two types of 'replacement macros' that you will see in
+   PM.CFG. The first type has the syntax $(<section>/<key>) and
+   allows referring to a variable in another section. For example,
+   $(.c/Model) will expand to 's', if section [.c] contains a
+   'Model = s' assignment.
+
+   The second type of 'replacement macros' is very similar to the
+   above, but can refer to (dynamically changing) values inside PM.
+   It has the following syntax: $(/<key>), i.e. the section part is
+   missing from the above variant. Supported internal macros
+   are:
+
+     $(/src): the current source file, for example
+              'lograph\getimg.c'
+
+     $(/tgt): the current target, for example
+              'lograph\getimg.obj'
+
+     $(/tgl): the concatenated list of all targets, used in the link step.
+              for example: 'myapp.obj myfont.obj myutil.obj'
+
+     $(/err): the current error file, for use with redirection.
+              Usually the name of the target file, but with the
+              '.err' extension. For example, lograph\getimg.err
+
+
+   Commandline options
+   -------------------
+
+   PM recognizes four commandline options - these can be combined.
+   A slash or dash in front of them is not required, spaces are
+   ignored.
+
+   Every option is activated with a single character - PM
+   recognizes:
+
+      Character     Meaning
+      ---------     -------
+      d             Debug mode. PM will process files as usual, but
+                    instead of executing the commands, it will only
+                    print them to the display.
+
+      a             Build all. PM will compile all files,
+                    regardless of dates.
+
+      c             Cleanup. This is the third mode mentioned
+                    above. In this mode, PM will not create target
+                    files, but delete them, using the 'CleanUp'
+                    command in the compiler-specific sections.
+                    Note that cleanup implies an 'a' switch as
+                    well. That is, it always processes all files.
+
+      f<file>       specify an alternate srclist file. The name of the
+                    file should immediately follow the character 'f',
+                    no blank between them.
+
+      !<Section>/<Variable>=<Value>
+
+                    In the PM.CFG that is in memory, set the <Variable>
+                    in <Section> to <Value>.
+
+
+
+   Example:
+
+   To check what commands would be issued by a complete rebuild,
+   use:
+
+      PM ad
+
+   To delete all object and err files:
+
+      PM c
+
+   To have PM use the file 'testdlg' instead of the default 'srclist':
+
+      PM ftestdlg
+
+   (This is useful when working with PDE)
+
+   To temporarily switch to another compiler:
+
+      PM !.c/tool=PC
+
+
+   My compiler is not supported - what can I do ?
+   ----------------------------------------------
+
+   You need to create a section for your compiler. Copy an existing
+   section, invent a short abbreviation (two characters are best)
+   for your compiler, and correctly set the various commands.
+
+   Here's their meaning in more detail - the samples are from the
+   [BC] (Borland C) section
+
+
+   TargetExt
+   ---------
+
+   Set this to the object file extension that your compiler uses.
+
+   Example:
+   TargetExt: = .obj
+
+
+   LibCompile
+   ----------
+
+   The command used to compile a single PAL source module.
+
+   Example:
+   LibCompile = bcc -c -v -m$(.c/Model) -I.\inc -o$(/tgt) $(/src)
+
+
+   AppCompile
+   ----------
+
+   The command used to compile a single source module of an
+   application (or a sample) that uses PAL.
+
+   Example:
+   AppCompile = bcc -c -v -m$(.c/Model) -I$(Env/PalDir)\src\inc -o$(/tgt) $(/src)
+
+
+   Archive
+   -------
+
+   The command used to add a single compiled object to the PAL
+   library for your compiler
+
+   Example:
+   Archive    = tlib ..\libs\BC$(.c/Model)PAL -+$(/tgt)
+
+
+   Link
+   ----
+
+   The command to link all object components (compiled via
+   AppCompile) of an application or sample using PAL, together with
+   the PAL library (which is assumed to exist) for your compiler.
+
+   Example:
+   Link       = bcc $(/tgl) $(Env/PalDir)\libs\BC$(.c/Model)PAL.LIB
+
+
+   Cleanup
+   -------
+
+   The command used to delete an object (either library or
+   application). Used to recover some disk storage.
+
+   Example:
+   CleanUp    = command /c del $(/tgt)
+
+   (Note that the 'command /c' prefix is necessary here since there
+   is no 'DEL.EXE' command in MS-DOS - deleting is done by
+   COMMAND.COM. Therefore, we call it to do the deletion.)
+
+
+   Tips and Tricks, helpful hints.
+   -------------------------------
+
+   + Different setups of Palmtop and Desktop ?
+
+   PALs can handle this. If you are using another compiler on the
+   palmtop than on the desktop (say, BC on the desktop and TC on
+   the palmtop), add a line 'LxTool =' to the [.c] section.
+
+   Example:
+
+   [.c]
+   Tool = BC
+   LxTool = TC
+   Model = s
+
+   If your PAL root directory is installed in a different directory
+   on the palmtop than on the desktop, add a line 'LxPalDir =' to
+   the [Env] section.
+
+   Example:
+   [Env]
+   PalDir = f:\lx\hp100\dev\pal
+   LxPalDir = a:\pal
+
+   If running on the palmtop, PM will first search for the 'LxTool'
+   and 'LxPalDir' keys. If they are not set, it will try to use
+   'Tool' and 'PalDir'.
+
+
+   + Can't get it to work ?
+
+   If you're on CompuServe, post a message describing your problem
+   in section 15, 'Palmtop Programmers' of the Hewlett-Packard
+   Handhelds forum (GO HPHAND) on CompuServe.
+
+   If not, you can contact me via the Internet: Gilles Kohl,
+   100114.3146@compuserve.com
+
+   As I have to pay by volume for messages received from the
+   Internet, please do not send large messages, or uuencoded
+   binaries.
+
+
+   Limitations, known bugs
+   ------------------------
+
+   + PMs most severe limitation is the DOS commandline which is
+   limited to 128 characters in lenght. PM can't use response
+   files since these vary widely from one compiler/linker to
+   another. If your PAL directory is too deeply nested, you may
+   get problems with the LibCompile lines. The same is true for
+   the Link line if you have too many object files to link.
+
+   The solution to the first problem is to move your PAL
+   directory up a bit higher in your directory structure. For
+   the second one, you will have to use a makefile, your
+   application has become too complex for PM.
+
+   + There's no library <-> object file dependency built into
+   PM. That is, if you delete the library and start PM in the
+   .\SRC directory, it will switch to LibMode, but will not do
+   anything since all the object files are up todate. In this
+   case, do a 'PM a' to completely compile and rebuild the
+   library.
+
+   + If you switch to another compiler by editing PM.CFG, and
+   the object extension of the new compiler is the same as for
+   the old one, PM won't notice this. In this case, do a 'PM c'
+   (cleanup) first, then build the new library. A 'PM a' would
+   also work.
+
+
+
+
+

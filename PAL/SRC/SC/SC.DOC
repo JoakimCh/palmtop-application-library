@@ -1,0 +1,677 @@
+!short:
+!short:^u Software Carousel Interface routines
+^u Software Carousel Interface routines
+
+The functions in this module allow easy access to the Software
+Carousel Interface API. They all make use of the DOS INT 21H Function
+DFH Interrupt that is provided by Software Carousel and basically put
+a C wrapper around these functions.
+
+Software Carousel is a product of:
+'!HTML:<pre>
+
+                 SunShine Software Company
+                 6950 Cypress Road
+                 Plantation, Florida 33317
+                 954-581-2200
+'!HTML:</pre>
+'!HTML:<p>
+'!HTML:Contact SunShine by
+'!HTML:<a href="mailto:76443.3232@compuserve.com>e-mail</a>.
+'!HTML:<p>
+
+Available functions:
+
+  - SCPresent          : Is Software Carousel Present?
+  - SCVersion          : Get Software Carousel Version
+  - SCMenu             : Display the Software Carousel menu
+  - SCSwitch           : Switch to another Work Area
+  - SCQuit             : Terminate SC
+  - SCBoot             : Reboot the computer.
+  - SCKill             : Kill a program in a session.
+  - SCSizeStatus       : Get Size and Status of a Work Area
+  - SCSetSize          : Set a Work Areas Size
+  - SCErrorMessage     : Convert Errorcode to Text
+  - SCGetName          : Get a Work Areas Name
+  - SCSetName          : Set a Work Areas Name
+  - SCSendCommand      : Send Keystrokes to a Work Area
+  - SCCodeMode         : Where is Software Carousel Running.
+  - SCKeyboardCommands : Enable/Disable Work Area Switching.
+
+!short: SCPresent            Is Software Carousel Present?
+  NAME
+      SCPresent
+
+  DESCRIPTION
+      This command determines whether or not Software Carousel is
+      running.  It returns the Version Number if present and 0 if not.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCPresent( void );
+
+  RETURN VALUE
+      0 = Software Carousel not present.
+      Version = Software Carousel present.
+
+  NOTE
+      This call should be made BEFORE using any other Software
+      Carousel calls to determine if Software Carousel is loaded.
+
+  SAMPLE
+    int isschere( void )
+    {
+       /* variable to receive results of the function call
+       */
+       int     version_number;
+
+       /* do function to see if SC is loaded
+       */
+       version_number = SCPresent();
+
+       /* display appropriate message
+       */
+       if(version_number)
+          printf("\nSOFTWARE CAROUSEL version %d is loaded", version_number);
+       else
+          printf("\nSOFTWARE CAROUSEL is not loaded");
+
+       return(version_number);
+    }
+
+!Seealso: SCVersion
+
+!short: SCVersion            Get Software Carousel Version
+  NAME
+      SCVersion
+
+  DESCRIPTION
+      Returns the current version of Software Carousel
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCVersion( void );
+
+  RETURN VALUE
+      An INT value containing the current version.
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other SC
+      calls to determine if Software Carousel is loaded.
+
+  SAMPLE
+    int ShowVersion( void )
+    {
+       /* variable to receive results of the function call
+       */
+       int     version_number;
+
+       /* do function to see if SC is loaded
+       */
+       version_number = SCVersion();
+
+       /* display appropriate message
+       */
+       if(version_number)
+          printf("\nSOFTWARE CAROUSEL version %d is loaded", version_number);
+       else
+          printf("\nSOFTWARE CAROUSEL is not loaded");
+
+       return(version_number);
+    }
+
+!Seealso: SCPresent
+
+!short: SCMenu               Display the Software Carousel menu
+  NAME
+      SCMenu
+
+  DESCRIPTION
+      To display and activate the Carousel Control Menu from within
+      your program.
+
+  RETURN VALUE
+      0 = success
+      1 = Error.  Could not invoke menu.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCMenu( void );
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+      int fMENU = 1, rc;
+      /* invoke the menu
+      */
+      if (fMENU) {
+         rc = SCMenu();
+         if (rc == 0) {
+            printf("\nMenu Invoked");
+         } else {
+            printf("\nMenu not invoked");
+         }
+      }
+
+
+!Seealso: SCSwitch
+
+!short: SCSwitch             Switch to another Work Area
+  NAME
+      SCSwitch
+
+  DESCRIPTION
+      To command Carousel to switch to a different Work Area.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCSwitch( int session );
+
+  INPUTS
+      session   An INT value containing the Work Area number (1-12) to
+                switch to, or the value (0) to switch to the next
+                sequential Work Area.
+
+  RETURN VALUE
+      0 = switch was successful
+      1 = invalid Work Area number specified
+      2 = zero memory size Work Area specified
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+      int fSWITCH = 3;
+      /* perform a session switch
+      */
+      if (fSWITCH) {
+         rc = SCSwitch(fSWITCH);
+         if (rc == 0) {
+            printf("\nSwitched to session [%d]",
+                   fSWITCH);
+         }
+      }
+
+!Seealso: SCMenu SCPresent
+
+!short: SCQuit               Terminate SC
+  NAME
+      SCQuit
+
+  DESCRIPTION
+      To cause the Software Carousel Program to exit.  Use with
+      caution as in-process information in Work Areas will not be
+      saved or updated.
+
+  SYNOPSIS
+      #include "palsc.h"
+      void SCQuit( int type );
+
+  INPUTS
+      type.   INT value used to control "ARE YOU SURE" question and
+              display.
+      0 =     ask & show program menu before quitting
+      1 =     don't ask before quitting
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+
+    int fQUITFAST = 0,
+        fQUITSLOW = 0;
+
+    /*......*/
+
+    /* quit sc without prompt
+    */
+    if (fQUITFAST){
+       SCQuit(1);
+    }
+
+    /* quit sc with users permission
+    */
+    if (fQUITSLOW){
+       SCQuit(0);
+    }
+
+!Seealso: SCPresent
+
+!short: SCBoot               Reboot the computer.
+  NAME
+      SCBoot
+
+  DESCRIPTION
+      This command permits your program to boot the system, removing
+      Carousel and all other software from memory.
+
+  SYNOPSIS
+      #include "palsc.h"
+      void SCBoot( int type );
+
+  INPUTS
+      type.  An INT variable to determine whether to prompt the user
+             with the question "are you sure?".  A value of 1
+             indicates booting without verification.  A value of 0
+             causes the question "Are your sure?" to be asked for
+             verification before booting.
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+    int fBOOTFAST = 0,
+        fBOOTSLOW = 0;
+
+    /* boot without prompt
+    */
+    if (fBOOTFAST){
+       SCBoot(1);
+    }
+
+    /* boot with users permission
+    */
+    if (fBOOTSLOW){
+       SCBoot(0);
+    }
+
+!Seealso: SCPresent SCQuit
+
+!short: SCKill               Kill a program in a session.
+  NAME
+      SCKill
+
+  DESCRIPTION
+      To command Carousel to KILL the program running in a specified
+      Work Area.  Note: This options also removes any TSR programs
+      loaded in the Work Area being killed.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCKill( int session );
+
+  INPUTS
+      session.  An INT value containing the Work Area number (1-12) to
+                kill.
+
+   RETURN VALUE
+      0 = successfully killed
+      1 = Error. Invalid Work Area number specified
+      3 = Error. No active program in memory Work Area specified
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+
+
+!Seealso: SCPresent SCSwitch
+
+!short: SCSizeStatus         Get Size and Status of a Work Area
+  NAME
+      SCSizeStatus
+
+  DESCRIPTION
+      To return to your program the size of the Work Area specified.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCSizeStatus( int number, int* size, int* status );
+
+  INPUTS
+      number.     An INT value containing the Work Area number (1-12).
+
+      size.       A POINTER to an INT variable, which will be updated
+                  with the Work Area size.
+
+      status.     A POINTER to a CHAR variable which will be updated
+                  with the status (0 = idle; 1 = active).
+
+
+   RETURN VALUE
+      0       successfully completed
+
+      1       Error. Invalid Work Area number specified
+
+      size    The amount of memory allocated to the Work Area.
+
+      status  (0) indicates that the Work Area is at a DOS prompt. (1)
+               indicates that the Work Area is not at a DOS prompt.
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+    int fSIZESTAT = 0,
+        *size,
+        *status,
+        rc;
+
+    if (fSIZESTAT) {
+       rc = SCSizeStatus(fSIZESTAT, &size, &status);
+       if (rc == 0) {
+          printf("\nSession %d has a size of %d", fSIZESTAT, size);
+          if (status) {
+             printf("\n and a program is running.");
+          } else {
+             printf("\n and no program is running.");
+          }
+       }
+    }
+
+!Seealso: SCPresent SCSetSize
+
+!short: SCErrorMessage       Convert Errorcode to Text
+  NAME
+      SCErrorMessage
+
+  DESCRIPTION
+      For many API Software Carousel returns an error code. This
+      function will take that error code and print the corresponding
+      error message via printf.
+
+  SYNOPSIS
+      #include "palsc.h"
+      char *SCErrorMessage( int number );
+
+
+  INPUTS
+      An INT containing the Software Carousel Error Code.
+
+
+   RETURN VALUE
+      An POINTER to a character string containing the Software
+      Carousel Error Message.
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+      SCErrorMessage returns a POINTER to an 80 byte internal buffer.
+      If this call is made twice in a row the results of the first
+      call will be lost.
+
+  SAMPLE
+
+    /* --------------------------------------------------------------------
+       PrintSCError: Printf's an SC Error message
+
+       -------------------------------------------------------------------- */
+    void PrintSCError(int number)
+    {
+        char *msg;
+        msg = SCErrorMessage(number);
+        printf(msg);
+    }
+
+!Seealso: SCPresent
+
+!short: SCGetName            Get a Work Areas Name
+  NAME
+      SCGetName
+
+  DESCRIPTION
+      To obtain the (menu) name of the Work Area specified.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCGetName( int session, char *name );
+
+  INPUTS
+      session         An INT value containing the Work Area number
+      (1-12).
+
+      name            A POINTER to a CHAR string field of at least 25
+                      bytes which will be updated with the Work Area
+                      name.
+
+  RETURN VALUE
+      0 = successfully completed
+      1 = Error. Invalid Work Area number specified
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+    char name[26];
+    int fNAME = 0;
+
+    if (fNAME) {
+       rc = SCGetName(fNAME, name);
+       if (rc == 0) {
+          printf("\nSession %d is called [%s]", fNAME, name);
+       }
+    }
+
+!Seealso: SCPresent SCSetName
+
+!short: SCSetSize            Set a Work Areas Size
+  NAME
+      SCSetSize
+
+  DESCRIPTION
+      To update the size of the Work Area specified.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCSetSize( int session, int size );
+
+  INPUTS
+      session     An INT value containing the Work Area number (1-12)
+                  to be modified.
+
+      size        An INT variable containing the new Work Area size.
+                  If the new_size value is larger than free memory
+                  or Low RAM,this function sets the Work Area to the
+                  largest size possible.
+
+  RETURN VALUE
+      0 = successfully completed
+      1 = Error. Invalid Work Area number specified
+      4 = Error.  Cannot change size of a Work Area with an active
+                  program.
+      5 = Error.  Invalid new size specified.
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+    int fSETSIZESESSION = 2,
+        fSETSIZE = 512;
+
+    if (fSETSIZESESSION) {
+       rc = SCSetSize(fSETSIZESESSION, fSETSIZE);
+       if (rc == 0) {
+          printf("\nSession %d set to a size of %d kbytes",
+                 fSETSIZESESSION, fSETSIZE);
+       }
+    }
+
+!Seealso: SCPresent SCSizeStatus
+
+!short: SCSetName            Set a Work Areas Name
+  NAME
+      SCSetName
+
+  DESCRIPTION
+      To update the (menu) name of the Work Area specified.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCSetName( int session, char *name );
+
+  INPUTS
+      session     An INT value containing the Work Area number (1-12)
+                  to be modified.
+
+      name        A POINTER to a character string containing the new
+                  Work Area name (maximum 24 characters).
+
+  RETURN VALUE
+      0 = successfully completed
+      1 = Error. Invalid Work Area number specified
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+
+    int fSETNAMESESSION = 2;
+    char szNAME[24] = "A PAL SESSION";
+
+    if (fSETNAMESESSION) {
+       rc = SCSetName(fSETNAMESESSION, szNAME);
+       if (rc == 0) {
+          printf("\nSession %d name set to [%s]", fSETNAMESESSION, szNAME);
+       }
+    }
+
+!Seealso: SCPresent SCGetName
+
+!short: SCSendCommand        Send Keystrokes to a Work Area
+  NAME
+      SCSendCommand
+
+  DESCRIPTION
+      To send keystrokes to another Work Area.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCSendCommand( int session, char * cmd );
+
+  INPUTS
+      session  An INT value for the Work Area number (1-12) to send
+               the command.
+
+      cmd      A (zero terminated) string of characters to send to the
+               Work Area as keystrokes.  Maximum size is 127 bytes, or
+               whatever you have set as the number of keystrokes to
+               pass through API, as defined with the SCCONFIG program.
+
+  RETURN VALUE
+      0 = successfully completed
+      1 = Error. Invalid Work Area number specified
+      6 = Error. A previous SEND_PARTITION command is still pending
+          for the specified Work Area.  Only one command can be
+          pending per Work Area.
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+    int fCMDSESSION= 0, rc;
+    char szCMD[127] = "DIR C:";
+
+    if (fCMDSESSION) {
+       rc = SCSendCommand(fCMDSESSION, szCMD);
+       if (rc == 0) {
+          printf("\nSession %d was sent command [%s]",
+                  fCMDSESSION, szCMD);
+       }
+    }
+
+!Seealso: SCPresent
+
+!short: SCCodeMode           Where is Software Carousel Running.
+  NAME
+      SCCodeMode
+
+  DESCRIPTION
+      To determine where Carousel code is running and being swapped
+      to.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCCodeMode( int *mode );
+
+  RETURN VALUE
+      An INT whose bits have the following significance.
+
+	  bit 0 on = Carousel is running in Extended Memory
+	  bit 1 on = Carousel is running in Expanded Memory
+	  bit 2 on = Carousel is storing code in Expanded Mem
+	  bit 3 on = Carousel is storing code in Extended Mem
+	  bit 4 on = Carousel is storing code on disk.
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+    int fCODEMODE= 1;
+    if (fCODEMODE) {
+       rc = SCCodeMode( &fCODEMODE );
+       if (rc == 0) {
+          printf("\nCode Mode is [%d]",
+                 fCODEMODE);
+       }
+    }
+
+!Seealso: SCPresent
+
+!short: SCKeyboardCommands   Enable/Disable Work Area Switching.
+  NAME
+      SCKeyboardCommands
+
+  DESCRIPTION
+      To control the operator's ability to use Carousel keyboard
+      commands;  to invoke the menu or switch to another Work Area.
+
+  SYNOPSIS
+      #include "palsc.h"
+      int  SCKeyboardCommands( int *type );
+
+  INPUTS
+      type.  An INT variable used to specify the type of operation
+             requested:
+
+              0 =  disable keyboard
+              1 =  enable keyboard
+              2 =  disable keyboard during AUTO-START
+              3 =  get present status
+
+  RETURN VALUE
+      0 =  keyboard is disabled
+      1 =  keyboard is enabled
+      2 =  keyboard is disabled until AUTO-START finishes
+
+  NOTE
+      The SCPresent call should be made BEFORE using any other
+      Software Carousel calls to determine if Software Carousel is
+      loaded.
+
+  SAMPLE
+    int fKEYCOMMAND = 3, rc, fKEYCMD;
+
+    if (fKEYCOMMAND) {
+       rc = SCKeyBoardCommands( &fKEYCMD );
+       if (rc == 0) {
+          printf("\nKeyCommand Mode is [%d]",
+                 fKEYCMD);
+       }
+    }
+
+!Seealso: SCPresent

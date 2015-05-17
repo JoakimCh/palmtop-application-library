@@ -1,0 +1,280 @@
+<HTML>
+<HEAD><TITLE>PAL - Quickreference: Ems</TITLE></HEAD>
+<BODY>
+<H1>PAL - Quickreference: Ems</H1>
+<HR>
+<A NAME="Expanded memory support"><HR>
+<H2> Expanded memory support
+</H2>
+</A><P>
+This set of routines provides EMS support. That is, they provide
+C-level access to the services of an EMS driver. To use them, an
+EMS driver needs to be installed - this can be your plain
+vanilla EMM386 on the desktop, or the special EMM200 driver that
+provides EMS support using the HORNET hardware for the palmtop.
+<P>
+EMS can be very useful for PAL applications. Instead of using up
+the conventional memory, programs can benefit from this
+additional memory space for storing large amounts of data
+including graphical screen information.
+<P>
+Available functions:
+<P>
+<BR><A HREF="#EmsInit">EmsInit</A>
+     : Initialize and check EMS for driver presence.
+<BR><A HREF="#EmsCheck">EmsCheck</A>
+    : Check for the presence of an EMS driver.
+<BR><A HREF="#EmsAlloc">EmsAlloc</A>
+    : Allocate a specified number of EMS pages.
+<BR><A HREF="#EmsMap">EmsMap</A>
+      : Map a given logical page into the physical frame.
+<BR><A HREF="#EmsFree">EmsFree</A>
+     : Free an allocated EMS block.
+<BR><A HREF="#EmsFrameSeg">EmsFrameSeg</A>
+ : Return segment address of the EMS frame.
+<BR><A HREF="#EmsFreeCnt">EmsFreeCnt</A>
+  : Return the number of free EMS pages available.
+<BR><A HREF="#EmsLastError">EmsLastError</A>
+: Return last error reported by an EMS routine.
+<BR><A HREF="#EmsPageCnt">EmsPageCnt</A>
+  : Return the total number of EMS pages available.
+<BR><A HREF="#EmsVersion">EmsVersion</A>
+  : Return version of EMS driver.
+<P>
+<HR><H2><A NAME="EmsInit">EmsInit</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      EmsInit</PRE><DT>DESCRIPTION
+<DD><PRE>      Check for the presence of an EMS driver, initialize EMS
+      and return a far pointer to the EMS page. This is usually the
+      first function that should be called before using any other
+      EMS function.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void far *EmsInit(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      Returns a far pointer to the EMS frame (and also stores it).
+      Returns NULL if initialization has failed, or EMS support
+      is not available.</PRE><DT>NOTE
+<DD><PRE>      You can also use the EmsCheck() function to check
+      for the EMS driver presence.</PRE><DT>SAMPLE
+<DD><PRE>
+     /* Initialize &amp; check EMS presence */
+     if(!EmsInit())  FatalExit("EMS support not available", 1);</PRE><DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsAlloc">EmsAlloc</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsFreeCnt">EmsFree</A>
+
+</DL><HR><H2><A NAME="EmsCheck">EmsCheck</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      EmsCheck</PRE><DT>DESCRIPTION
+<DD><PRE>      Checks for the presence of an EMS driver. This function
+      or EmsInit() should be called first when using the EMS
+      functions.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int EmsCheck(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      TRUE if the EMS driver is found, FALSE otherwise.</PRE><DT>NOTE
+<DD><PRE>      Usually EmsInit() is used instead of this function, since
+      it checks for EMS presence _and_ initializes at the same
+      time.</PRE><DT>SAMPLE
+<DD><PRE>
+      /* Check for EMS presence */
+      if(!EmsCheck())  FatalExit("EMS support not available", 1);</PRE></DL><HR><H2><A NAME="EmsAlloc">EmsAlloc</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      EmsAlloc</PRE><DT>DESCRIPTION
+<DD><PRE>      Allocates n-pages from the Expanded Memory, and returns
+      a handle I.D.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int EmsAlloc(int Pages);</PRE><DT>INPUTS
+<DD><PRE>
+      int Pages  - Number of pages (16KB blocks) to allocate.
+                   e.g.: 8 pages = 128k of memory.</PRE><DT>RETURN VALUE
+<DD><PRE>      Returns a Handle number that can be used later to
+      free the allocated pages with EmsFree().
+      Returns EMS_ERR on error.</PRE><DT>SAMPLE
+<DD><PRE>
+      #include &lt;stdio.h&gt;
+      #include &lt;stdlib.h&gt;
+
+      #include &lt;dos.h&gt;
+      #include "pal.h"
+
+      void main(void)
+      {
+         int Handle;
+         int LogicalPage = 1;
+         int PhysicalPage = 0;  /* 0-3 */
+
+         /* initialize PAL */
+         if(!PalInit(1)) FatalExit("Pal init fail", 1);
+
+         /* Initialize &amp; check EMS presence */
+         if(!EmsInit())  FatalExit("EMS support not available", 1);
+
+         /* Allocate 4 pages of EMS */
+         if((Handle = EmsAlloc(4)) == EMS_ERR)
+            FatalExit("EMS Alloc fail",1);
+
+         /* save screen contents in EMS */
+         GetImg(0, 0, 639, 199, EmsMap(Handle, LogicalPage, PhysicalPage));
+
+         /* draw a black rectangle on the screen */
+         SetColor(BLACK_COLOR);
+         Rectangle(50,50,400,150, SOLID_FILL);
+
+         GetKey(); /* wait for a key */
+         /* restore screen contents from EMS memory */
+         PutImg(0, 0, FORCE_RULE, EmsMap(Handle, LogicalPage, PhysicalPage));
+
+         /* free allocated EMS storage */
+         EmsFree(Handle);
+         PalDeInit(1);
+      }
+</PRE><DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsFreeCnt">EmsFree</A>
+
+<DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsFreeCnt">EmsFree</A>
+
+</DL><HR><H2><A NAME="EmsMap">EmsMap</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      EmsMap</PRE><DT>DESCRIPTION
+<DD><PRE>      Maps a given logical page into a physical frame.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      void far *EmsMap(int Handle, int LogPage, int PhysPage);</PRE><DT>INPUTS
+<DD><PRE>
+      handle    - The handle ID returned by the EmsAlloc() function.
+      logPage   - Logical page number.
+      PsysPage  - Physical page number (0-3).
+</PRE><DT>RETURN VALUE
+<DD><PRE>      Returns a far pointer to the EMS frame.</PRE><DT>SAMPLE
+<DD><PRE>      See the EmsAlloc() function.</PRE><DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsAlloc">EmsAlloc</A>
+<A HREF="ems.HTM#EmsPageCnt">EmsPageCnt</A>
+
+</DL><HR><H2><A NAME="EmsFree">EmsFree</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      EmsFree</PRE><DT>DESCRIPTION
+<DD><PRE>      Frees a previously allocated EMS block, specified by
+      its HANDLE number.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int EmsFree(int Handle);</PRE><DT>INPUTS
+<DD><PRE>
+      Handle  - Handle I.D. previously returned by the EmsAlloc()
+                function.</PRE><DT>RETURN VALUE
+<DD><PRE>      Returns TRUE on success, FALSE otherwise.</PRE><DT>NOTE
+<DD><PRE>      You can use EmsAlloc() to allocate EMS blocks.</PRE><DT>SAMPLE
+<DD><PRE>      See the EmsAlloc() function.</PRE></DL><HR><H2><A NAME="EmsFrameSeg">EmsFrameSeg</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      EmsFrameSeg</PRE><DT>DESCRIPTION
+<DD><PRE>      Returns the SEGMENT address of the EMS frame. The OFFSET
+      is not needed because it's always zero. (that's why the
+      address starts always at 16-byte boundaries).</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      WORD EmsFrameSeg(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      Returns the SEGMENT address (SEG:0000) of the EMS frame.</PRE><DT>SAMPLE
+<DD><PRE>      See the EmsVersion() function.</PRE><DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsFreeCnt">EmsFree</A>
+
+<DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsAlloc">EmsAlloc</A>
+
+</DL><HR><H2><A NAME="EmsFreeCnt">EmsFreeCnt</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      EmsFreeCnt</PRE><DT>DESCRIPTION
+<DD><PRE>      Returns the number of free EMS pages available for
+      allocation.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int EmsFreeCnt(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      Number of free EMS pages available. Each page is 16KB.</PRE><DT>SAMPLE
+<DD><PRE>      See the EmsVersion() function.</PRE><DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsAlloc">EmsAlloc</A>
+
+</DL><HR><H2><A NAME="EmsLastError">EmsLastError</A>
+</H2>
+<DL>
+<DT>NAME
+<DD><PRE>      EmsLastError</PRE><DT>DESCRIPTION
+<DD><PRE>      Returns the last error reported by an EMS function, if any.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int EmsLastError(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      Last EMS-error number (EMS_ERR).
+</PRE><DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsAlloc">EmsAlloc</A>
+
+</DL><HR><H2><A NAME="EmsPageCnt">EmsPageCnt</A>
+</H2>
+
+<DL>
+<DT>NAME
+<DD><PRE>      EmsPageCnt</PRE><DT>DESCRIPTION
+<DD><PRE>      Returns the total number of EMS pages available.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int EmsPageCnt(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      Number of EMS pages available.</PRE><DT>SAMPLE
+<DD><PRE>      See the EmsVersion() function.</PRE><DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsAlloc">EmsAlloc</A>
+<A HREF="ems.HTM#EmsPageCnt">EmsPageCnt</A>
+
+</DL><HR><H2><A NAME="EmsVersion">EmsVersion</A>
+</H2>
+
+<DL>
+<DT>NAME
+<DD><PRE>      EmsVersion</PRE><DT>DESCRIPTION
+<DD><PRE>      Returns the version number of the EMS driver.</PRE><DT>SYNOPSIS
+<DD><PRE>      #include "pal.h"
+      int EmsVersion(void);</PRE><DT>INPUTS
+<DD><PRE>      None.</PRE><DT>RETURN VALUE
+<DD><PRE>      Version number of the EMS driver.
+      e.g.: 320 is Version 3.20.</PRE><DT>SAMPLE
+<DD><PRE>
+      void EmsReport(void)
+      {
+         MsgBox(" EMS Status report ",
+                "|Version of EMS driver : %d|"
+                "Total pages available : %d|"
+                "Number of free pages  : %d|"
+                "Frame segment location: %04X|",
+                NULL, " OK ",
+                EmsVersion(), EmsPageCnt(), EmsFreeCnt(), EmsFrameSeg());
+      }</PRE><DT>SEE ALSO
+<DD><A HREF="ems.HTM#EmsInit">EmsInit</A>
+<A HREF="ems.HTM#EmsMap">EmsMap</A>
+<A HREF="ems.HTM#EmsAlloc">EmsAlloc</A>
+
+</DL></BODY>
+</HTML>
