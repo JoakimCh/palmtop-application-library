@@ -1,8 +1,8 @@
-#Palmtop Application Library
+# Palmtop Application Library
 
 New information will be added here if needed.
 
-##The original readme is found below (any contact information is probably outdated):
+## The original readme is found below (any contact information is probably outdated):
 ```
 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 ³                                                                ³
